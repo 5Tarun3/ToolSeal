@@ -1,0 +1,704 @@
+{
+  "findings": [
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": false,
+      "note": "carried on .metadata",
+      "observed": false,
+      "prop": "annotation.readOnlyHint",
+      "tool": "delete_records",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": true,
+      "note": "carried on .metadata",
+      "observed": true,
+      "prop": "annotation.destructiveHint",
+      "tool": "delete_records",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": false,
+      "note": "carried on .metadata",
+      "observed": false,
+      "prop": "annotation.idempotentHint",
+      "tool": "delete_records",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": false,
+      "note": "carried on .metadata",
+      "observed": false,
+      "prop": "annotation.openWorldHint",
+      "tool": "delete_records",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": "Delete Records",
+      "note": "carried on .metadata",
+      "observed": "Delete Records",
+      "prop": "annotation.title",
+      "tool": "delete_records",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": [
+        "users",
+        "orders"
+      ],
+      "note": "",
+      "observed": null,
+      "prop": "constraint.table.enum",
+      "tool": "delete_records",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": 1,
+      "note": "",
+      "observed": null,
+      "prop": "constraint.limit.minimum",
+      "tool": "delete_records",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": 100,
+      "note": "",
+      "observed": null,
+      "prop": "constraint.limit.maximum",
+      "tool": "delete_records",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": "Permanently delete rows from a table. This cannot be undone.",
+      "note": "",
+      "observed": "Permanently delete rows from a table. This cannot be undone.",
+      "prop": "description",
+      "tool": "delete_records",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": true,
+      "note": "carried on .metadata",
+      "observed": true,
+      "prop": "annotation.readOnlyHint",
+      "tool": "read_document",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": false,
+      "note": "carried on .metadata",
+      "observed": false,
+      "prop": "annotation.destructiveHint",
+      "tool": "read_document",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": true,
+      "note": "carried on .metadata",
+      "observed": true,
+      "prop": "annotation.idempotentHint",
+      "tool": "read_document",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": false,
+      "note": "carried on .metadata",
+      "observed": false,
+      "prop": "annotation.openWorldHint",
+      "tool": "read_document",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": "Read Document",
+      "note": "carried on .metadata",
+      "observed": "Read Document",
+      "prop": "annotation.title",
+      "tool": "read_document",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": 256,
+      "note": "",
+      "observed": null,
+      "prop": "constraint.path.maxLength",
+      "tool": "read_document",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": "^/docs/[A-Za-z0-9_/.-]+$",
+      "note": "",
+      "observed": null,
+      "prop": "constraint.path.pattern",
+      "tool": "read_document",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": "Read a document from the documentation directory.",
+      "note": "",
+      "observed": "Read a document from the documentation directory.",
+      "prop": "description",
+      "tool": "read_document",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": true,
+      "note": "carried on .metadata",
+      "observed": true,
+      "prop": "annotation.readOnlyHint",
+      "tool": "search_web",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": false,
+      "note": "carried on .metadata",
+      "observed": false,
+      "prop": "annotation.destructiveHint",
+      "tool": "search_web",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": false,
+      "note": "carried on .metadata",
+      "observed": false,
+      "prop": "annotation.idempotentHint",
+      "tool": "search_web",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": true,
+      "note": "carried on .metadata",
+      "observed": true,
+      "prop": "annotation.openWorldHint",
+      "tool": "search_web",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": "Search the Web",
+      "note": "carried on .metadata",
+      "observed": "Search the Web",
+      "prop": "annotation.title",
+      "tool": "search_web",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": 1,
+      "note": "",
+      "observed": null,
+      "prop": "constraint.query.minLength",
+      "tool": "search_web",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": 200,
+      "note": "",
+      "observed": null,
+      "prop": "constraint.query.maxLength",
+      "tool": "search_web",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": "Search the public web and return result summaries.",
+      "note": "",
+      "observed": "Search the public web and return result summaries.",
+      "prop": "description",
+      "tool": "search_web",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": null,
+      "note": "no client-side rejection; the invalid call reached the server, which rejected it and returned the error as ordinary tool content",
+      "observed": "[{\"type\": \"text\", \"text\": \"Error executing tool read_document: 1 validation error for read_documentArguments\\npath\\n  String should match pattern '^/docs/[A-Za-z0-9_/.-]+$' [type=string_pattern_mismat",
+      "prop": "enforcement.pattern",
+      "tool": "read_document",
+      "verdict": "dropped"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": null,
+      "note": "MCP error result surfaced as tool content, not as an exception",
+      "observed": "[{\"type\": \"text\", \"text\": \"Error executing tool read_document: 1 validation error for read_documentArguments\\npath\\n  String should match pattern '^/docs/[A-Za-z0-9_/.-]+$' [type=string_pattern_mismat",
+      "prop": "error_semantics.isError",
+      "tool": "read_document",
+      "verdict": "mutated"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": null,
+      "note": "no client-side rejection; the invalid call reached the server, which rejected it and returned the error as ordinary tool content",
+      "observed": "[{\"type\": \"text\", \"text\": \"Error executing tool delete_records: 1 validation error for delete_recordsArguments\\ntable\\n  Input should be 'users' or 'orders' [type=literal_error, input_value='secrets',",
+      "prop": "enforcement.enum",
+      "tool": "delete_records",
+      "verdict": "dropped"
+    },
+    {
+      "adapter": "langchain-mcp-adapters",
+      "expected": null,
+      "note": "MCP error result surfaced as tool content, not as an exception",
+      "observed": "[{\"type\": \"text\", \"text\": \"Error executing tool delete_records: 1 validation error for delete_recordsArguments\\ntable\\n  Input should be 'users' or 'orders' [type=literal_error, input_value='secrets',",
+      "prop": "error_semantics.isError",
+      "tool": "delete_records",
+      "verdict": "mutated"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": false,
+      "note": "no carrier on the translated tool holds this hint",
+      "observed": null,
+      "prop": "annotation.readOnlyHint",
+      "tool": "delete_records",
+      "verdict": "dropped"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": true,
+      "note": "no carrier on the translated tool holds this hint",
+      "observed": null,
+      "prop": "annotation.destructiveHint",
+      "tool": "delete_records",
+      "verdict": "dropped"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": false,
+      "note": "no carrier on the translated tool holds this hint",
+      "observed": null,
+      "prop": "annotation.idempotentHint",
+      "tool": "delete_records",
+      "verdict": "dropped"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": false,
+      "note": "no carrier on the translated tool holds this hint",
+      "observed": null,
+      "prop": "annotation.openWorldHint",
+      "tool": "delete_records",
+      "verdict": "dropped"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": "Delete Records",
+      "note": "no carrier on the translated tool holds this hint",
+      "observed": null,
+      "prop": "annotation.title",
+      "tool": "delete_records",
+      "verdict": "dropped"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": [
+        "users",
+        "orders"
+      ],
+      "note": "",
+      "observed": null,
+      "prop": "constraint.table.enum",
+      "tool": "delete_records",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": 1,
+      "note": "",
+      "observed": null,
+      "prop": "constraint.limit.minimum",
+      "tool": "delete_records",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": 100,
+      "note": "",
+      "observed": null,
+      "prop": "constraint.limit.maximum",
+      "tool": "delete_records",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": "Permanently delete rows from a table. This cannot be undone.",
+      "note": "author's text retained but adapter added content around it",
+      "observed": "Tool Name: delete_records\nTool Arguments: {'additionalProperties': False, 'properties': {'table': {'description': 'Table to delete from.', 'enum': ['users', 'orders'], 'title': 'Table', 'type': 'strin",
+      "prop": "description",
+      "tool": "delete_records",
+      "verdict": "mutated"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": true,
+      "note": "no carrier on the translated tool holds this hint",
+      "observed": null,
+      "prop": "annotation.readOnlyHint",
+      "tool": "read_document",
+      "verdict": "dropped"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": false,
+      "note": "no carrier on the translated tool holds this hint",
+      "observed": null,
+      "prop": "annotation.destructiveHint",
+      "tool": "read_document",
+      "verdict": "dropped"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": true,
+      "note": "no carrier on the translated tool holds this hint",
+      "observed": null,
+      "prop": "annotation.idempotentHint",
+      "tool": "read_document",
+      "verdict": "dropped"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": false,
+      "note": "no carrier on the translated tool holds this hint",
+      "observed": null,
+      "prop": "annotation.openWorldHint",
+      "tool": "read_document",
+      "verdict": "dropped"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": "Read Document",
+      "note": "no carrier on the translated tool holds this hint",
+      "observed": null,
+      "prop": "annotation.title",
+      "tool": "read_document",
+      "verdict": "dropped"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": 256,
+      "note": "",
+      "observed": null,
+      "prop": "constraint.path.maxLength",
+      "tool": "read_document",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": "^/docs/[A-Za-z0-9_/.-]+$",
+      "note": "",
+      "observed": null,
+      "prop": "constraint.path.pattern",
+      "tool": "read_document",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": "Read a document from the documentation directory.",
+      "note": "author's text retained but adapter added content around it",
+      "observed": "Tool Name: read_document\nTool Arguments: {'additionalProperties': False, 'properties': {'path': {'description': 'Absolute path beneath /docs.', 'maxLength': 256, 'pattern': '^/docs/[A-Za-z0-9_/.-]+$',",
+      "prop": "description",
+      "tool": "read_document",
+      "verdict": "mutated"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": true,
+      "note": "no carrier on the translated tool holds this hint",
+      "observed": null,
+      "prop": "annotation.readOnlyHint",
+      "tool": "search_web",
+      "verdict": "dropped"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": false,
+      "note": "no carrier on the translated tool holds this hint",
+      "observed": null,
+      "prop": "annotation.destructiveHint",
+      "tool": "search_web",
+      "verdict": "dropped"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": false,
+      "note": "no carrier on the translated tool holds this hint",
+      "observed": null,
+      "prop": "annotation.idempotentHint",
+      "tool": "search_web",
+      "verdict": "dropped"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": true,
+      "note": "no carrier on the translated tool holds this hint",
+      "observed": null,
+      "prop": "annotation.openWorldHint",
+      "tool": "search_web",
+      "verdict": "dropped"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": "Search the Web",
+      "note": "no carrier on the translated tool holds this hint",
+      "observed": null,
+      "prop": "annotation.title",
+      "tool": "search_web",
+      "verdict": "dropped"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": 1,
+      "note": "",
+      "observed": null,
+      "prop": "constraint.query.minLength",
+      "tool": "search_web",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": 200,
+      "note": "",
+      "observed": null,
+      "prop": "constraint.query.maxLength",
+      "tool": "search_web",
+      "verdict": "preserved"
+    },
+    {
+      "adapter": "crewai-tools",
+      "expected": "Search the public web and return result summaries.",
+      "note": "author's text retained but adapter added content around it",
+      "observed": "Tool Name: search_web\nTool Arguments: {'additionalProperties': False, 'properties': {'query': {'description': 'Search terms.', 'maxLength': 200, 'minLength': 1, 'title': 'Query', 'type': 'string'}}, '",
+      "prop": "description",
+      "tool": "search_web",
+      "verdict": "mutated"
+    }
+  ],
+  "generated": "2026-08-11T20:39:15+00:00",
+  "ground_truth": {
+    "delete_records": {
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Delete Records"
+      },
+      "description": "Permanently delete rows from a table. This cannot be undone.",
+      "execution": null,
+      "icons": null,
+      "inputSchema": {
+        "properties": {
+          "confirm": {
+            "default": false,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "limit": {
+            "description": "Maximum rows to remove.",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "table": {
+            "description": "Table to delete from.",
+            "enum": [
+              "users",
+              "orders"
+            ],
+            "title": "Table",
+            "type": "string"
+          }
+        },
+        "required": [
+          "table",
+          "limit"
+        ],
+        "title": "delete_recordsArguments",
+        "type": "object"
+      },
+      "meta": null,
+      "name": "delete_records",
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "delete_recordsOutput",
+        "type": "object"
+      },
+      "title": null
+    },
+    "read_document": {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Read Document"
+      },
+      "description": "Read a document from the documentation directory.",
+      "execution": null,
+      "icons": null,
+      "inputSchema": {
+        "properties": {
+          "path": {
+            "description": "Absolute path beneath /docs.",
+            "maxLength": 256,
+            "pattern": "^/docs/[A-Za-z0-9_/.-]+$",
+            "title": "Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "title": "read_documentArguments",
+        "type": "object"
+      },
+      "meta": null,
+      "name": "read_document",
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "read_documentOutput",
+        "type": "object"
+      },
+      "title": null
+    },
+    "search_web": {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true,
+        "readOnlyHint": true,
+        "title": "Search the Web"
+      },
+      "description": "Search the public web and return result summaries.",
+      "execution": null,
+      "icons": null,
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Search terms.",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Query",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "search_webArguments",
+        "type": "object"
+      },
+      "meta": null,
+      "name": "search_web",
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "search_webOutput",
+        "type": "object"
+      },
+      "title": null
+    }
+  },
+  "summary": {
+    "crewai-tools / annotation": {
+      "dropped": 15,
+      "mutated": 0,
+      "preserved": 0,
+      "unknown": 0
+    },
+    "crewai-tools / constraint": {
+      "dropped": 0,
+      "mutated": 0,
+      "preserved": 7,
+      "unknown": 0
+    },
+    "crewai-tools / description": {
+      "dropped": 0,
+      "mutated": 3,
+      "preserved": 0,
+      "unknown": 0
+    },
+    "langchain-mcp-adapters / annotation": {
+      "dropped": 0,
+      "mutated": 0,
+      "preserved": 15,
+      "unknown": 0
+    },
+    "langchain-mcp-adapters / constraint": {
+      "dropped": 0,
+      "mutated": 0,
+      "preserved": 7,
+      "unknown": 0
+    },
+    "langchain-mcp-adapters / description": {
+      "dropped": 0,
+      "mutated": 0,
+      "preserved": 3,
+      "unknown": 0
+    },
+    "langchain-mcp-adapters / enforcement": {
+      "dropped": 2,
+      "mutated": 0,
+      "preserved": 0,
+      "unknown": 0
+    },
+    "langchain-mcp-adapters / error_semantics": {
+      "dropped": 0,
+      "mutated": 2,
+      "preserved": 0,
+      "unknown": 0
+    }
+  },
+  "versions": {
+    "crewai": "1.15.14",
+    "crewai-tools": "1.15.14",
+    "langchain-core": "1.5.4",
+    "langchain-mcp-adapters": "0.3.2",
+    "mcp": "1.28.1",
+    "pydantic": "2.12.5"
+  }
+}
