@@ -59,7 +59,10 @@ uv run pre-commit install
 
 ## Documentation
 
-Design documents and the project plan live in [`docs/`](docs/).
+- [`reference/`](reference/) — normative specifications, starting with the
+  [misconfiguration taxonomy](reference/taxonomy.md).
+- [`research/`](research/) — probes and measurement harnesses that produce
+  evidence for the project's claims.
 
 ## License
 
