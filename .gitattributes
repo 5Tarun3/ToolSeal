@@ -1,0 +1,6 @@
+# Normalise line endings in the repository to LF regardless of contributor OS.
+# Without this, Windows checkouts produce CRLF diffs that churn against CI.
+* text=auto eol=lf
+
+# Lockfiles are generated; keep them out of diff review noise.
+uv.lock linguist-generated=true

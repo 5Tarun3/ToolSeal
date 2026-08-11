@@ -1,0 +1,76 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "toolseal"
+version = "0.0.1"
+description = "Secure-by-default scaffolding and cross-framework tool registry for agentic systems"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+keywords = ["agents", "mcp", "supply-chain", "security", "scaffolding", "sbom"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: Software Development :: Build Tools",
+    "Typing :: Typed",
+]
+dependencies = [
+    "typer>=0.15.1",
+]
+
+[project.scripts]
+toolseal = "toolseal.cli:main"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.14.1",
+    "pytest>=8.3.4",
+    "ruff>=0.9.2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/toolseal"]
+
+# ---------------------------------------------------------------------------
+# Lint / format
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# S (flake8-bandit) is deliberately enabled: this is a security tool and its own
+# code is held to the standard it enforces on others.
+select = ["E", "F", "W", "I", "B", "UP", "N", "S", "C4", "SIM", "PTH", "RET", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"] # assert is the point of a test
+
+[tool.ruff.format]
+docstring-code-format = true
+
+# ---------------------------------------------------------------------------
+# Types
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+files = ["src", "tests"]
+
+# ---------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-q --strict-markers --strict-config"
