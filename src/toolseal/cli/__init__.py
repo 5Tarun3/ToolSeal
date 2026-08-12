@@ -19,7 +19,7 @@ from typing import Annotated, Any
 import typer
 
 from toolseal import __version__
-from toolseal.cli import init_command
+from toolseal.cli import audit_command, init_command
 from toolseal.cli.errors import command as error_boundary
 from toolseal.errors import ExitCode, ToolsealError
 from toolseal.logging import configure_logging
@@ -61,6 +61,7 @@ def cli(
 
 
 app.command(name="init")(error_boundary(init_command.init))
+app.command(name="audit")(error_boundary(audit_command.audit))
 
 
 @app.command()
