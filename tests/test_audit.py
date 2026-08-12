@@ -33,6 +33,7 @@ from toolseal.core.policy.model import (
     Verdict,
 )
 from toolseal.core.policy.suppress import is_suppressed, suppression_for
+from toolseal.core.report import to_sarif
 from toolseal.core.scaffold import apply_plan, build_plan
 from toolseal.errors import ExitCode
 
@@ -341,3 +342,60 @@ def test_every_registered_check_has_a_remediation() -> None:
 def test_families_a_and_c_are_registered() -> None:
     assert {c.id for c in checks_in("A")} == {"A1", "A2", "A3", "A4", "A5"}
     assert {c.id for c in checks_in("C")} == {"C1", "C2"}
+
+
+# --- SARIF -----------------------------------------------------------------
+
+
+def test_sarif_is_well_formed(tmp_path: Path) -> None:
+    (tmp_path / "main.py").write_text("x = 1\n", encoding="utf-8")
+
+    log = to_sarif(audit(tmp_path))
+
+    assert log["version"] == "2.1.0"
+    assert len(log["runs"]) == 1
+    assert log["runs"][0]["tool"]["driver"]["name"] == "toolseal"
+
+
+def test_sarif_declares_every_rule_not_only_the_failing_ones(tmp_path: Path) -> None:
+    # A consumer that can say "24 of 28 passed" is more useful than one that
+    # only ever learns about failures.
+    log = to_sarif(audit(tmp_path))
+
+    declared = {rule["id"] for rule in log["runs"][0]["tool"]["driver"]["rules"]}
+    assert declared == {item.id for item in all_checks()}
+
+
+def test_sarif_locations_are_relative(tmp_path: Path) -> None:
+    (tmp_path / "config.py").write_text(
+        'OPENAI_API_KEY = "sk-abcdefghijklmnopqrstuvwxyz01"\n', encoding="utf-8"
+    )
+
+    log = to_sarif(audit(tmp_path))
+    located = [r for r in log["runs"][0]["results"] if "locations" in r]
+
+    assert located
+    for entry in located:
+        uri = entry["locations"][0]["physicalLocation"]["artifactLocation"]["uri"]
+        assert not Path(uri).is_absolute()
+        assert ":" not in uri  # no drive letter leaked from a build machine
+
+
+def test_sarif_severity_narrowing_keeps_the_original(tmp_path: Path) -> None:
+    (tmp_path / "config.py").write_text(
+        'OPENAI_API_KEY = "sk-abcdefghijklmnopqrstuvwxyz01"\n', encoding="utf-8"
+    )
+
+    results = to_sarif(audit(tmp_path))["runs"][0]["results"]
+    critical = [r for r in results if r["properties"]["severity"] == "critical"]
+
+    assert critical
+    assert all(r["level"] == "error" for r in critical)
+
+
+def test_sarif_command_emits_valid_json(tmp_path: Path) -> None:
+    (tmp_path / "main.py").write_text("x = 1\n", encoding="utf-8")
+
+    payload = json.loads(runner.invoke(app, ["audit", str(tmp_path), "--sarif"]).stdout)
+
+    assert payload["version"] == "2.1.0"
