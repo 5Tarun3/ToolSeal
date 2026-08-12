@@ -14,6 +14,7 @@ from toolseal.core.translate.lattice import (
     plan_translation,
     profile,
 )
+from toolseal.core.translate.lower import GuardCode, Lowering, guards_for, lower
 
 __all__ = [
     "ANNOTATION_PROPERTIES",
@@ -21,9 +22,13 @@ __all__ = [
     "AbstractionProfile",
     "Evidence",
     "Guard",
+    "GuardCode",
     "GuardKind",
+    "Lowering",
     "SecurityProperty",
     "TranslationPlan",
+    "guards_for",
+    "lower",
     "plan_translation",
     "profile",
 ]

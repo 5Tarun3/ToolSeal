@@ -6,7 +6,11 @@ without knowing which module defines which family.
 
 from __future__ import annotations
 
-from toolseal.core.policy import family_a, family_c  # noqa: F401  (registration side effect)
+from toolseal.core.policy import (  # noqa: F401  (registration side effect)
+    family_a,
+    family_c,
+    family_g,
+)
 from toolseal.core.policy.model import (
     AuditReport,
     Check,
