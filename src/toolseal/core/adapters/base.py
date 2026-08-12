@@ -65,13 +65,42 @@ class ScaffoldSpec:
 
 
 class Provider(Protocol):
-    """An LLM provider: the facts needed to talk to it, and nothing else."""
+    """An LLM provider: the facts needed to talk to it, and nothing else.
 
-    id: str
-    display_name: str
-    default_model: str
-    default_base_url: str
-    credential_env_var: str
+    Identity is declared read-only throughout. These are facts about an adapter,
+    not mutable state, and a settable protocol member would both permit
+    rebinding at runtime and force every implementation to spell the exact
+    declared type - mutable protocol attributes are invariant.
+    """
+
+    @property
+    def id(self) -> str: ...
+
+    @property
+    def display_name(self) -> str: ...
+
+    @property
+    def default_model(self) -> str: ...
+
+    @property
+    def default_base_url(self) -> str: ...
+
+    @property
+    def credential_env_var(self) -> str | None:
+        """Environment variable carrying this provider's credential.
+
+        ``None`` means the provider genuinely needs no credential - a locally
+        hosted runtime, for example. That is different from a credential this
+        project has not been given, and the distinction matters: family A must
+        not report a missing secret for a provider that never had one.
+
+        Declared read-only rather than as a plain attribute so that an
+        implementation may narrow it. A mutable protocol attribute is invariant,
+        which would force every provider to spell the type ``str | None`` even
+        when it is always one or the other - and adapter identity should not be
+        rebindable at runtime regardless.
+        """
+        ...
 
     def packages(self) -> tuple[str, ...]:
         """Requirement specifiers this provider needs, pinned by the adapter."""
@@ -85,8 +114,11 @@ class Provider(Protocol):
 class Framework(Protocol):
     """An agent framework: renders a project, and declares what it can express."""
 
-    id: str
-    display_name: str
+    @property
+    def id(self) -> str: ...
+
+    @property
+    def display_name(self) -> str: ...
 
     def packages(self, provider: Provider) -> tuple[str, ...]:
         """Requirements for this framework combined with *provider*."""
@@ -109,8 +141,11 @@ class Framework(Protocol):
 class MCPTarget(Protocol):
     """Reads and writes one framework's MCP server configuration."""
 
-    id: str
-    config_path: PurePosixPath
+    @property
+    def id(self) -> str: ...
+
+    @property
+    def config_path(self) -> PurePosixPath: ...
 
     def read(self, root: Path) -> tuple[MCPServerBinding, ...]:
         """Parse configured servers. Returns empty when no config exists."""
