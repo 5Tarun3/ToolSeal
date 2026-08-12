@@ -18,6 +18,7 @@ import typer
 
 from toolseal.core.audit import audit as run_audit
 from toolseal.core.policy.model import AuditReport, Severity, Verdict
+from toolseal.core.report import to_sarif
 from toolseal.errors import ExitCode
 
 GOOD_SCORE = 80
@@ -37,6 +38,10 @@ def audit(
     as_json: Annotated[
         bool, typer.Option("--json", help="Emit machine-readable output on stdout.")
     ] = False,
+    as_sarif: Annotated[
+        bool,
+        typer.Option("--sarif", help="Emit SARIF 2.1.0 on stdout, for code scanning."),
+    ] = False,
     min_severity: Annotated[
         Severity | None,
         typer.Option("--min-severity", help="Only report findings at or above this severity."),
@@ -46,7 +51,9 @@ def audit(
     report = run_audit(path or Path.cwd())
     findings = _filtered(report, min_severity)
 
-    if as_json:
+    if as_sarif:
+        typer.echo(json.dumps(to_sarif(report), indent=2, sort_keys=True))
+    elif as_json:
         typer.echo(json.dumps(_as_dict(report, findings), indent=2, sort_keys=True))
     else:
         _print_report(report, findings)
