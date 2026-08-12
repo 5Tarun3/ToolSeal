@@ -48,7 +48,7 @@ def build_agent():
         model="$model",
         base_url="$base_url",
         temperature=0,
-        client_kwargs={"timeout": REQUEST_TIMEOUT_SECONDS},
+        $timeout_kwarg,
     )
 
     # B1: an explicit tool list, not every tool in scope. Binding everything to

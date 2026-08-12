@@ -60,6 +60,16 @@ class ScaffoldSpec:
     framework_id: str
     workspace_root: Path
     model: str | None = None
+
+    base_url: str | None = None
+    """Endpoint override, or ``None`` for the provider default.
+
+    Exists for self-hosted and proxied deployments, and for verifying a
+    hosted provider against a local stand-in. Setting it is what check ``D3``
+    reports, which is correct: an overridden endpoint is where traffic and
+    credentials get silently redirected, so it should be a visible choice.
+    """
+
     mcp_servers: tuple[MCPServerBinding, ...] = ()
     extras: dict[str, str] = field(default_factory=dict)
 

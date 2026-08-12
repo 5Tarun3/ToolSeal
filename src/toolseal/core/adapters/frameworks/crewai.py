@@ -99,7 +99,7 @@ class CrewAIFramework:
             "project_name": spec.project_name,
             "package_name": _package_name(spec.project_name),
             "crewai_model": f"{integration.litellm_prefix}/{model}",
-            "base_url": provider.default_base_url,
+            "base_url": spec.base_url or provider.default_base_url,
         }
 
         requirements = "\n".join(self.packages(provider)) + "\n"

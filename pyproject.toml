@@ -34,6 +34,7 @@ toolseal = "toolseal.cli:main"
 cells = [
     "langchain>=1.0",
     "langchain-ollama>=0.2",
+    "langchain-openai>=1.0",
     "langgraph>=0.3",
 ]
 dev = [

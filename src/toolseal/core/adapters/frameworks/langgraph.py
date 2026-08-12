@@ -40,12 +40,27 @@ class _Integration:
     chat_module: str
     chat_class: str
 
+    timeout_kwarg: str = "timeout=REQUEST_TIMEOUT_SECONDS"
+    """How this chat class accepts a request timeout.
+
+    Not uniform across LangChain integrations: `ChatOllama` takes
+    `client_kwargs={"timeout": ...}` while `ChatOpenAI` and `ChatAnthropic` take
+    `timeout=`. Passing the wrong one is a TypeError at the first call, so a
+    generated project would look correct and fail on use - which is exactly what
+    the live cell test caught.
+    """
+
 
 # Adding a provider means adding a row here and nothing else.
 _INTEGRATIONS: Final[dict[str, _Integration]] = {
-    "ollama": _Integration("langchain-ollama==1.1.0", "langchain_ollama", "ChatOllama"),
-    "openai": _Integration("langchain-openai==1.1.0", "langchain_openai", "ChatOpenAI"),
-    "anthropic": _Integration("langchain-anthropic==1.1.0", "langchain_anthropic", "ChatAnthropic"),
+    "ollama": _Integration(
+        "langchain-ollama==1.1.0",
+        "langchain_ollama",
+        "ChatOllama",
+        timeout_kwarg='client_kwargs={"timeout": REQUEST_TIMEOUT_SECONDS}',
+    ),
+    "openai": _Integration("langchain-openai==1.4.3", "langchain_openai", "ChatOpenAI"),
+    "anthropic": _Integration("langchain-anthropic==1.5.5", "langchain_anthropic", "ChatAnthropic"),
 }
 
 
@@ -104,9 +119,10 @@ class LangGraphFramework:
             "project_name": spec.project_name,
             "package_name": package_name,
             "model": model,
-            "base_url": provider.default_base_url,
+            "base_url": spec.base_url or provider.default_base_url,
             "chat_module": integration.chat_module,
             "chat_class": integration.chat_class,
+            "timeout_kwarg": integration.timeout_kwarg,
         }
 
         requirements = "\n".join(self.packages(provider)) + "\n"

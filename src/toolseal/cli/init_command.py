@@ -39,6 +39,10 @@ def init(
     model: Annotated[
         str | None, typer.Option("--model", "-m", help="Override the provider's default model.")
     ] = None,
+    base_url: Annotated[
+        str | None,
+        typer.Option("--base-url", help="Override the provider endpoint (reported by check D3)."),
+    ] = None,
     directory: Annotated[
         Path | None,
         typer.Option("--directory", "-d", help="Where to create it. Defaults to ./<name>."),
@@ -66,6 +70,7 @@ def init(
         framework_id=framework,
         workspace_root=root,
         model=model,
+        base_url=base_url,
     )
 
     plan = build_plan(spec, force=force)
