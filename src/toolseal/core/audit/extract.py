@@ -63,7 +63,15 @@ REDACTION_MARKERS: Final = ("RedactingFilter", "redact(", "REDACTED")
 # Evidence that calls are bounded (check E3). Both are needed: a timeout
 # without a loop bound still permits an agent that never terminates.
 TIMEOUT_MARKERS: Final = ("timeout", "REQUEST_TIMEOUT")
-LOOP_BOUND_MARKERS: Final = ("recursion_limit", "RECURSION_LIMIT", "max_iterations")
+# Each framework spells the loop bound differently; a marker list that knows
+# only one of them reports every other framework as unbounded.
+LOOP_BOUND_MARKERS: Final = (
+    "recursion_limit",
+    "RECURSION_LIMIT",
+    "max_iterations",
+    "MAX_ITERATIONS",
+    "max_iter",
+)
 
 
 def _git_tracked(root: Path) -> frozenset[PurePosixPath] | None:

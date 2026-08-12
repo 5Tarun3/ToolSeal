@@ -1,13 +1,14 @@
-"""Source templates for a LangGraph project.
+"""Source templates for a CrewAI project.
 
-These are ``string.Template`` rather than f-strings or Jinja, for two reasons.
-The output is Python source full of braces, which an ``str.format`` template
-would fight; and ``$`` placeholders cannot appear by accident in generated code,
-so a substitution bug is a loud :class:`KeyError` rather than a silent literal.
+CrewAI is the target where translation actually costs something. Probe P0
+measured that its MCP adapter drops every annotation hint and rewrites every
+tool description, so a tool lowered into CrewAI arrives without the
+`destructiveHint` its author declared.
 
-Every security-relevant line in the generated project carries the check id it
-satisfies. A developer who deletes one should be able to see what they are
-deleting, and `toolseal audit` will say the same thing later.
+The generated project is therefore shaped to make that recoverable: it imports
+the same `guards.py` every framework gets, so the approval decorator the
+translation layer emits as a compensating guard is already available, and the
+author's description is kept verbatim where a reviewer can see it.
 """
 
 from __future__ import annotations
@@ -25,8 +26,7 @@ from __future__ import annotations
 import logging
 import sys
 
-from langchain.agents import create_agent
-from $chat_module import $chat_class
+from crewai import LLM, Agent, Crew, Task
 
 from guards import configure_logging
 from tools import TOOLS
@@ -34,26 +34,38 @@ from tools import TOOLS
 log = logging.getLogger("$package_name")
 
 # E3: a wall-clock bound on every provider call. Without one, a hung endpoint
-# hangs the agent forever and there is no way to notice from inside.
+# hangs the crew forever and there is no way to notice from inside.
 REQUEST_TIMEOUT_SECONDS = 60.0
 
 # E3: bounds the tool-calling loop. An agent that cannot terminate is a
 # resource-exhaustion bug (OWASP LLM10 Unbounded Consumption).
-RECURSION_LIMIT = 25
+MAX_ITERATIONS = 15
 
 
-def build_agent():
-    """Construct the agent with an explicit, minimal tool set."""
-    model = $chat_class(
-        model="$model",
+def build_llm() -> LLM:
+    return LLM(
+        model="$crewai_model",
         base_url="$base_url",
         temperature=0,
-        client_kwargs={"timeout": REQUEST_TIMEOUT_SECONDS},
+        timeout=REQUEST_TIMEOUT_SECONDS,
     )
 
-    # B1: an explicit tool list, not every tool in scope. Binding everything to
-    # every session is the overprovisioning default this scaffold avoids.
-    return create_agent(model, list(TOOLS))
+
+def build_agent() -> Agent:
+    """Construct the agent with an explicit, minimal tool set."""
+    return Agent(
+        role="$project_name assistant",
+        goal="Answer the request using only the tools provided.",
+        backstory="A focused assistant that prefers its tools over guessing.",
+        llm=build_llm(),
+        # B1: an explicit tool list, not every tool in scope. Binding everything
+        # to every agent is the overprovisioning default this scaffold avoids.
+        tools=list(TOOLS),
+        # E3: without this the crew can loop until the provider bill notices.
+        max_iter=MAX_ITERATIONS,
+        allow_delegation=False,
+        verbose=False,
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -66,20 +78,21 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     agent = build_agent()
+    task = Task(
+        description=prompt,
+        expected_output="A short, direct answer.",
+        agent=agent,
+    )
+
     try:
-        result = agent.invoke(
-            {"messages": [{"role": "user", "content": prompt}]},
-            config={"recursion_limit": RECURSION_LIMIT},
-        )
+        result = Crew(agents=[agent], tasks=[task], verbose=False).kickoff()
     except Exception:
         # The provider endpoint is the most common failure and its exceptions
         # can carry request context, so this is logged rather than printed raw.
-        log.exception("agent run failed")
+        log.exception("crew run failed")
         return 1
 
-    for message in result["messages"]:
-        log.debug("%s: %s", type(message).__name__, message.content)
-    print(result["messages"][-1].content)
+    print(result)
     return 0
 
 
@@ -95,19 +108,23 @@ Add tools here. Two rules the audit enforces:
 * No shell or code-execution tool without a justification recorded in
   `toolseal.toml` (check B2).
 * Filesystem tools stay inside the workspace (check B3).
+
+CrewAI rewrites tool descriptions when it registers them, so the text the model
+reads is not the text written here. That is check G5, and it is why anything a
+reviewer needs to trust belongs in the code rather than in the description.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 
-from langchain_core.tools import tool
+from crewai.tools import tool
 
 # B3: filesystem access is rooted at the project workspace, not at "/" or "~".
 WORKSPACE = (Path(__file__).resolve().parent / "workspace").resolve()
 
 
-@tool
+@tool("read_workspace_file")
 def read_workspace_file(relative_path: str) -> str:
     """Read a UTF-8 text file from the project workspace."""
     target = (WORKSPACE / relative_path).resolve()
@@ -128,14 +145,3 @@ def read_workspace_file(relative_path: str) -> str:
 # act, which is the point.
 TOOLS = (read_workspace_file,)
 ''')
-
-
-# Shared with every other framework: guards, the env example, and the readme
-# are not LangGraph-specific, and a second copy would drift.
-from toolseal.templates.common import (  # noqa: E402
-    ENV_EXAMPLE,
-    GUARDS_PY,
-    README_MD,
-)
-
-__all__ = ["AGENT_PY", "ENV_EXAMPLE", "GUARDS_PY", "README_MD", "TOOLS_PY"]
