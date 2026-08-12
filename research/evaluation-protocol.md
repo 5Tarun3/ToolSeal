@@ -140,10 +140,22 @@ reported as such. Agent transcripts are published.
 
 ### Human arm — secondary
 
-`n ≈ 12–15` participants, each completing a subset of tasks in both conditions
-with order counterbalanced. Runs only if ethics approval (P6) is granted in time;
-the study does not depend on it. Recruitment criteria, consent text and the
-analysis plan are fixed before the first session.
+**Status as of 2026-08-12: deferred, and likely to be dropped.** No participant
+access is available, and whether an ethics committee is reachable for this
+project is unresolved. The scripted arm is therefore the only planned
+measurement for RQ2.
+
+This is permitted by the design rather than a departure from it: the human arm
+was specified as conditional from the outset. The consequence must be stated in
+the write-up — the developer-experience result rests on an LLM agent following
+documentation, which is a lower-bound proxy for a developer, and no
+human-subjects data was collected.
+
+Should access and approval both become available before week 19, the design
+stands as originally specified: `n ≈ 12–15` participants, each completing a
+subset of tasks in both conditions with order counterbalanced, and with
+recruitment criteria, consent text and the analysis plan fixed before the first
+session.
 
 ### Metrics
 
