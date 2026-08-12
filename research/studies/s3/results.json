@@ -1,0 +1,34 @@
+{
+  "comparison": {
+    "agentwarden_ms_per_call": 800,
+    "ratio": 80000.0,
+    "toolseal_ms_per_call": 0.01
+  },
+  "excludes": "provider latency, deliberately: a model round trip hides a millisecond-scale difference and would produce a meaningless null",
+  "guarded": {
+    "label": "tool call, approval guard",
+    "mean_us": 20.54,
+    "median_us": 19.5,
+    "p95_us": 24.2,
+    "repeats": 200
+  },
+  "overhead_per_call_ms": 0.01,
+  "overhead_per_call_us": 10.04,
+  "redaction": {
+    "label": "redact one log line",
+    "mean_us": 9.03,
+    "median_us": 8.0,
+    "p95_us": 12.5,
+    "repeats": 200
+  },
+  "reference_point": "AgentWarden reports ~800 ms per call for runtime capability governance; quoted from the paper, not reproduced here",
+  "repeats": 200,
+  "study": "S3 runtime overhead",
+  "unguarded": {
+    "label": "tool call, no guard",
+    "mean_us": 0.46,
+    "median_us": 0.4,
+    "p95_us": 0.5,
+    "repeats": 200
+  }
+}

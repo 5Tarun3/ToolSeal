@@ -5,7 +5,8 @@ number quoted anywhere in this project can be traced to the run that produced
 it. Regenerate with:
 
 ```bash
-uv run python -m bench --out research/studies/s2
+uv run python -m bench s2 --out research/studies/s2
+uv run python -m bench s3 --out research/studies/s3
 ```
 
 Selection rules, metric definitions and falsification conditions are fixed in
@@ -15,7 +16,8 @@ table.
 
 | Study | Question | Status |
 | --- | --- | --- |
-| [`s2`](s2/) | Does securing setup cost developer time? (RQ2) | Run, scripted arm only |
+| [`s2`](s2/) | Does securing setup cost developer time? (RQ2) | Run, idealised manual arm |
+| [`s3`](s3/) | What does a secure default cost at runtime? (RQ3) | Run |
 
 ## A caveat that belongs on every figure
 
@@ -27,3 +29,15 @@ estimate rather than a flattering one.
 The protocol names a scripted LLM agent as the intended primary arm. That needs
 a model capable of following documentation, and none was available; the human
 arm is deferred separately and recorded as such in the protocol.
+
+## Reading Study 3's ratio
+
+Study 3 reports a per-call overhead in microseconds against a published runtime
+figure in milliseconds, which produces a ratio large enough to be misleading if
+quoted alone. It is **indicative, not like-for-like**: the 800 ms it is compared
+against buys a learned, task-aware policy, while a compensating guard reinstates
+one declared property.
+
+The defensible claim is the narrow one - that a property knowable at
+configuration time does not need re-deriving on every call - and both the report
+and its tests are written to keep the ratio from being read as more than that.

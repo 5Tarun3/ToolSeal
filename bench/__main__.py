@@ -9,25 +9,33 @@ import argparse
 import tempfile
 from pathlib import Path
 
+from bench import overhead
 from bench.harness import run, to_dict, to_markdown, write
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(prog="bench", description="Run Study 2.")
+    parser = argparse.ArgumentParser(prog="bench", description="Run an evaluation study.")
+    parser.add_argument("study", choices=("s2", "s3"), help="Which study to run.")
     parser.add_argument(
-        "--out",
-        type=Path,
-        default=Path("research/studies/s2"),
-        help="Where to write results.json and RESULTS.md.",
+        "--out", type=Path, default=None, help="Where to write results.json and RESULTS.md."
+    )
+    parser.add_argument(
+        "--repeats", type=int, default=200, help="Repeats per measurement (s3 only)."
     )
     args = parser.parse_args()
+    out = args.out or Path("research/studies") / args.study
 
-    with tempfile.TemporaryDirectory(prefix="toolseal-bench-") as workspace:
-        results = run(Path(workspace))
+    if args.study == "s2":
+        with tempfile.TemporaryDirectory(prefix="toolseal-bench-") as workspace:
+            results = run(Path(workspace))
+        write(results, out)
+        print(to_markdown(to_dict(results)))
+    else:
+        payload = overhead.run(args.repeats)
+        overhead.write(payload, out)
+        print(overhead.to_markdown(payload))
 
-    write(results, args.out)
-    print(to_markdown(to_dict(results)))
-    print(f"written to {args.out}")
+    print(f"written to {out}")
     return 0
 
 
