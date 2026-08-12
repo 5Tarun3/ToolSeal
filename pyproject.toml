@@ -23,6 +23,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
+    "keyring>=25.0",
     "typer>=0.15.1",
 ]
 
