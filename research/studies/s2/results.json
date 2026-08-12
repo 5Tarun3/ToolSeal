@@ -1,0 +1,300 @@
+{
+  "aggregate": {
+    "manual_blocking": 4,
+    "manual_succeeded": 6,
+    "mean_score_manual": 8.0,
+    "mean_score_toolseal": 100.0,
+    "tasks_adverse": 2,
+    "tasks_total": 8,
+    "toolseal_blocking": 0,
+    "toolseal_succeeded": 6
+  },
+  "manual_arm": "idealised quickstart; lower bound on manual effort",
+  "study": "S2 with/without",
+  "tasks": [
+    {
+      "adverse": false,
+      "description": "Local model, LangGraph agent",
+      "id": "ollama-langgraph",
+      "manual": {
+        "arm": "manual",
+        "audit_score": 24,
+        "blocking": false,
+        "findings": [
+          "A2",
+          "A4",
+          "C1",
+          "C5",
+          "E2",
+          "E3",
+          "F1"
+        ],
+        "hand_written_files": 4,
+        "manual_steps": 10,
+        "note": "idealised: no mistakes, no debugging",
+        "seconds": 0.002806699980283156,
+        "succeeded": true
+      },
+      "score_delta": 76,
+      "step_delta": 8,
+      "toolseal": {
+        "arm": "toolseal",
+        "audit_score": 100,
+        "blocking": false,
+        "findings": [],
+        "hand_written_files": 0,
+        "manual_steps": 2,
+        "note": "",
+        "seconds": 0.013513899990357459,
+        "succeeded": true
+      }
+    },
+    {
+      "adverse": false,
+      "description": "Local model, CrewAI crew",
+      "id": "ollama-crewai",
+      "manual": {
+        "arm": "manual",
+        "audit_score": 24,
+        "blocking": false,
+        "findings": [
+          "A2",
+          "A4",
+          "C1",
+          "C5",
+          "E2",
+          "E3",
+          "F1"
+        ],
+        "hand_written_files": 4,
+        "manual_steps": 10,
+        "note": "idealised: no mistakes, no debugging",
+        "seconds": 0.0027102000021841377,
+        "succeeded": true
+      },
+      "score_delta": 76,
+      "step_delta": 8,
+      "toolseal": {
+        "arm": "toolseal",
+        "audit_score": 100,
+        "blocking": false,
+        "findings": [],
+        "hand_written_files": 0,
+        "manual_steps": 2,
+        "note": "",
+        "seconds": 0.013949999993201345,
+        "succeeded": true
+      }
+    },
+    {
+      "adverse": false,
+      "description": "Hosted OpenAI, LangGraph agent",
+      "id": "openai-langgraph",
+      "manual": {
+        "arm": "manual",
+        "audit_score": 0,
+        "blocking": true,
+        "findings": [
+          "A1",
+          "A2",
+          "A4",
+          "C1",
+          "C5",
+          "E2",
+          "E3",
+          "F1"
+        ],
+        "hand_written_files": 4,
+        "manual_steps": 10,
+        "note": "idealised: no mistakes, no debugging",
+        "seconds": 0.0037515999865718186,
+        "succeeded": true
+      },
+      "score_delta": 100,
+      "step_delta": 8,
+      "toolseal": {
+        "arm": "toolseal",
+        "audit_score": 100,
+        "blocking": false,
+        "findings": [],
+        "hand_written_files": 0,
+        "manual_steps": 2,
+        "note": "",
+        "seconds": 0.013557199999922886,
+        "succeeded": true
+      }
+    },
+    {
+      "adverse": false,
+      "description": "Hosted OpenAI, CrewAI crew",
+      "id": "openai-crewai",
+      "manual": {
+        "arm": "manual",
+        "audit_score": 0,
+        "blocking": true,
+        "findings": [
+          "A1",
+          "A2",
+          "A4",
+          "C1",
+          "C5",
+          "E2",
+          "E3",
+          "F1"
+        ],
+        "hand_written_files": 4,
+        "manual_steps": 10,
+        "note": "idealised: no mistakes, no debugging",
+        "seconds": 0.0022579999931622297,
+        "succeeded": true
+      },
+      "score_delta": 100,
+      "step_delta": 8,
+      "toolseal": {
+        "arm": "toolseal",
+        "audit_score": 100,
+        "blocking": false,
+        "findings": [],
+        "hand_written_files": 0,
+        "manual_steps": 2,
+        "note": "",
+        "seconds": 0.01583969997591339,
+        "succeeded": true
+      }
+    },
+    {
+      "adverse": false,
+      "description": "Hosted Anthropic, LangGraph agent",
+      "id": "anthropic-langgraph",
+      "manual": {
+        "arm": "manual",
+        "audit_score": 0,
+        "blocking": true,
+        "findings": [
+          "A1",
+          "A2",
+          "A4",
+          "C1",
+          "C5",
+          "E2",
+          "E3",
+          "F1"
+        ],
+        "hand_written_files": 4,
+        "manual_steps": 10,
+        "note": "idealised: no mistakes, no debugging",
+        "seconds": 0.002688299980945885,
+        "succeeded": true
+      },
+      "score_delta": 100,
+      "step_delta": 8,
+      "toolseal": {
+        "arm": "toolseal",
+        "audit_score": 100,
+        "blocking": false,
+        "findings": [],
+        "hand_written_files": 0,
+        "manual_steps": 2,
+        "note": "",
+        "seconds": 0.016525500017451122,
+        "succeeded": true
+      }
+    },
+    {
+      "adverse": false,
+      "description": "Hosted Anthropic, CrewAI crew",
+      "id": "anthropic-crewai",
+      "manual": {
+        "arm": "manual",
+        "audit_score": 0,
+        "blocking": true,
+        "findings": [
+          "A1",
+          "A2",
+          "A4",
+          "C1",
+          "C5",
+          "E2",
+          "E3",
+          "F1"
+        ],
+        "hand_written_files": 4,
+        "manual_steps": 10,
+        "note": "idealised: no mistakes, no debugging",
+        "seconds": 0.002363500010687858,
+        "succeeded": true
+      },
+      "score_delta": 100,
+      "step_delta": 8,
+      "toolseal": {
+        "arm": "toolseal",
+        "audit_score": 100,
+        "blocking": false,
+        "findings": [],
+        "hand_written_files": 0,
+        "manual_steps": 2,
+        "note": "",
+        "seconds": 0.01375230000121519,
+        "succeeded": true
+      }
+    },
+    {
+      "adverse": true,
+      "description": "A framework toolseal does not support: the manual arm succeeds and toolseal cannot help at all",
+      "id": "adverse-unsupported-framework",
+      "manual": {
+        "arm": "manual",
+        "audit_score": null,
+        "blocking": null,
+        "findings": [],
+        "hand_written_files": 0,
+        "manual_steps": 0,
+        "note": "no baseline template authored (\"no baseline template authored for framework 'autogen'. A developer could follow its documentation; this harness cannot.\")",
+        "seconds": 1.3499986380338669e-05,
+        "succeeded": false
+      },
+      "score_delta": null,
+      "step_delta": null,
+      "toolseal": {
+        "arm": "toolseal",
+        "audit_score": null,
+        "blocking": null,
+        "findings": [],
+        "hand_written_files": 0,
+        "manual_steps": 0,
+        "note": "UsageError: unknown framework 'autogen'; available: crewai, langgraph",
+        "seconds": 1.2500007869675756e-05,
+        "succeeded": false
+      }
+    },
+    {
+      "adverse": true,
+      "description": "A provider toolseal does not support: same shape, other axis",
+      "id": "adverse-unsupported-provider",
+      "manual": {
+        "arm": "manual",
+        "audit_score": null,
+        "blocking": null,
+        "findings": [],
+        "hand_written_files": 0,
+        "manual_steps": 0,
+        "note": "no baseline template authored (unknown provider 'gemini'; available: anthropic, ollama, openai)",
+        "seconds": 4.6000059228390455e-06,
+        "succeeded": false
+      },
+      "score_delta": null,
+      "step_delta": null,
+      "toolseal": {
+        "arm": "toolseal",
+        "audit_score": null,
+        "blocking": null,
+        "findings": [],
+        "hand_written_files": 0,
+        "manual_steps": 0,
+        "note": "UsageError: unknown provider 'gemini'; available: anthropic, ollama, openai",
+        "seconds": 3.7999998312443495e-06,
+        "succeeded": false
+      }
+    }
+  ]
+}

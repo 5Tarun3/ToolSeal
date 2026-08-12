@@ -1,0 +1,1 @@
+"""Study harnesses. Not part of the shipped package."""

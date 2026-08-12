@@ -61,7 +61,7 @@ packages = ["src/toolseal"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-src = ["src", "tests"]
+src = ["src", "tests", "bench"]
 
 [tool.ruff.lint]
 # S (flake8-bandit) is deliberately enabled: this is a security tool and its own
@@ -81,7 +81,7 @@ docstring-code-format = true
 python_version = "3.11"
 strict = true
 warn_unreachable = true
-files = ["src", "tests"]
+files = ["src", "tests", "bench"]
 
 # ---------------------------------------------------------------------------
 # Tests
