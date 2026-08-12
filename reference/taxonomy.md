@@ -166,9 +166,19 @@ where the decision is actually made.
 | `C5` | No SBOM | `low` |
 
 **C1 — Unpinned dependencies**
-*Detects:* absent lockfile, or unconstrained version specifiers.
-*Remediates:* scaffold generates and commits a lockfile.
+*Detects:* any dependency declared with an unconstrained specifier; or the
+absence of both a lockfile **and** a fully pinned dependency set.
+*Remediates:* the scaffold pins every direct dependency to the exact version the
+cell was verified against.
 *Grounding:* dependency-challenge catalogue [P6]; reproducible builds [P7].
+
+> **Refined 2026-08-12.** Originally "absent lockfile, **or** unconstrained
+> specifiers", which reported a finding against a fully `==`-pinned project that
+> had no separate lockfile. A fully pinned set already reproduces the direct
+> dependency graph, which is what the lockfile requirement exists for. It
+> remains weaker than hash pinning, since transitive versions still float, so
+> the recommendation stands — but on its own it is no longer a finding. Recorded
+> per rule 3.
 
 **C2 — Dependency carrying a known advisory**
 *Detects:* resolved dependency set queried against OSV.

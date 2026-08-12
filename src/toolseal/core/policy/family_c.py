@@ -87,7 +87,14 @@ def query_osv(dependencies: Sequence[Dependency], ecosystem: str = "PyPI") -> di
 def _c1(model: ProjectModel) -> Sequence[Finding]:
     findings: list[Finding] = []
 
-    if model.dependencies.lockfile is None:
+    declared = model.dependencies.declared
+    fully_pinned = bool(declared) and all(d.pinned for d in declared)
+
+    # A fully `==`-pinned dependency set reproduces the direct dependency graph
+    # without a separate lockfile, which is what the lockfile requirement is for.
+    # It is weaker than hash pinning, because transitive versions still float -
+    # so the recommendation stays, but it is not a finding on its own.
+    if model.dependencies.lockfile is None and not fully_pinned:
         findings.append(
             Finding(
                 check_id="C1",

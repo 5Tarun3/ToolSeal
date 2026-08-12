@@ -51,7 +51,7 @@ class OllamaProvider:
         Framework integration packages are the framework's business, since they
         are named after the pairing rather than after the provider.
         """
-        return ("ollama>=0.4.0",)
+        return ("ollama==0.6.2",)
 
     def supports_model(self, model: str) -> bool:
         """Whether *model* is a well-formed Ollama model reference.
