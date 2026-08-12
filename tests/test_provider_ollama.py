@@ -10,15 +10,17 @@ from __future__ import annotations
 
 import pytest
 
-from toolseal.core.adapters import Provider, providers
+from toolseal.core.adapters import Provider, provider_registry
 from toolseal.core.adapters.providers import OllamaProvider
 
 
 def test_registered_under_its_id() -> None:
-    import toolseal.core.adapters.providers  # noqa: F401  (registration side effect)
+    # Importing the package registers the adapter; the registry name must not be
+    # shadowed by the subpackage that shares its concept.
+    import toolseal.core.adapters.providers as _registration  # noqa: F401
 
-    assert "ollama" in providers.names()
-    assert providers.get("ollama").id == "ollama"
+    assert "ollama" in provider_registry.names()
+    assert provider_registry.get("ollama").id == "ollama"
 
 
 def test_satisfies_the_provider_protocol() -> None:

@@ -10,9 +10,9 @@ from toolseal.core.adapters.base import (
     Provider,
     RenderedFile,
     ScaffoldSpec,
-    frameworks,
-    mcp_targets,
-    providers,
+    framework_registry,
+    mcp_target_registry,
+    provider_registry,
 )
 
 __all__ = [
@@ -23,7 +23,7 @@ __all__ = [
     "Provider",
     "RenderedFile",
     "ScaffoldSpec",
-    "frameworks",
-    "mcp_targets",
-    "providers",
+    "framework_registry",
+    "mcp_target_registry",
+    "provider_registry",
 ]
