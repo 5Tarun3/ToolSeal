@@ -1,0 +1,111 @@
+name: cells
+
+# The most important suite in this repository. It scaffolds every provider x
+# framework cell, installs what the generated project declares, and checks that
+# the result compiles and audits clean.
+#
+# It exists because the demo is "a fresh laptop": a cell that breaks upstream
+# breaks the demo, and the failure has to surface the day the upstream release
+# lands rather than the morning of the presentation.
+#
+# What it deliberately does NOT do is run the agent. GitHub runners have no
+# Ollama and no provider keys, so live execution stays local - and the tests
+# that need it skip rather than pretend. See research/evaluation-protocol.md.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly, so an upstream release that breaks a cell is found by the
+    # schedule rather than by a user.
+    - cron: "23 5 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cells-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  matrix:
+    name: ${{ matrix.provider }} x ${{ matrix.framework }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        provider: [ollama, openai, anthropic]
+        framework: [langgraph, crewai]
+        # The OS axis is not decoration: `keyring` selects a different backend on
+        # each platform, and the demo happens on whichever laptop is to hand.
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install toolseal
+        run: uv sync --locked
+
+      - name: Scaffold the cell
+        run: >
+          uv run toolseal init cell
+          --provider ${{ matrix.provider }}
+          --framework ${{ matrix.framework }}
+          --directory cell
+          --json
+
+      - name: Audit the generated project
+        # The claim under test: a scaffolded project satisfies the taxonomy it
+        # enforces on everyone else. Exit 1 means findings, which fails here.
+        run: uv run toolseal audit cell
+
+      - name: Check the generated sources compile
+        shell: bash
+        run: |
+          for f in agent.py tools.py guards.py; do
+            uv run python -m py_compile "cell/$f"
+          done
+
+      - name: Install what the generated project declares
+        # Catches an upstream release that makes the pinned set unresolvable -
+        # the failure mode a user hits first and the tests cannot see.
+        run: uv run --isolated --with-requirements cell/requirements.txt python -c "print('resolved')"
+
+  self-audit:
+    name: toolseal audits itself
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - run: uv sync --locked
+
+      - name: Audit this repository
+        # Dogfooding, and a regression guard: the taxonomy is applied to the
+        # tool that defines it. Findings are reported without failing the build,
+        # because this repository is a Python library rather than an agent
+        # project and several checks do not apply to it.
+        run: uv run toolseal audit . || true
+
+      - name: Upload SARIF
+        run: uv run toolseal audit . --sarif > toolseal.sarif || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: toolseal-sarif
+          path: toolseal.sarif
+          if-no-files-found: warn
