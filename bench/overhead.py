@@ -30,7 +30,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Final
+from typing import Any, Final, cast
 
 DEFAULT_REPEATS: Final = 200
 
@@ -95,11 +95,13 @@ def _approval_guard() -> Callable[..., Any]:
     source = GUARDS_PY.substitute(project_name="bench", package_name="bench")
     exec(compile(source, "guards.py", "exec"), namespace)  # noqa: S102
 
-    guard = namespace["require_approval"]
+    guard: object = namespace["require_approval"]
     if not callable(guard):  # pragma: no cover - the template would be broken
         message = "generated guards.py does not export require_approval"
         raise RuntimeError(message)
-    return guard
+    # Narrowed from `object` rather than trusted: this comes out of exec'd
+    # template source, so the type is genuinely unknown until it is checked.
+    return cast("Callable[..., Any]", guard)
 
 
 def guard_overhead(repeats: int = DEFAULT_REPEATS) -> dict[str, Any]:
