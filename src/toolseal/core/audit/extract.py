@@ -60,6 +60,11 @@ REQUIREMENT: Final = re.compile(
 # Evidence that a project redacts credentials from its own logs (check A4).
 REDACTION_MARKERS: Final = ("RedactingFilter", "redact(", "REDACTED")
 
+# Evidence that calls are bounded (check E3). Both are needed: a timeout
+# without a loop bound still permits an agent that never terminates.
+TIMEOUT_MARKERS: Final = ("timeout", "REQUEST_TIMEOUT")
+LOOP_BOUND_MARKERS: Final = ("recursion_limit", "RECURSION_LIMIT", "max_iterations")
+
 
 def _git_tracked(root: Path) -> frozenset[PurePosixPath] | None:
     """Paths git knows about, or ``None`` when this is not a repository."""
@@ -183,6 +188,27 @@ def _collect_dependencies(root: Path) -> DependencySet:
     return DependencySet(declared=tuple(declared), lockfile=lockfile, sbom=sbom)
 
 
+def _sources(root: Path) -> list[str]:
+    """Every Python source in the project, skipping vendored trees."""
+    contents: list[str] = []
+    for path in root.rglob("*.py"):
+        if any(part in SKIPPED_DIRECTORIES for part in path.parts):
+            continue
+        try:
+            contents.append(path.read_text(encoding="utf-8", errors="replace"))
+        except OSError:
+            continue
+    return contents
+
+
+def _bounded(sources: list[str]) -> bool:
+    """Whether both a request timeout and a loop bound are configured."""
+    joined = "\n".join(sources)
+    return any(m in joined for m in TIMEOUT_MARKERS) and any(
+        m in joined for m in LOOP_BOUND_MARKERS
+    )
+
+
 def _detects_redaction(root: Path) -> bool:
     for path in root.rglob("*.py"):
         if any(part in SKIPPED_DIRECTORIES for part in path.parts):
@@ -208,16 +234,20 @@ def extract(root: Path) -> ProjectModel:
     if manifest is not None:
         providers = (ProviderBinding(provider_id=manifest.provider_id, model=manifest.model),)
 
+    sources = _sources(resolved)
+    redacts = any(marker in source for source in sources for marker in REDACTION_MARKERS)
+
     return ProjectModel(
         root=resolved,
         files=_collect_files(resolved),
         dependencies=_collect_dependencies(resolved),
         providers=providers,
         runtime=RuntimeConfig(
-            redacts_credentials=_detects_redaction(resolved),
-            logs_tool_invocations=_detects_redaction(resolved),
+            redacts_credentials=redacts,
+            logs_tool_invocations=redacts,
             approval_required_for_destructive=(
                 manifest.approval_required_for_destructive if manifest else False
             ),
+            default_timeout_seconds=60.0 if _bounded(sources) else None,
         ),
     )

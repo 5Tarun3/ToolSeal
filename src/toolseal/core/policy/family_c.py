@@ -163,3 +163,62 @@ C2 = register(
         applies=lambda model: any(d.resolved_version for d in model.dependencies.declared),
     )
 )
+
+
+def _c4(model: ProjectModel) -> Sequence[Finding]:
+    return [
+        Finding(
+            check_id="C4",
+            severity=Severity.HIGH,
+            title="Install source cannot be verified",
+            detail=(
+                f"{dependency.name} comes from {dependency.source.kind} "
+                f"{dependency.source.reference!r}, which is neither pinned nor integrity-checked"
+            ),
+            remediation="Install from an indexed registry with a pinned version and a checksum.",
+        )
+        for dependency in model.dependencies.declared
+        if dependency.source is not None and not dependency.source.is_verified
+    ]
+
+
+def _c5(model: ProjectModel) -> Sequence[Finding]:
+    if model.dependencies.sbom is not None:
+        return []
+    return [
+        Finding(
+            check_id="C5",
+            severity=Severity.LOW,
+            title="No SBOM",
+            detail=(
+                "Without a component inventory, a newly disclosed advisory cannot be matched "
+                "against this project without re-resolving it"
+            ),
+            remediation="Generate a CycloneDX or SPDX document, refreshed on dependency change.",
+        )
+    ]
+
+
+C4 = register(
+    Check(
+        id="C4",
+        family="C",
+        title="Install from an unverified source",
+        severity=Severity.HIGH,
+        remediation="Install from an indexed, integrity-checked source.",
+        run=_c4,
+        applies=lambda model: any(d.source is not None for d in model.dependencies.declared),
+    )
+)
+
+C5 = register(
+    Check(
+        id="C5",
+        family="C",
+        title="No SBOM",
+        severity=Severity.LOW,
+        remediation="Generate an SBOM at scaffold time.",
+        run=_c5,
+        applies=lambda model: bool(model.dependencies.declared),
+    )
+)

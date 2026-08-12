@@ -339,9 +339,17 @@ def test_every_registered_check_has_a_remediation() -> None:
     assert all(item.remediation for item in all_checks())
 
 
-def test_families_a_and_c_are_registered() -> None:
+def test_the_whole_taxonomy_is_registered() -> None:
+    # The document in reference/taxonomy.md is normative; this is the drift
+    # guard it asks for. Identifiers are permanent and never reused, so a
+    # mismatch here is either an unimplemented check or an undocumented one.
     assert {c.id for c in checks_in("A")} == {"A1", "A2", "A3", "A4", "A5"}
-    assert {c.id for c in checks_in("C")} == {"C1", "C2"}
+    assert {c.id for c in checks_in("B")} == {"B1", "B2", "B3", "B4", "B5"}
+    assert {c.id for c in checks_in("C")} == {"C1", "C2", "C4", "C5"}
+    assert {c.id for c in checks_in("D")} == {"D1", "D2", "D3"}
+    assert {c.id for c in checks_in("E")} == {"E1", "E2", "E3"}
+    assert {c.id for c in checks_in("F")} == {"F1", "F2"}
+    assert {c.id for c in checks_in("G")} == {"G1", "G2", "G3", "G4", "G5"}
 
 
 # --- SARIF -----------------------------------------------------------------

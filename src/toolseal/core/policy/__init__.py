@@ -8,7 +8,9 @@ from __future__ import annotations
 
 from toolseal.core.policy import (  # noqa: F401  (registration side effect)
     family_a,
+    family_b,
     family_c,
+    family_def,
     family_g,
 )
 from toolseal.core.policy.model import (
