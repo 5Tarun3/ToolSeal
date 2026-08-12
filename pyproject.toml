@@ -30,6 +30,11 @@ dependencies = [
 toolseal = "toolseal.cli:main"
 
 [dependency-groups]
+cells = [
+    "langchain>=1.0",
+    "langchain-ollama>=0.2",
+    "langgraph>=0.3",
+]
 dev = [
     "mypy>=1.14.1",
     "pytest>=8.3.4",

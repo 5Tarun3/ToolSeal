@@ -184,6 +184,6 @@ class _Registry(Generic[T]):
         return tuple(sorted(self._items))
 
 
-providers: _Registry[Provider] = _Registry("provider")
-frameworks: _Registry[Framework] = _Registry("framework")
-mcp_targets: _Registry[MCPTarget] = _Registry("mcp target")
+provider_registry: _Registry[Provider] = _Registry("provider")
+framework_registry: _Registry[Framework] = _Registry("framework")
+mcp_target_registry: _Registry[MCPTarget] = _Registry("mcp target")
