@@ -1,0 +1,154 @@
+"""Contracts every provider, framework and MCP target implements.
+
+These are :class:`~typing.Protocol` definitions rather than base classes, so an
+adapter is defined by what it offers rather than by what it inherits. Conformance
+is checked by mypy at build time; there is no runtime registration ceremony and
+no import cycle between an adapter and the machinery that uses it.
+
+The division of labour matters, because the provider x framework matrix would
+otherwise grow a class per cell:
+
+* a :class:`Provider` supplies **facts** - package names, the credential it
+  needs, its default endpoint and model;
+* a :class:`Framework` supplies **rendering** - it turns those facts into files;
+* an :class:`MCPTarget` reads and writes one framework's MCP server
+  configuration, which is a separate concern because several frameworks share a
+  config format while rendering entirely differently.
+
+Adapters know nothing about checks, and checks know nothing about adapters. They
+meet only at :mod:`toolseal.core.model`.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from pathlib import Path, PurePosixPath
+from typing import Generic, Protocol, TypeVar
+
+from toolseal.core.model import MCPServerBinding
+from toolseal.errors import UsageError
+
+DEFAULT_FILE_MODE = 0o644
+PRIVATE_FILE_MODE = 0o600
+
+
+@dataclass(frozen=True)
+class RenderedFile:
+    """A file an adapter wants written, produced before anything touches disk.
+
+    Rendering returns values rather than writing directly so that a scaffold can
+    be inspected, diffed and audited before it exists - which is what makes
+    ``init`` testable without a filesystem.
+    """
+
+    path: PurePosixPath
+    content: str
+    mode: int = DEFAULT_FILE_MODE
+    overwrite: bool = False
+
+    @property
+    def is_sensitive(self) -> bool:
+        return self.mode == PRIVATE_FILE_MODE
+
+
+@dataclass(frozen=True)
+class ScaffoldSpec:
+    """Everything an adapter needs in order to render a project."""
+
+    project_name: str
+    provider_id: str
+    framework_id: str
+    workspace_root: Path
+    model: str | None = None
+    mcp_servers: tuple[MCPServerBinding, ...] = ()
+    extras: dict[str, str] = field(default_factory=dict)
+
+
+class Provider(Protocol):
+    """An LLM provider: the facts needed to talk to it, and nothing else."""
+
+    id: str
+    display_name: str
+    default_model: str
+    default_base_url: str
+    credential_env_var: str
+
+    def packages(self) -> tuple[str, ...]:
+        """Requirement specifiers this provider needs, pinned by the adapter."""
+        ...
+
+    def supports_model(self, model: str) -> bool:
+        """Whether this provider can serve *model*."""
+        ...
+
+
+class Framework(Protocol):
+    """An agent framework: renders a project, and declares what it can express."""
+
+    id: str
+    display_name: str
+
+    def packages(self, provider: Provider) -> tuple[str, ...]:
+        """Requirements for this framework combined with *provider*."""
+        ...
+
+    def render(self, spec: ScaffoldSpec, provider: Provider) -> tuple[RenderedFile, ...]:
+        """Produce the project's files. Must not touch the filesystem."""
+        ...
+
+    def expressible_properties(self) -> frozenset[str]:
+        """Security properties this framework's tool abstraction can represent.
+
+        Anything a source tool declares that is absent from this set must be
+        compensated by a generated guard, and the substitution recorded. Probe
+        P0 measured these sets for the v1 targets.
+        """
+        ...
+
+
+class MCPTarget(Protocol):
+    """Reads and writes one framework's MCP server configuration."""
+
+    id: str
+    config_path: PurePosixPath
+
+    def read(self, root: Path) -> tuple[MCPServerBinding, ...]:
+        """Parse configured servers. Returns empty when no config exists."""
+        ...
+
+    def write(self, root: Path, servers: tuple[MCPServerBinding, ...]) -> tuple[RenderedFile, ...]:
+        """Render the configuration for *servers*. Must not touch the filesystem."""
+        ...
+
+
+T = TypeVar("T")
+
+
+class _Registry(Generic[T]):
+    """A name-to-adapter lookup that fails loudly and lists what it does have."""
+
+    def __init__(self, kind: str) -> None:
+        self._kind = kind
+        self._items: dict[str, T] = {}
+
+    def register(self, key: str, item: T) -> None:
+        if key in self._items:
+            message = f"{self._kind} {key!r} is already registered"
+            raise UsageError(message)
+        self._items[key] = item
+
+    def get(self, key: str) -> T:
+        try:
+            return self._items[key]
+        except KeyError:
+            known = ", ".join(sorted(self._items)) or "none"
+            message = f"unknown {self._kind} {key!r}; available: {known}"
+            raise UsageError(message) from None
+
+    def names(self) -> tuple[str, ...]:
+        return tuple(sorted(self._items))
+
+
+providers: _Registry[Provider] = _Registry("provider")
+frameworks: _Registry[Framework] = _Registry("framework")
+mcp_targets: _Registry[MCPTarget] = _Registry("mcp target")
