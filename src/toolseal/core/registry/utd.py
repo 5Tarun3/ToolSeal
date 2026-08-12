@@ -181,6 +181,12 @@ class UnifiedToolDescriptor:
     filesystem_scope: str | None = None
     provenance: Provenance = field(default_factory=Provenance)
 
+    status: str = "unknown"
+    """Lifecycle state as the source registry reports it (active, deleted, ...)."""
+
+    is_latest: bool = True
+    """Whether this is the newest published version the registry knows of."""
+
     def has_input_constraints(self) -> bool:
         """Whether any property in the input schema narrows its accepted values."""
         properties = self.input_schema.get("properties")
@@ -225,6 +231,8 @@ class UnifiedToolDescriptor:
                 "filesystem_scope": self.filesystem_scope,
             },
             "provenance": self.provenance.to_dict(),
+            "status": self.status,
+            "is_latest": self.is_latest,
         }
 
     @classmethod
@@ -273,4 +281,6 @@ class UnifiedToolDescriptor:
             egress_hosts=tuple(str(host) for host in egress),
             filesystem_scope=security.get("filesystem_scope"),
             provenance=Provenance.from_dict(data.get("provenance") or {}),
+            status=str(data.get("status", "unknown")),
+            is_latest=bool(data.get("is_latest", True)),
         )

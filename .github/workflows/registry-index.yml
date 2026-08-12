@@ -1,0 +1,51 @@
+name: registry-index
+
+on:
+  schedule:
+    # Weekly. The MCP registry does not change fast enough to justify more, and
+    # a polite crawler is one a registry operator never has to think about.
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+# Only this job needs write access, and only to commit the rebuilt index. The
+# repository default stays read-only; this grant is explicit and scoped.
+permissions:
+  contents: write
+
+concurrency:
+  group: registry-index
+  cancel-in-progress: false
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install
+        run: uv sync --locked
+
+      - name: Crawl and rebuild the index
+        # Exit 1 means the crawl was partial, which is a usable index and worth
+        # committing. Only a real failure (exit 2 or 3) should stop the job.
+        run: |
+          uv run toolseal registry sync --output registry/index.json --json | tee crawl.json
+          code=${PIPESTATUS[0]}
+          if [ "$code" -gt 1 ]; then exit "$code"; fi
+
+      - name: Commit if the index changed
+        run: |
+          if git diff --quiet -- registry/index.json; then
+            echo "index unchanged"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add registry/index.json
+          git commit -m "registry: rebuild index"
+          git push
