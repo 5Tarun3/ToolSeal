@@ -87,6 +87,41 @@ def configure_logging(level: int = logging.INFO) -> None:
     root.setLevel(level)
 
 
+ALLOWED_ENVIRONMENT = frozenset(
+    {
+        "PATH",
+        "HOME",
+        "USERPROFILE",
+        "TMPDIR",
+        "TEMP",
+        "TMP",
+        "LANG",
+        "LC_ALL",
+        "SYSTEMROOT",
+        "TOOLSEAL_ASSUME_YES",
+    }
+)
+"""Variables a tool subprocess is allowed to see.
+
+E2: a tool that inherits the parent environment inherits every cloud CLI
+profile, SSH agent socket and exported API key along with it. The allowlist is
+the parts a process genuinely needs to run - anything else has to be passed
+deliberately.
+"""
+
+
+def minimal_environment(extra: dict[str, str] | None = None) -> dict[str, str]:
+    """The environment a child process should get: an allowlist, plus *extra*.
+
+    Use this rather than `os.environ` when launching a tool, an MCP server, or
+    anything else this project spawns.
+    """
+    env = {name: os.environ[name] for name in ALLOWED_ENVIRONMENT if name in os.environ}
+    if extra:
+        env.update(extra)
+    return env
+
+
 def require_approval(reason: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """F2: refuse a destructive call unless a human confirms it.
 

@@ -48,14 +48,11 @@ def scaffolded(tmp_path: Path) -> Path:
     return root
 
 
-# Checks the scaffold does not yet satisfy. Both are genuine gaps rather than
-# false positives, and they are listed here so they stay visible: a test that
-# asserted a clean score by ignoring them would be the exact dishonesty this
-# project exists to argue against.
-#
-#   E2  the generated agent inherits the full host environment
-#   C5  no SBOM is emitted at scaffold time
-KNOWN_OPEN = frozenset({"E2", "C5"})
+# Nothing outstanding. E2 (host environment inheritance) and C5 (no SBOM) were
+# both real gaps and are now closed: the guards template exports an environment
+# allowlist, and the scaffolder emits a CycloneDX inventory. The set is kept
+# rather than deleted so that re-opening a gap is a visible, deliberate edit.
+KNOWN_OPEN: frozenset[str] = frozenset()
 
 
 def test_gate_scaffold_has_no_blocking_findings(scaffolded: Path) -> None:
@@ -65,12 +62,13 @@ def test_gate_scaffold_has_no_blocking_findings(scaffolded: Path) -> None:
     assert not report.blocking, [f"{f.check_id}: {f.detail}" for f in report.findings]
 
 
-def test_gate_scaffold_fails_nothing_outside_the_known_gaps(scaffolded: Path) -> None:
-    # This is the regression guard. A new failure that is not on the known list
-    # means the scaffold stopped satisfying a check it used to satisfy.
-    failing = {finding.check_id for finding in audit(scaffolded).findings}
+def test_gate_scaffold_audits_perfectly_clean(scaffolded: Path) -> None:
+    # The scaffolder satisfies every check it enforces on everyone else. This is
+    # the strongest form of the claim and the one the demo rests on.
+    report = audit(scaffolded)
 
-    assert failing <= KNOWN_OPEN, sorted(failing - KNOWN_OPEN)
+    assert report.score == 100, [f"{f.check_id}: {f.detail}" for f in report.findings]
+    assert report.findings == ()
 
 
 def test_gate_known_gaps_are_low_or_high_but_never_critical(scaffolded: Path) -> None:

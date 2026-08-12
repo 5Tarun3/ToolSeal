@@ -34,6 +34,8 @@ from toolseal.core.adapters.base import (
 )
 from toolseal.core.credentials import PRECOMMIT_CONFIG, merge_gitignore
 from toolseal.core.manifest import MANIFEST_NAME, Manifest
+from toolseal.core.sbom import SBOM_FILENAME
+from toolseal.core.sbom import render as render_sbom
 from toolseal.errors import ConfigError
 
 
@@ -111,6 +113,12 @@ def _project_hygiene_files(
         ),
         RenderedFile(PurePosixPath(".pre-commit-config.yaml"), PRECOMMIT_CONFIG),
         RenderedFile(PurePosixPath(MANIFEST_NAME), manifest.to_toml()),
+        # C5: the scaffolder already knows every pinned dependency, so it can
+        # emit the inventory rather than tell the user to go and make one.
+        RenderedFile(
+            PurePosixPath(SBOM_FILENAME),
+            render_sbom(spec.project_name, framework.packages(provider)),
+        ),
     ]
 
 

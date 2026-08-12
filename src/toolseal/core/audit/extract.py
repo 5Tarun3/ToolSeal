@@ -65,6 +65,10 @@ REDACTION_MARKERS: Final = ("RedactingFilter", "redact(", "REDACTED")
 TIMEOUT_MARKERS: Final = ("timeout", "REQUEST_TIMEOUT")
 # Each framework spells the loop bound differently; a marker list that knows
 # only one of them reports every other framework as unbounded.
+# Evidence that child processes get an allowlisted environment rather than a
+# copy of the parent's (check E2).
+ENVIRONMENT_MARKERS: Final = ("minimal_environment", "ALLOWED_ENVIRONMENT")
+
 LOOP_BOUND_MARKERS: Final = (
     "recursion_limit",
     "RECURSION_LIMIT",
@@ -244,6 +248,9 @@ def extract(root: Path) -> ProjectModel:
 
     sources = _sources(resolved)
     redacts = any(marker in source for source in sources for marker in REDACTION_MARKERS)
+    restricts_environment = any(
+        marker in source for source in sources for marker in ENVIRONMENT_MARKERS
+    )
 
     return ProjectModel(
         root=resolved,
@@ -256,6 +263,7 @@ def extract(root: Path) -> ProjectModel:
             approval_required_for_destructive=(
                 manifest.approval_required_for_destructive if manifest else False
             ),
+            inherits_host_environment=not restricts_environment,
             default_timeout_seconds=60.0 if _bounded(sources) else None,
         ),
     )
