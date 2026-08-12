@@ -38,10 +38,25 @@ class NotFoundError(HttpError):
     """The resource does not exist. Distinct because absence is often the answer."""
 
 
+# Loopback is exempt from the https requirement, matching check D1. Plaintext
+# to localhost never traverses a network, and refusing it makes the client
+# unusable against exactly the local runtimes this project targets - which is
+# how a whole study came back with every sample "excluded" for the wrong reason.
+LOOPBACK_HOSTS: Final = frozenset({"localhost", "127.0.0.1", "::1", "[::1]"})
+
+
+def _is_loopback(parsed: urllib.parse.ParseResult) -> bool:
+    return (parsed.hostname or "") in LOOPBACK_HOSTS
+
+
 def _require_https(url: str) -> None:
-    if urllib.parse.urlparse(url).scheme != "https":
-        message = f"refusing a non-https request: {url}"
-        raise HttpError(message)
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme == "https":
+        return
+    if parsed.scheme == "http" and _is_loopback(parsed):
+        return
+    message = f"refusing a non-https request: {url}"
+    raise HttpError(message)
 
 
 def _open(url: str, *, data: bytes | None, timeout: float) -> bytes:

@@ -16,6 +16,7 @@ table.
 
 | Study | Question | Status |
 | --- | --- | --- |
+| [`s1`](s1/) | What do LLM-generated agent setups look like? (RQ1) | Run, **no usable samples** - see below |
 | [`s2`](s2/) | Does securing setup cost developer time? (RQ2) | Run, idealised manual arm |
 | [`s3`](s3/) | What does a secure default cost at runtime? (RQ3) | Run |
 
@@ -41,3 +42,19 @@ one declared property.
 The defensible claim is the narrow one - that a property knowable at
 configuration time does not need re-deriving on every call - and both the report
 and its tests are written to keep the ratio from being read as more than that.
+
+## Study 1 currently has no security result
+
+The `llm-generated` stratum ran and returned nothing measurable: **0 of 12
+completions materialised**. Not because the generated setups were insecure, but
+because `qwen2.5:3b` never named a file - bare fences, no filename on the fence
+line and none in the surrounding prose - so there was no project to audit.
+
+That is a result about instruction-following, not about security posture, and it
+is reported as such. The harness is unchanged and ready for a model that
+produces nameable multi-file output; what is missing is the model, not the
+method.
+
+It is also the clearest illustration of why the protocol requires exclusions to
+be counted rather than dropped. Discarding them would have left a mean score
+computed over zero samples and presented as a finding.

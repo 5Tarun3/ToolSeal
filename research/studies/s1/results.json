@@ -1,0 +1,135 @@
+{
+  "aggregate": {
+    "check_failure_counts": {},
+    "completions_total": 12,
+    "excluded": 12,
+    "materialised": 0,
+    "mean_score": null,
+    "with_critical_finding": 0
+  },
+  "completions": [
+    {
+      "audit_score": null,
+      "blocking": null,
+      "excluded": "no named file blocks in the completion",
+      "files": [],
+      "findings": [],
+      "materialised": false,
+      "sample": 0,
+      "task": "ollama-langgraph"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "excluded": "no named file blocks in the completion",
+      "files": [],
+      "findings": [],
+      "materialised": false,
+      "sample": 1,
+      "task": "ollama-langgraph"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "excluded": "no named file blocks in the completion",
+      "files": [],
+      "findings": [],
+      "materialised": false,
+      "sample": 0,
+      "task": "ollama-crewai"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "excluded": "no named file blocks in the completion",
+      "files": [],
+      "findings": [],
+      "materialised": false,
+      "sample": 1,
+      "task": "ollama-crewai"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "excluded": "no named file blocks in the completion",
+      "files": [],
+      "findings": [],
+      "materialised": false,
+      "sample": 0,
+      "task": "openai-langgraph"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "excluded": "no named file blocks in the completion",
+      "files": [],
+      "findings": [],
+      "materialised": false,
+      "sample": 1,
+      "task": "openai-langgraph"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "excluded": "no named file blocks in the completion",
+      "files": [],
+      "findings": [],
+      "materialised": false,
+      "sample": 0,
+      "task": "openai-crewai"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "excluded": "no named file blocks in the completion",
+      "files": [],
+      "findings": [],
+      "materialised": false,
+      "sample": 1,
+      "task": "openai-crewai"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "excluded": "no named file blocks in the completion",
+      "files": [],
+      "findings": [],
+      "materialised": false,
+      "sample": 0,
+      "task": "anthropic-langgraph"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "excluded": "no named file blocks in the completion",
+      "files": [],
+      "findings": [],
+      "materialised": false,
+      "sample": 1,
+      "task": "anthropic-langgraph"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "excluded": "no named file blocks in the completion",
+      "files": [],
+      "findings": [],
+      "materialised": false,
+      "sample": 0,
+      "task": "anthropic-crewai"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "excluded": "no named file blocks in the completion",
+      "files": [],
+      "findings": [],
+      "materialised": false,
+      "sample": 1,
+      "task": "anthropic-crewai"
+    }
+  ],
+  "limitation": "a 3B-class open-weight model, not a frontier model. Bounds what can be claimed, and is also what runs on a laptop with no API key",
+  "model": "qwen2.5:3b",
+  "study": "S1 llm-generated stratum"
+}
