@@ -1,7 +1,7 @@
 # Research
 
-Probes and measurement harnesses that produce evidence for the project's claims.
-Nothing here ships in the `toolseal` package.
+Probes, measurement harnesses, and the protocol governing them. Nothing here
+ships in the `toolseal` package.
 
 Everything under `research/` depends on the `research` dependency group, which is
 deliberately separate from `dev` so that neither contributors nor CI pay to
@@ -10,6 +10,15 @@ install heavy agent frameworks:
 ```bash
 uv sync --group research
 ```
+
+## Protocol
+
+[`evaluation-protocol.md`](evaluation-protocol.md) is the pre-registration: what
+will be measured, how the corpora are selected, and what would falsify each
+claim. It is committed before data collection, and departures from it are
+recorded in its deviations table.
+
+## Probes
 
 Each probe owns a directory containing the code, a README stating its question
 and verdict, and a `results/` directory holding the generated evidence. Results
