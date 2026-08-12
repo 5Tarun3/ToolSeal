@@ -9,8 +9,6 @@ from typing import Annotated, Any
 import typer
 
 from toolseal.core.adapters import ScaffoldSpec, framework_registry, provider_registry
-from toolseal.core.adapters import frameworks as _frameworks  # noqa: F401  (registration)
-from toolseal.core.adapters import providers as _providers  # noqa: F401  (registration)
 from toolseal.core.scaffold import apply_plan, build_plan
 from toolseal.errors import ExitCode, UsageError
 

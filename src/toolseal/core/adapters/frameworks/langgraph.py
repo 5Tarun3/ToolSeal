@@ -23,9 +23,12 @@ from toolseal.core.translate.lattice import profile
 from toolseal.errors import UsageError
 from toolseal.templates import langgraph as tpl
 
+# Pinned exactly, not floated. A generated project must satisfy C1 the moment
+# it is created, and these are the versions the cell was verified against.
+# Updating them is a deliberate act with a test run behind it.
 FRAMEWORK_PACKAGES: Final = (
-    "langchain>=1.0.0",
-    "langgraph>=1.0.0",
+    "langchain==1.3.15",
+    "langgraph==1.2.11",
 )
 
 
@@ -40,9 +43,9 @@ class _Integration:
 
 # Adding a provider means adding a row here and nothing else.
 _INTEGRATIONS: Final[dict[str, _Integration]] = {
-    "ollama": _Integration("langchain-ollama>=1.0.0", "langchain_ollama", "ChatOllama"),
-    "openai": _Integration("langchain-openai>=1.0.0", "langchain_openai", "ChatOpenAI"),
-    "anthropic": _Integration("langchain-anthropic>=1.0.0", "langchain_anthropic", "ChatAnthropic"),
+    "ollama": _Integration("langchain-ollama==1.1.0", "langchain_ollama", "ChatOllama"),
+    "openai": _Integration("langchain-openai==1.1.0", "langchain_openai", "ChatOpenAI"),
+    "anthropic": _Integration("langchain-anthropic==1.1.0", "langchain_anthropic", "ChatAnthropic"),
 }
 
 
