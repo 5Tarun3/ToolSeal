@@ -1,0 +1,48 @@
+# NIST AI Risk Management Framework 1.0 (AI 100-1).
+# US Government work, public domain. Subcategory identifiers only.
+# Only subcategories a configuration auditor can bear on are listed; the
+# framework is far broader than this project's scope, and Task 5 reports that
+# gap rather than hiding it.
+#
+# Subcategory ids and titles verified against the NIST AI RMF Playbook
+# (airc.nist.gov/AI_RMF_Knowledge_Base/Playbook/{Govern,Map,Measure,Manage}),
+# which mirrors the AI RMF 1.0 Core (Tables 1-4) cited below. Titles here are
+# short paraphrases of the Playbook's outcome statements, not verbatim quotes.
+
+id = "nist-ai-rmf"
+kind = "standard"
+name = "NIST AI Risk Management Framework"
+version = "1.0"
+license = "public-domain"
+source_url = "https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf"
+text_included = false
+
+[[control]]
+id = "GOVERN-1.1"
+title = "Legal and regulatory requirements are understood, managed, and documented"
+checkable = false            # a legal/regulatory judgment, not a config property
+
+[[control]]
+id = "GOVERN-4.1"
+title = "Organizational practices foster a critical-thinking, safety-first mindset"
+checkable = false            # an organizational mindset, not a config property
+
+[[control]]
+id = "GOVERN-6.1"
+title = "Policies address AI risks associated with third-party entities"
+
+[[control]]
+id = "MAP-4.1"
+title = "Risks of third-party AI system components are mapped and documented"
+
+[[control]]
+id = "MEASURE-2.7"
+title = "AI system security and resilience are evaluated and documented"
+
+[[control]]
+id = "MANAGE-2.2"
+title = "Mechanisms are in place to sustain the value of deployed AI systems"
+
+[[control]]
+id = "MANAGE-4.1"
+title = "Post-deployment AI system monitoring plans are implemented"

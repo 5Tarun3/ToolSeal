@@ -1,0 +1,39 @@
+# ISO/IEC 42001:2023 Annex A - clause identifiers and short labels ONLY.
+#
+# The standard is paywalled and its control text is not redistributable. This
+# file exists so a check can cite a clause number; it deliberately carries no
+# control body text, and `test_iso_catalogue_carries_no_control_text` fails if
+# any is added.
+#
+# Clause numbers and short titles verified against two independent free
+# summaries of Annex A (isms.online and mindsetcyber.com.au), which agree
+# exactly. The draft's A.8.3 was wrong: A.8.3 is "External reporting", not a
+# third-party/supplier clause. Replaced with A.10.3 "Suppliers", the verified
+# clause under "A.10 Third-party and customer relationships" that matches the
+# draft's original intent. A.9.2's title was corrected to match the verified
+# short label.
+
+id = "iso-42001"
+kind = "standard"
+name = "ISO/IEC 42001:2023 (Annex A, by reference)"
+version = "2023"
+license = "proprietary-reference-only"
+source_url = "https://www.iso.org/standard/81230.html"
+text_included = false
+
+[[control]]
+id = "A.6.2.2"
+title = "AI system requirements and specification"
+
+[[control]]
+id = "A.6.2.4"
+title = "AI system verification and validation"
+
+[[control]]
+id = "A.10.3"
+title = "Suppliers"
+
+[[control]]
+id = "A.9.2"
+title = "Processes for responsible use of AI systems"
+checkable = false

@@ -182,3 +182,37 @@ def test_every_shipped_catalogue_declares_a_licence() -> None:
     for catalogue in load_catalogues().values():
         assert catalogue.license, f"{catalogue.id} declares no licence"
         assert catalogue.source_url, f"{catalogue.id} declares no source"
+
+
+# --- the licence guard -----------------------------------------------------
+
+ISO_MAX_TITLE_WORDS = 12
+
+
+def test_iso_catalogue_carries_no_control_text() -> None:
+    # ISO/IEC 42001 is paywalled and its text is not redistributable. This test
+    # is a licence control, not a style check: it fails if anyone pastes clause
+    # bodies in. Titles are short labels; a long one means prose crept in.
+    catalogue = load_catalogues()["iso-42001"]
+
+    assert catalogue.text_included is False
+    assert catalogue.license == "proprietary-reference-only"
+    for control in catalogue.controls:
+        assert len(control.title.split()) <= ISO_MAX_TITLE_WORDS, (
+            f"{control.id} title looks like reproduced text, not a label"
+        )
+
+
+def test_no_catalogue_claims_to_include_text() -> None:
+    # v1 ships identifiers and titles only, for every standard.
+    for catalogue in load_catalogues().values():
+        assert catalogue.text_included is False
+
+
+def test_all_expected_catalogues_are_present() -> None:
+    assert set(load_catalogues()) == {
+        "owasp-llm-top10",
+        "owasp-agentic-top10",
+        "nist-ai-rmf",
+        "iso-42001",
+    }

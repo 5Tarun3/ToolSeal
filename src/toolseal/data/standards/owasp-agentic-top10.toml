@@ -1,0 +1,87 @@
+# OWASP Agentic AI threat taxonomy: "Agentic AI - Threats and Mitigations"
+# v1.0 (Feb 2025), OWASP GenAI Security Project, Agentic Security Initiative.
+# Identifiers and short titles only.
+#
+# Titles verified against three independent secondary sources that agree
+# verbatim (the OWASP resource page itself would not render as text through
+# available tooling); the PDF could not be parsed directly, so exact wording
+# is corroborated rather than quoted from the primary source. See the task
+# report for the sources used and the corrections made to the draft titles
+# for T5, T6, T7, and T11.
+
+id = "owasp-agentic-top10"
+kind = "standard"
+name = "OWASP Agentic AI Threats"
+version = "2025"
+license = "CC-BY-SA-4.0"
+source_url = "https://genai.owasp.org/resource/agentic-ai-threats-and-mitigations/"
+text_included = false
+
+[[control]]
+id = "T1"
+title = "Memory Poisoning"
+checkable = false
+
+[[control]]
+id = "T2"
+title = "Tool Misuse"
+
+[[control]]
+id = "T3"
+title = "Privilege Compromise"
+
+[[control]]
+id = "T4"
+title = "Resource Overload"
+
+[[control]]
+id = "T5"
+title = "Cascading Hallucination Attacks"
+checkable = false
+
+[[control]]
+id = "T6"
+title = "Intent Breaking and Goal Manipulation"
+checkable = false
+
+[[control]]
+id = "T7"
+title = "Misaligned and Deceptive Behaviors"
+checkable = false
+
+[[control]]
+id = "T8"
+title = "Repudiation and Untraceability"
+
+[[control]]
+id = "T9"
+title = "Identity Spoofing and Impersonation"
+
+[[control]]
+id = "T10"
+title = "Overwhelming Human in the Loop"
+checkable = false
+
+[[control]]
+id = "T11"
+title = "Unexpected RCE and Code Attacks"
+
+[[control]]
+id = "T12"
+title = "Agent Communication Poisoning"
+checkable = false
+
+[[control]]
+id = "T13"
+title = "Rogue Agents in Multi-Agent Systems"
+checkable = false
+
+[[control]]
+id = "T14"
+title = "Human Attacks on Multi-Agent Systems"
+checkable = false
+
+[[control]]
+id = "T15"
+title = "Human Manipulation"
+checkable = false
