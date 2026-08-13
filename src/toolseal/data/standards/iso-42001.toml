@@ -36,4 +36,4 @@ title = "Suppliers"
 [[control]]
 id = "A.9.2"
 title = "Processes for responsible use of AI systems"
-checkable = false
+checkable = false            # an organizational process, not a config property

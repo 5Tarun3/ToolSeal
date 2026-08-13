@@ -1,0 +1,94 @@
+# OWASP Agentic AI threat taxonomy: "Agentic AI - Threats and Mitigations"
+# v1.0 (Feb 2025), OWASP GenAI Security Project, Agentic Security Initiative.
+# Identifiers and short titles only.
+#
+# This is the master T1-T15 threat taxonomy, not the ranked ASI01-ASI10 "Top
+# 10 for Agentic Applications" OWASP published later (Dec 2025) - that is a
+# separate document, catalogued separately as owasp-agentic-top10. This file
+# was originally shipped under the id owasp-agentic-top10 before that
+# distinction was drawn; the id was corrected to owasp-agentic-threats so it
+# no longer collides with the actual Top 10 document's name.
+#
+# Titles verified against three independent secondary sources that agree
+# verbatim (the OWASP resource page itself would not render as text through
+# available tooling); the PDF could not be parsed directly, so exact wording
+# is corroborated rather than quoted from the primary source. See the task
+# report for the sources used and the corrections made to the draft titles
+# for T5, T6, T7, and T11.
+
+id = "owasp-agentic-threats"
+kind = "standard"
+name = "OWASP Agentic AI Threats"
+version = "1.0"
+license = "CC-BY-SA-4.0"
+source_url = "https://genai.owasp.org/resource/agentic-ai-threats-and-mitigations/"
+text_included = false
+
+[[control]]
+id = "T1"
+title = "Memory Poisoning"
+checkable = false            # a runtime memory attack, not a config property
+
+[[control]]
+id = "T2"
+title = "Tool Misuse"
+
+[[control]]
+id = "T3"
+title = "Privilege Compromise"
+
+[[control]]
+id = "T4"
+title = "Resource Overload"
+
+[[control]]
+id = "T5"
+title = "Cascading Hallucination Attacks"
+checkable = false            # a model-output/runtime property, not a config one
+
+[[control]]
+id = "T6"
+title = "Intent Breaking and Goal Manipulation"
+checkable = false            # a runtime planning behaviour, not a config property
+
+[[control]]
+id = "T7"
+title = "Misaligned and Deceptive Behaviors"
+checkable = false            # a runtime behaviour, not a config property
+
+[[control]]
+id = "T8"
+title = "Repudiation and Untraceability"
+
+[[control]]
+id = "T9"
+title = "Identity Spoofing and Impersonation"
+
+[[control]]
+id = "T10"
+title = "Overwhelming Human in the Loop"
+checkable = false            # a human-factors concern, outside a project's config
+
+[[control]]
+id = "T11"
+title = "Unexpected RCE and Code Attacks"
+
+[[control]]
+id = "T12"
+title = "Agent Communication Poisoning"
+checkable = false            # a runtime multi-agent attack, not a config property
+
+[[control]]
+id = "T13"
+title = "Rogue Agents in Multi-Agent Systems"
+checkable = false            # runtime agent behaviour, not a config property
+
+[[control]]
+id = "T14"
+title = "Human Attacks on Multi-Agent Systems"
+checkable = false            # a social-engineering concern, outside a project's config
+
+[[control]]
+id = "T15"
+title = "Human Manipulation"
+checkable = false            # a social-engineering concern, outside a project's config

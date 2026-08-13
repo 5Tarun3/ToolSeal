@@ -212,7 +212,27 @@ def test_no_catalogue_claims_to_include_text() -> None:
 def test_all_expected_catalogues_are_present() -> None:
     assert set(load_catalogues()) == {
         "owasp-llm-top10",
+        "owasp-agentic-threats",
         "owasp-agentic-top10",
         "nist-ai-rmf",
         "iso-42001",
     }
+
+
+def test_agentic_threats_and_agentic_top10_are_distinct_documents() -> None:
+    # owasp-agentic-threats (T1-T15, Feb 2025) and owasp-agentic-top10
+    # (ASI01-ASI10, Dec 2025) are two different OWASP publications that
+    # happen to share a topic. They must not collapse into one catalogue or
+    # bleed control ids into each other.
+    catalogues = load_catalogues()
+    threats = catalogues["owasp-agentic-threats"]
+    top10 = catalogues["owasp-agentic-top10"]
+
+    assert threats.id != top10.id
+
+    threat_ids = {c.id for c in threats.controls}
+    top10_ids = {c.id for c in top10.controls}
+
+    assert all(control_id.startswith("T") for control_id in threat_ids)
+    assert all(control_id.startswith("ASI") for control_id in top10_ids)
+    assert threat_ids.isdisjoint(top10_ids)

@@ -1,87 +1,81 @@
-# OWASP Agentic AI threat taxonomy: "Agentic AI - Threats and Mitigations"
-# v1.0 (Feb 2025), OWASP GenAI Security Project, Agentic Security Initiative.
-# Identifiers and short titles only.
+# OWASP Top 10 for Agentic Applications (2026), published 2025-12-09 by the
+# OWASP GenAI Security Project, Agentic Security Initiative. Identifiers and
+# short titles only.
 #
-# Titles verified against three independent secondary sources that agree
-# verbatim (the OWASP resource page itself would not render as text through
-# available tooling); the PDF could not be parsed directly, so exact wording
-# is corroborated rather than quoted from the primary source. See the task
-# report for the sources used and the corrections made to the draft titles
-# for T5, T6, T7, and T11.
+# A ranked, incident-grounded Top 10 (ASI01-ASI10) - a separate document from
+# the earlier T1-T15 "Agentic AI - Threats and Mitigations" master taxonomy,
+# catalogued separately as owasp-agentic-threats. Do not conflate the two:
+# T-prefixed ids belong to the taxonomy, ASI-prefixed ids belong to this Top
+# 10.
+#
+# Titles verified against four independent secondary sources that agree
+# (a WebSearch synthesis, promptfoo.dev, goteleport.com, and f5.com's numbered
+# list) - the primary PDF would not render as text through available
+# tooling, so exact wording is corroborated rather than quoted from the
+# primary source, as with owasp-agentic-threats.toml. ASI06's title has two
+# competing renderings in circulation: "Memory and Context Poisoning" (five
+# independent sources, including two articles dedicated solely to ASI06) vs.
+# f5.com's own descriptive prose elsewhere on the same page, "Context
+# Management and Retrieval Manipulation". Took the majority reading.
+# ASI05's title also circulates with and without a trailing "(RCE)"; dropped
+# the parenthetical, matching the majority of sources that spell it out in
+# prose rather than as a label suffix.
+#
+# The document's own resource page identifies it as "for 2026" without
+# stating a separate version number on the page as fetched; used "2026" as
+# the version, the identifier the document uses for itself, rather than a
+# "2.01" update figure that appeared in a single unverified search summary
+# and could not be independently confirmed.
 
 id = "owasp-agentic-top10"
 kind = "standard"
-name = "OWASP Agentic AI Threats"
-version = "1.0"
+name = "OWASP Top 10 for Agentic Applications"
+version = "2026"
 license = "CC-BY-SA-4.0"
-source_url = "https://genai.owasp.org/resource/agentic-ai-threats-and-mitigations/"
+source_url = "https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/"
 text_included = false
 
 [[control]]
-id = "T1"
-title = "Memory Poisoning"
-checkable = false
+id = "ASI01"
+title = "Agent Goal Hijack"
+checkable = false            # a runtime input-manipulation attack, not a config property
 
 [[control]]
-id = "T2"
-title = "Tool Misuse"
+id = "ASI02"
+title = "Tool Misuse and Exploitation"
 
 [[control]]
-id = "T3"
-title = "Privilege Compromise"
+id = "ASI03"
+title = "Identity and Privilege Abuse"
 
 [[control]]
-id = "T4"
-title = "Resource Overload"
+id = "ASI04"
+title = "Agentic Supply Chain Vulnerabilities"
 
 [[control]]
-id = "T5"
-title = "Cascading Hallucination Attacks"
-checkable = false
+id = "ASI05"
+title = "Unexpected Code Execution"
 
 [[control]]
-id = "T6"
-title = "Intent Breaking and Goal Manipulation"
-checkable = false
+id = "ASI06"
+title = "Memory and Context Poisoning"
+checkable = false            # a runtime memory/retrieval attack, not a config property
 
 [[control]]
-id = "T7"
-title = "Misaligned and Deceptive Behaviors"
-checkable = false
+id = "ASI07"
+title = "Insecure Inter-Agent Communication"
 
 [[control]]
-id = "T8"
-title = "Repudiation and Untraceability"
+id = "ASI08"
+title = "Cascading Failures"
+checkable = false            # a systemic runtime property, not assessable from static config
 
 [[control]]
-id = "T9"
-title = "Identity Spoofing and Impersonation"
+id = "ASI09"
+title = "Human-Agent Trust Exploitation"
+checkable = false            # a social-engineering concern, outside a project's config
 
 [[control]]
-id = "T10"
-title = "Overwhelming Human in the Loop"
-checkable = false
-
-[[control]]
-id = "T11"
-title = "Unexpected RCE and Code Attacks"
-
-[[control]]
-id = "T12"
-title = "Agent Communication Poisoning"
-checkable = false
-
-[[control]]
-id = "T13"
-title = "Rogue Agents in Multi-Agent Systems"
-checkable = false
-
-[[control]]
-id = "T14"
-title = "Human Attacks on Multi-Agent Systems"
-checkable = false
-
-[[control]]
-id = "T15"
-title = "Human Manipulation"
-checkable = false
+id = "ASI10"
+title = "Rogue Agents"
+checkable = false            # runtime agent behaviour, not a config property
