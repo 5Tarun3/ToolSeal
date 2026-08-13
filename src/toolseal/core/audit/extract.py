@@ -23,6 +23,7 @@ import tomllib
 from pathlib import Path, PurePosixPath
 from typing import Final
 
+from toolseal.core.adapters.mcp_targets import discover as discover_mcp
 from toolseal.core.manifest import Manifest
 from toolseal.core.model import (
     Dependency,
@@ -255,6 +256,10 @@ def extract(root: Path) -> ProjectModel:
     return ProjectModel(
         root=resolved,
         files=_collect_files(resolved),
+        # Until this was wired, mcp_servers was always empty and checks A5,
+        # B4, D1 and D2 were implemented but could never fire on a real
+        # project.
+        mcp_servers=discover_mcp(resolved),
         dependencies=_collect_dependencies(resolved),
         providers=providers,
         runtime=RuntimeConfig(

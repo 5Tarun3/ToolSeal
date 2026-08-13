@@ -14,6 +14,7 @@ from typing import Annotated
 
 import typer
 
+from toolseal.cli import mcp_command
 from toolseal.cli.errors import command as error_boundary
 from toolseal.core.adapters import ScaffoldSpec, framework_registry, provider_registry
 from toolseal.core.injection import inject, load, plan_revert
@@ -163,3 +164,4 @@ def revert(
 # declared with a bare decorator bypasses it and leaks a raw exception with the
 # wrong exit code - the same defect the top-level commands had at P10.
 add_app.command("framework")(error_boundary(add_framework))
+add_app.command("mcp")(error_boundary(mcp_command.add_mcp))

@@ -144,9 +144,26 @@ def test_destructive_tool_lowers_losslessly() -> None:
     assert result.guards == ()
 
 
-def test_the_lattice_row_does_not_claim_measurement() -> None:
-    # Read from documented behaviour, not measured against a live session.
-    assert profile("claude-code").evidence.value == "specified"
+def test_the_lattice_row_is_measured_and_says_how() -> None:
+    # Promoted from `specified` after a live session confirmed the behaviour:
+    # a read of .env was refused by the deny rule, and the agent declined to
+    # reach the same file through another tool. The note carries that evidence
+    # so the claim can be checked rather than taken on trust.
+    row = profile("claude-code")
+
+    assert row.evidence.value == "measured"
+    assert "live session" in row.note
+    assert ".env" in row.note
+
+
+def test_three_rows_are_now_measured() -> None:
+    # With one measured row the lattice is an assertion; with three it is a
+    # comparison. claude-code is the row carrying the lossless control case.
+    from toolseal.core.translate.lattice import PROFILES
+
+    measured = {key for key, row in PROFILES.items() if row.evidence.value == "measured"}
+
+    assert measured == {"langchain", "crewai", "claude-code"}
 
 
 # --- injection and revert --------------------------------------------------

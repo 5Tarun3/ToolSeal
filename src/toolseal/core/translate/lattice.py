@@ -160,11 +160,15 @@ PROFILES: dict[str, AbstractionProfile] = {
                 SecurityProperty.DESCRIPTION_INTEGRITY,
             }
         ),
-        evidence=Evidence.SPECIFIED,
+        evidence=Evidence.MEASURED,
         note=(
             "Permission allow/ask/deny rules are evaluated before a tool runs, which "
-            "is what makes destructiveHint actionable rather than merely stored. Read "
-            "from documented behaviour; not yet measured against a live session."
+            "is what makes destructiveHint actionable rather than merely stored. "
+            "Confirmed in a live session against a toolseal-configured project: a "
+            "read of .env was refused by the deny rule, and the agent declined to "
+            "reach the same file through another tool - treating the rule as a "
+            "boundary rather than an obstacle, which is the behaviour the rule "
+            "exists to produce."
         ),
     ),
     "openai_fc": AbstractionProfile(
