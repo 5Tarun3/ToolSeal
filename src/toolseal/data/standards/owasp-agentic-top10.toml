@@ -8,18 +8,26 @@
 # T-prefixed ids belong to the taxonomy, ASI-prefixed ids belong to this Top
 # 10.
 #
-# Titles verified against four independent secondary sources that agree
-# (a WebSearch synthesis, promptfoo.dev, goteleport.com, and f5.com's numbered
-# list) - the primary PDF would not render as text through available
-# tooling, so exact wording is corroborated rather than quoted from the
-# primary source, as with owasp-agentic-threats.toml. ASI06's title has two
-# competing renderings in circulation: "Memory and Context Poisoning" (five
-# independent sources, including two articles dedicated solely to ASI06) vs.
-# f5.com's own descriptive prose elsewhere on the same page, "Context
-# Management and Retrieval Manipulation". Took the majority reading.
-# ASI05's title also circulates with and without a trailing "(RCE)"; dropped
-# the parenthetical, matching the majority of sources that spell it out in
-# prose rather than as a label suffix.
+# Titles corroborated against four independent secondary sources - a
+# WebSearch synthesis, promptfoo.dev, goteleport.com, and f5.com - the
+# primary PDF would not render as text through available tooling, so exact
+# wording is corroborated rather than quoted from the primary source, as
+# with owasp-agentic-threats.toml. The four agree on nine of the ten
+# titles. ASI06 is the exception: f5.com's sole mention of it - the heading
+# of its own numbered list, the only place the term appears on that page -
+# reads "Context Management and Retrieval Manipulation", not "Memory and
+# Context Poisoning". The shipped title rests on the other three fetched
+# sources plus two further pages surfaced by a targeted follow-up search
+# and titled specifically around ASI06 (vectorize.io's "OWASP ASI06: Memory
+# and Context Poisoning Explained" and zealynx.io's "OWASP ASI06 Explained:
+# AI Memory & Context Poisoning" - seen as search-result titles, not
+# independently fetched) - five sources naming it "Memory and Context
+# Poisoning" against f5.com's one dissenting mention.
+# ASI05's title circulates with and without a trailing "(RCE)" - the
+# WebSearch synthesis and goteleport.com include it, promptfoo.dev and
+# f5.com omit it, a 2-2 split among the four fetched sources. Dropped the
+# parenthetical since it is not universal and is not load-bearing for
+# identifying the control by id.
 #
 # The document's own resource page identifies it as "for 2026" without
 # stating a separate version number on the page as fetched; used "2026" as

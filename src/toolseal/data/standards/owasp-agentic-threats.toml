@@ -9,12 +9,19 @@
 # distinction was drawn; the id was corrected to owasp-agentic-threats so it
 # no longer collides with the actual Top 10 document's name.
 #
-# Titles verified against three independent secondary sources that agree
-# verbatim (the OWASP resource page itself would not render as text through
-# available tooling); the PDF could not be parsed directly, so exact wording
-# is corroborated rather than quoted from the primary source. See the task
-# report for the sources used and the corrections made to the draft titles
-# for T5, T6, T7, and T11.
+# Titles corroborated against three independent secondary sources (a
+# HumanSecurity blog post, a Pipelab.org article, and a third-party GitHub
+# mapping doc that itself notes it does not guarantee OWASP's exact
+# wording) - the OWASP resource page would not render as text through
+# available tooling, so this is corroboration, not a primary-source quote.
+# The three agree on 13 of 15 titles. T10 differs only in hyphenation
+# ("Human in the Loop" vs "Human-in-the-Loop"; kept unhyphenated, matching
+# one of the three). T11 has a real wording split: two sources abbreviate
+# "Unexpected RCE and Code Attacks", one spells out "Unexpected Remote Code
+# Execution and Code Attacks"; kept the abbreviated form, matching two of
+# the three and this catalogue's short-label style. T6 and T7 use "&" in
+# all three sources; kept "and" for this catalogue's own consistency, not a
+# source disagreement.
 
 id = "owasp-agentic-threats"
 kind = "standard"
