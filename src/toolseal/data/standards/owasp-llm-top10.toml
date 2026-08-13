@@ -7,7 +7,7 @@ kind = "standard"
 name = "OWASP Top 10 for LLM Applications"
 version = "2025"
 license = "CC-BY-SA-4.0"
-source_url = "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+source_url = "https://genai.owasp.org/llm-top-10/"
 text_included = false
 
 [[control]]
