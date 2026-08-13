@@ -15,6 +15,7 @@ from toolseal.core.policy.controls import (
     Catalogue,
     Control,
     ControlRef,
+    load_catalogues,
     parse_catalogue,
     resolve,
 )
@@ -154,3 +155,30 @@ def test_catalogue_is_frozen() -> None:
         catalogue.id = "changed"  # type: ignore[misc]
 
     assert isinstance(catalogue, Catalogue)
+
+
+# --- shipped catalogues ----------------------------------------------------
+
+
+def test_owasp_llm_catalogue_ships_and_loads() -> None:
+    # Loaded through importlib.resources, so this also proves the data
+    # directory is a real package and will survive being installed as a wheel.
+    catalogue = load_catalogues()["owasp-llm-top10"]
+
+    assert catalogue.kind == "standard"
+    assert len(catalogue.controls) == 10
+    assert catalogue.get("LLM06") is not None
+
+
+def test_owasp_llm_controls_are_all_checkable_or_say_why() -> None:
+    catalogue = load_catalogues()["owasp-llm-top10"]
+
+    for control in catalogue.controls:
+        assert control.title, f"{control.id} has no title"
+
+
+def test_every_shipped_catalogue_declares_a_licence() -> None:
+    # A catalogue with no stated licence cannot be safely redistributed.
+    for catalogue in load_catalogues().values():
+        assert catalogue.license, f"{catalogue.id} declares no licence"
+        assert catalogue.source_url, f"{catalogue.id} declares no source"

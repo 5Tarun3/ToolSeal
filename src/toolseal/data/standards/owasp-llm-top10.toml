@@ -1,0 +1,56 @@
+# OWASP Top 10 for Large Language Model Applications.
+# Titles only. The project maps its checks onto these ids; it does not
+# reproduce OWASP's guidance text.
+
+id = "owasp-llm-top10"
+kind = "standard"
+name = "OWASP Top 10 for LLM Applications"
+version = "2025"
+license = "CC-BY-SA-4.0"
+source_url = "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+text_included = false
+
+[[control]]
+id = "LLM01"
+title = "Prompt Injection"
+checkable = false            # a runtime property, not a configuration one
+
+[[control]]
+id = "LLM02"
+title = "Sensitive Information Disclosure"
+
+[[control]]
+id = "LLM03"
+title = "Supply Chain"
+
+[[control]]
+id = "LLM04"
+title = "Data and Model Poisoning"
+checkable = false            # concerns training data, outside a project's config
+
+[[control]]
+id = "LLM05"
+title = "Improper Output Handling"
+
+[[control]]
+id = "LLM06"
+title = "Excessive Agency"
+
+[[control]]
+id = "LLM07"
+title = "System Prompt Leakage"
+checkable = false            # a prompt-content property
+
+[[control]]
+id = "LLM08"
+title = "Vector and Embedding Weaknesses"
+checkable = false            # no retrieval configuration is in scope for v1
+
+[[control]]
+id = "LLM09"
+title = "Misinformation"
+checkable = false            # an output-quality property
+
+[[control]]
+id = "LLM10"
+title = "Unbounded Consumption"
