@@ -90,6 +90,25 @@ def _require(data: dict[str, Any], key: str, kind: type) -> Any:
     return value
 
 
+def _optional_bool(data: dict[str, Any], key: str, default: bool, label: str) -> bool:
+    """Fetch an optional boolean field, or explain precisely what is wrong.
+
+    A quoted TOML value (``checkable = "false"``) is a real typo, not a value
+    that merely needs coercing. Coercing it with a bare ``bool()`` would turn a
+    typo into a silent ``True`` - exactly the wrong direction for a field the
+    coverage denominator depends on - so this rejects anything that is not
+    TOML's actual boolean type.
+    """
+    if key not in data:
+        return default
+    value = data[key]
+    if not isinstance(value, bool):
+        found = type(value).__name__
+        message = f"{label} field {key!r} must be bool, found {found}"
+        raise ConfigError(message)
+    return value
+
+
 def _parse_control(raw: Any, index: int) -> Control:
     if not isinstance(raw, dict):
         message = f"control at position {index} must be a table"
@@ -100,7 +119,7 @@ def _parse_control(raw: Any, index: int) -> Control:
     return Control(
         id=str(raw["id"]),
         title=str(raw.get("title", "")),
-        checkable=bool(raw.get("checkable", True)),
+        checkable=_optional_bool(raw, "checkable", True, f"control at position {index}"),
         url=str(raw["url"]) if raw.get("url") else None,
     )
 
@@ -137,7 +156,7 @@ def parse_catalogue(text: str) -> Catalogue:
         license=str(data.get("license", "")),
         source_url=str(data.get("source_url", "")),
         controls=controls,
-        text_included=bool(data.get("text_included", False)),
+        text_included=_optional_bool(data, "text_included", False, "catalogue"),
     )
 
 

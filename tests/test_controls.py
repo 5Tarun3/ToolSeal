@@ -16,6 +16,7 @@ from toolseal.core.policy.controls import (
     Control,
     ControlRef,
     parse_catalogue,
+    resolve,
 )
 from toolseal.errors import ConfigError
 
@@ -89,6 +90,57 @@ def test_duplicate_control_id_is_refused() -> None:
 
     with pytest.raises(ConfigError, match="EX01"):
         parse_catalogue(doubled)
+
+
+def test_quoted_checkable_is_refused() -> None:
+    # A quoted boolean is a real typo, not something to coerce. Coercing it
+    # would silently mark an excluded control assessable, inflating the
+    # coverage denominator this module is supposed to keep honest.
+    source = CATALOGUE.replace("checkable = true", 'checkable = "true"')
+
+    with pytest.raises(ConfigError, match="checkable"):
+        parse_catalogue(source)
+
+
+def test_quoted_text_included_is_refused() -> None:
+    source = """
+    id = "example-std"
+    kind = "standard"
+    text_included = "true"
+    """
+
+    with pytest.raises(ConfigError, match="text_included"):
+        parse_catalogue(source)
+
+
+def test_resolve_returns_control() -> None:
+    catalogue = parse_catalogue(CATALOGUE)
+
+    control = resolve(ControlRef("example-std", "EX01"), {"example-std": catalogue})
+
+    assert control == Control(id="EX01", title="First control", checkable=True, url=None)
+
+
+def test_resolve_unknown_standard_names_what_was_loaded() -> None:
+    catalogue = parse_catalogue(CATALOGUE)
+
+    with pytest.raises(ConfigError) as excinfo:
+        resolve(ControlRef("nonexistent-std", "EX01"), {"example-std": catalogue})
+
+    message = str(excinfo.value)
+    assert "nonexistent-std" in message
+    assert "example-std" in message
+
+
+def test_resolve_unknown_control_names_the_standard() -> None:
+    catalogue = parse_catalogue(CATALOGUE)
+
+    with pytest.raises(ConfigError) as excinfo:
+        resolve(ControlRef("example-std", "NOPE"), {"example-std": catalogue})
+
+    message = str(excinfo.value)
+    assert "example-std" in message
+    assert "NOPE" in message
 
 
 def test_control_ref_renders_readably() -> None:
