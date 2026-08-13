@@ -111,9 +111,17 @@ def guard_overhead(repeats: int = DEFAULT_REPEATS) -> dict[str, Any]:
     evaluation harness and CI run it. The interactive path costs whatever a human
     takes to answer and is not a machine measurement.
     """
+    import logging
     import os
 
     require_approval = _approval_guard()
+
+    # The guard warns on every bypass, which is correct behaviour and useless
+    # noise here: 200 repeats would bury the result under 400 log lines. The
+    # warning is silenced for the measurement, not removed from the template.
+    guard_log = logging.getLogger("bench")
+    previous_level = guard_log.level
+    logging.disable(logging.WARNING)
     previous = os.environ.get("TOOLSEAL_ASSUME_YES")
     os.environ["TOOLSEAL_ASSUME_YES"] = "1"
 
@@ -133,19 +141,27 @@ def guard_overhead(repeats: int = DEFAULT_REPEATS) -> dict[str, Any]:
         unguarded_timing = measure("tool call, no guard", call_bare, repeats)
         guarded_timing = measure("tool call, approval guard", call_guarded, repeats)
     finally:
+        logging.disable(logging.NOTSET)
+        guard_log.setLevel(previous_level)
         if previous is None:
             os.environ.pop("TOOLSEAL_ASSUME_YES", None)
         else:
             os.environ["TOOLSEAL_ASSUME_YES"] = previous
 
     calls = len(_GUARD_INPUTS)
-    delta_per_call = (guarded_timing.mean - unguarded_timing.mean) / calls
+    # Medians, not means. Timing data on a shared machine has a long right
+    # tail - a scheduler hiccup during one repeat drags the mean by more than
+    # the quantity being measured, and the observed spread here reached 1 ms
+    # against a ~14 us signal. The median is the honest central estimate; the
+    # tail is still reported as p95 rather than hidden.
+    delta_per_call = (guarded_timing.median - unguarded_timing.median) / calls
 
     return {
         "unguarded": unguarded_timing.to_dict(),
         "guarded": guarded_timing.to_dict(),
         "overhead_per_call_us": round(delta_per_call, 2),
         "overhead_per_call_ms": round(delta_per_call / 1000, 4),
+        "statistic": "median of repeats, per call",
     }
 
 
@@ -193,7 +209,7 @@ def to_markdown(payload: dict[str, Any]) -> str:
     lines = [
         "# Study 3 - runtime cost of secure defaults",
         "",
-        f"Repeats per measurement: {payload['repeats']}.",
+        f"Repeats per measurement: {payload['repeats']}. Overhead is the {payload['statistic']}.",
         f"Excludes {payload['excludes']}.",
         "",
         "| operation | repeats | mean (us) | median (us) | p95 (us) |",

@@ -7,10 +7,12 @@ works without the caller knowing which module defines it.
 from __future__ import annotations
 
 from toolseal.core.adapters.base import framework_registry
+from toolseal.core.adapters.frameworks.claudecode import ClaudeCodeFramework
 from toolseal.core.adapters.frameworks.crewai import CrewAIFramework
 from toolseal.core.adapters.frameworks.langgraph import LangGraphFramework
 
 framework_registry.register(LangGraphFramework.id, LangGraphFramework())
 framework_registry.register(CrewAIFramework.id, CrewAIFramework())
+framework_registry.register(ClaudeCodeFramework.id, ClaudeCodeFramework())
 
-__all__ = ["CrewAIFramework", "LangGraphFramework"]
+__all__ = ["ClaudeCodeFramework", "CrewAIFramework", "LangGraphFramework"]

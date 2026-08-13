@@ -49,6 +49,7 @@ _INTEGRATIONS: Final[dict[str, _Integration]] = {
     "ollama": _Integration(litellm_prefix="ollama"),
     "openai": _Integration(litellm_prefix="openai"),
     "anthropic": _Integration(litellm_prefix="anthropic"),
+    "gemini": _Integration(litellm_prefix="gemini"),
 }
 
 

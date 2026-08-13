@@ -80,7 +80,7 @@ TASKS: Final[tuple[Task, ...]] = (
     ),
     Task(
         "adverse-unsupported-provider",
-        "gemini",
+        "cohere",
         "langgraph",
         "A provider toolseal does not support: same shape, other axis",
         adverse=True,

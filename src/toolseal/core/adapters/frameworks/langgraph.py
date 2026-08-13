@@ -61,6 +61,11 @@ _INTEGRATIONS: Final[dict[str, _Integration]] = {
     ),
     "openai": _Integration("langchain-openai==1.4.3", "langchain_openai", "ChatOpenAI"),
     "anthropic": _Integration("langchain-anthropic==1.5.5", "langchain_anthropic", "ChatAnthropic"),
+    "gemini": _Integration(
+        "langchain-google-genai==2.1.14",
+        "langchain_google_genai",
+        "ChatGoogleGenerativeAI",
+    ),
 }
 
 

@@ -19,14 +19,19 @@ from pathlib import Path
 import pytest
 
 from toolseal.core.adapters import Provider, ScaffoldSpec, provider_registry
-from toolseal.core.adapters.providers import AnthropicProvider, OllamaProvider, OpenAIProvider
+from toolseal.core.adapters.providers import (
+    AnthropicProvider,
+    GeminiProvider,
+    OllamaProvider,
+    OpenAIProvider,
+)
 from toolseal.core.audit import audit
 from toolseal.core.scaffold import apply_plan, build_plan
 
-HOSTED = (OpenAIProvider(), AnthropicProvider())
+HOSTED = (OpenAIProvider(), AnthropicProvider(), GeminiProvider())
 CELLS = [
     (provider, framework)
-    for provider in ("ollama", "openai", "anthropic")
+    for provider in ("ollama", "openai", "anthropic", "gemini")
     for framework in ("langgraph", "crewai")
 ]
 
@@ -42,8 +47,8 @@ def ollama_reachable() -> bool:
 # --- provider facts --------------------------------------------------------
 
 
-def test_all_three_providers_are_registered() -> None:
-    assert set(provider_registry.names()) == {"anthropic", "ollama", "openai"}
+def test_every_provider_is_registered() -> None:
+    assert set(provider_registry.names()) == {"anthropic", "gemini", "ollama", "openai"}
 
 
 @pytest.mark.parametrize("provider", HOSTED, ids=lambda p: p.id)

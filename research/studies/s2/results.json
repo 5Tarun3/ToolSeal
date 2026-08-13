@@ -32,7 +32,7 @@
         "hand_written_files": 4,
         "manual_steps": 10,
         "note": "idealised: no mistakes, no debugging",
-        "seconds": 0.002806699980283156,
+        "seconds": 0.0025974000000132946,
         "succeeded": true
       },
       "score_delta": 76,
@@ -45,7 +45,7 @@
         "hand_written_files": 0,
         "manual_steps": 2,
         "note": "",
-        "seconds": 0.013513899990357459,
+        "seconds": 0.01342800000020361,
         "succeeded": true
       }
     },
@@ -69,7 +69,7 @@
         "hand_written_files": 4,
         "manual_steps": 10,
         "note": "idealised: no mistakes, no debugging",
-        "seconds": 0.0027102000021841377,
+        "seconds": 0.0036769999996977276,
         "succeeded": true
       },
       "score_delta": 76,
@@ -82,7 +82,7 @@
         "hand_written_files": 0,
         "manual_steps": 2,
         "note": "",
-        "seconds": 0.013949999993201345,
+        "seconds": 0.01743720000013127,
         "succeeded": true
       }
     },
@@ -107,7 +107,7 @@
         "hand_written_files": 4,
         "manual_steps": 10,
         "note": "idealised: no mistakes, no debugging",
-        "seconds": 0.0037515999865718186,
+        "seconds": 0.003473400000075344,
         "succeeded": true
       },
       "score_delta": 100,
@@ -120,7 +120,7 @@
         "hand_written_files": 0,
         "manual_steps": 2,
         "note": "",
-        "seconds": 0.013557199999922886,
+        "seconds": 0.012611500000275555,
         "succeeded": true
       }
     },
@@ -145,7 +145,7 @@
         "hand_written_files": 4,
         "manual_steps": 10,
         "note": "idealised: no mistakes, no debugging",
-        "seconds": 0.0022579999931622297,
+        "seconds": 0.0022236000004340895,
         "succeeded": true
       },
       "score_delta": 100,
@@ -158,7 +158,7 @@
         "hand_written_files": 0,
         "manual_steps": 2,
         "note": "",
-        "seconds": 0.01583969997591339,
+        "seconds": 0.01576759999989008,
         "succeeded": true
       }
     },
@@ -183,7 +183,7 @@
         "hand_written_files": 4,
         "manual_steps": 10,
         "note": "idealised: no mistakes, no debugging",
-        "seconds": 0.002688299980945885,
+        "seconds": 0.002606299999570183,
         "succeeded": true
       },
       "score_delta": 100,
@@ -196,7 +196,7 @@
         "hand_written_files": 0,
         "manual_steps": 2,
         "note": "",
-        "seconds": 0.016525500017451122,
+        "seconds": 0.023245200000019395,
         "succeeded": true
       }
     },
@@ -221,7 +221,7 @@
         "hand_written_files": 4,
         "manual_steps": 10,
         "note": "idealised: no mistakes, no debugging",
-        "seconds": 0.002363500010687858,
+        "seconds": 0.002517200000511366,
         "succeeded": true
       },
       "score_delta": 100,
@@ -234,7 +234,7 @@
         "hand_written_files": 0,
         "manual_steps": 2,
         "note": "",
-        "seconds": 0.01375230000121519,
+        "seconds": 0.012992400000257476,
         "succeeded": true
       }
     },
@@ -250,7 +250,7 @@
         "hand_written_files": 0,
         "manual_steps": 0,
         "note": "no baseline template authored (\"no baseline template authored for framework 'autogen'. A developer could follow its documentation; this harness cannot.\")",
-        "seconds": 1.3499986380338669e-05,
+        "seconds": 8.799999704933725e-06,
         "succeeded": false
       },
       "score_delta": null,
@@ -262,8 +262,8 @@
         "findings": [],
         "hand_written_files": 0,
         "manual_steps": 0,
-        "note": "UsageError: unknown framework 'autogen'; available: crewai, langgraph",
-        "seconds": 1.2500007869675756e-05,
+        "note": "UsageError: unknown framework 'autogen'; available: claude-code, crewai, langgraph",
+        "seconds": 1.049999991664663e-05,
         "succeeded": false
       }
     },
@@ -278,8 +278,8 @@
         "findings": [],
         "hand_written_files": 0,
         "manual_steps": 0,
-        "note": "no baseline template authored (unknown provider 'gemini'; available: anthropic, ollama, openai)",
-        "seconds": 4.6000059228390455e-06,
+        "note": "no baseline template authored (unknown provider 'cohere'; available: anthropic, gemini, ollama, openai)",
+        "seconds": 4.600000465870835e-06,
         "succeeded": false
       },
       "score_delta": null,
@@ -291,8 +291,8 @@
         "findings": [],
         "hand_written_files": 0,
         "manual_steps": 0,
-        "note": "UsageError: unknown provider 'gemini'; available: anthropic, ollama, openai",
-        "seconds": 3.7999998312443495e-06,
+        "note": "UsageError: unknown provider 'cohere'; available: anthropic, gemini, ollama, openai",
+        "seconds": 3.600000127335079e-06,
         "succeeded": false
       }
     }

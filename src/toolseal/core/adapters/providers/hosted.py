@@ -75,3 +75,25 @@ class AnthropicProvider:
 
     def supports_model(self, model: str) -> bool:
         return _valid_model_id(model)
+
+
+class GeminiProvider:
+    """Google Gemini.
+
+    Added because a key is available for it, which makes it the second hosted
+    cell that can be exercised rather than only contract-tested.
+    """
+
+    id: Final = "gemini"
+    display_name: Final = "Google Gemini"
+
+    default_model: Final = "gemini-2.5-flash"
+    default_base_url: Final = "https://generativelanguage.googleapis.com/v1beta"
+    credential_env_var: Final[str | None] = "GEMINI_API_KEY"
+
+    def packages(self) -> tuple[str, ...]:
+        # Verified against OSV before pinning, as every pin here is.
+        return ("google-genai==1.51.0",)
+
+    def supports_model(self, model: str) -> bool:
+        return _valid_model_id(model)

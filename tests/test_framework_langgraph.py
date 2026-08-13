@@ -75,11 +75,11 @@ def test_expressible_properties_come_from_the_lattice() -> None:
 
 def test_unknown_provider_is_a_usage_error(tmp_path: Path) -> None:
     class UnknownProvider:
-        id = "gemini"
-        display_name = "Gemini"
-        default_model = "gemini-2.0"
+        id = "cohere"
+        display_name = "Cohere"
+        default_model = "command-r"
         default_base_url = "https://example.test"
-        credential_env_var = "GEMINI_API_KEY"
+        credential_env_var = "COHERE_API_KEY"
 
         def packages(self) -> tuple[str, ...]:
             return ()

@@ -104,10 +104,10 @@ def test_toolseal_arm_produces_a_clean_project(tmp_path: Path) -> None:
 
 
 def test_toolseal_arm_records_a_refusal_rather_than_crashing(tmp_path: Path) -> None:
-    result = run_toolseal(Task("x", "gemini", "langgraph", "unsupported"), tmp_path)
+    result = run_toolseal(Task("x", "cohere", "langgraph", "unsupported"), tmp_path)
 
     assert not result.succeeded
-    assert "gemini" in result.note
+    assert "cohere" in result.note
 
 
 # --- reporting -------------------------------------------------------------

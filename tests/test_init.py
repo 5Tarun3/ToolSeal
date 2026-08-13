@@ -173,7 +173,7 @@ def test_dry_run_reports_findings_exit_code_on_conflict(tmp_path: Path) -> None:
 
 def test_unknown_provider_lists_the_known_ones(tmp_path: Path) -> None:
     result = runner.invoke(
-        app, ["init", "demo", "--provider", "gemini", "--directory", str(tmp_path / "demo")]
+        app, ["init", "demo", "--provider", "cohere", "--directory", str(tmp_path / "demo")]
     )
 
     assert result.exit_code == ExitCode.USAGE

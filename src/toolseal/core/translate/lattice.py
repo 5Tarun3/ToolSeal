@@ -142,6 +142,31 @@ PROFILES: dict[str, AbstractionProfile] = {
             "as a rebuilt Pydantic model."
         ),
     ),
+    "claude-code": AbstractionProfile(
+        id="claude-code",
+        display_name="Claude Code",
+        # The widest set of any target. Permission rules are evaluated before a
+        # tool runs, so client-side validation and the consequence of
+        # destructiveHint are both expressible without generating any code.
+        expressible=frozenset(
+            {
+                SecurityProperty.READ_ONLY,
+                SecurityProperty.DESTRUCTIVE,
+                SecurityProperty.IDEMPOTENT,
+                SecurityProperty.OPEN_WORLD,
+                SecurityProperty.INPUT_CONSTRAINTS,
+                SecurityProperty.CLIENT_VALIDATION,
+                SecurityProperty.ERROR_CHANNEL,
+                SecurityProperty.DESCRIPTION_INTEGRITY,
+            }
+        ),
+        evidence=Evidence.SPECIFIED,
+        note=(
+            "Permission allow/ask/deny rules are evaluated before a tool runs, which "
+            "is what makes destructiveHint actionable rather than merely stored. Read "
+            "from documented behaviour; not yet measured against a live session."
+        ),
+    ),
     "openai_fc": AbstractionProfile(
         id="openai_fc",
         display_name="OpenAI function calling",
