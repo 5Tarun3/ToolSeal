@@ -26,17 +26,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from toolseal.core.properties import ANNOTATION_PROPERTIES, SecurityProperty
 from toolseal.core.registry.utd import (
     Provenance,
     SecurityAnnotations,
     ToolSource,
     UnifiedToolDescriptor,
 )
-from toolseal.core.translate.lattice import (
-    ANNOTATION_PROPERTIES,
-    SecurityProperty,
-    profile,
-)
+from toolseal.core.translate.lattice import profile
 from toolseal.errors import RegistryError
 
 # Attributes an adapter might hang annotations on. Same list the P0 probe used,

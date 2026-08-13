@@ -117,11 +117,23 @@ _BINDING = Template(
     "\n"
     "SCHEMA = $schema\n"
     "\n"
+    "\n"
+    "def _not_wired(name: str, arguments: dict[str, object]) -> object:\n"
+    "    # A generated binding cannot know how to reach the upstream server.\n"
+    "    # Raising beats returning something: a guarded tool that silently did\n"
+    "    # nothing would look exactly like one that had worked.\n"
+    '    message = name + " is not wired; set DISPATCH to your upstream client."\n'
+    "    raise NotImplementedError(message)\n"
+    "\n"
+    "\n"
+    "#: Replace with the callable that performs the upstream call.\n"
+    "DISPATCH = _not_wired\n"
+    "\n"
     "$guard_comments\n"
     "$decorators@tool\n"
     "def $function_name(**kwargs: object) -> object:\n"
     '    """$short_description"""\n'
-    "    return call_upstream($tool_name_literal, kwargs)\n"
+    "    return DISPATCH($tool_name_literal, kwargs)\n"
 )
 
 

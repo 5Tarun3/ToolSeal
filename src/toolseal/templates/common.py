@@ -122,6 +122,102 @@ def minimal_environment(extra: dict[str, str] | None = None) -> dict[str, str]:
     return env
 
 
+class ToolCallError(RuntimeError):
+    """A tool reported failure.
+
+    G3: an MCP error result arrives as ordinary content, so without this a
+    failed call is indistinguishable from a successful one unless somebody
+    parses English prose. Raising turns it back into a failure the framework
+    can see.
+    """
+
+
+class SchemaViolationError(ValueError):
+    """Arguments did not satisfy the tool's own declared schema."""
+
+
+_ERROR_PREFIXES = ("Error executing tool", "error:", "Traceback (most recent call last)")
+
+
+def raise_on_tool_error(function: Callable[..., Any]) -> Callable[..., Any]:
+    """G3: map an error-shaped result onto the failure channel.
+
+    Recognising an error by its text is unpleasant, and it is what the wire
+    format leaves available: the adapter has already flattened `isError` into a
+    content block by the time this sees it.
+    """
+
+    @wraps(function)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        result = function(*args, **kwargs)
+        text = result if isinstance(result, str) else repr(result)
+        if any(marker in text for marker in _ERROR_PREFIXES):
+            raise ToolCallError(text[:500])
+        return result
+
+    return wrapper
+
+
+def validate_against_schema(
+    schema: dict[str, Any],
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    """G2: enforce the declared constraints before the call is dispatched.
+
+    The constraints survive translation but nothing checks them, so an
+    out-of-range argument is sent and only the server refuses it. A server that
+    does not validate has no second line at all.
+
+    Deliberately small: `enum`, numeric bounds, string length and pattern. These
+    are the keywords that actually narrow a value. A full JSON Schema validator
+    would be a dependency, and a generated project should not acquire one to
+    check four things.
+    """
+
+    def decorate(function: Callable[..., Any]) -> Callable[..., Any]:
+        @wraps(function)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            properties = schema.get("properties") or {}
+            for name, value in kwargs.items():
+                rules = properties.get(name)
+                if isinstance(rules, dict):
+                    _check_value(name, value, rules)
+            return function(*args, **kwargs)
+
+        return wrapper
+
+    return decorate
+
+
+def _check_value(name: str, value: Any, rules: dict[str, Any]) -> None:
+    allowed = rules.get("enum")
+    if isinstance(allowed, list) and value not in allowed:
+        message = f"{name}={value!r} is not one of {allowed}"
+        raise SchemaViolationError(message)
+
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        minimum, maximum = rules.get("minimum"), rules.get("maximum")
+        if minimum is not None and value < minimum:
+            message = f"{name}={value} is below the minimum {minimum}"
+            raise SchemaViolationError(message)
+        if maximum is not None and value > maximum:
+            message = f"{name}={value} is above the maximum {maximum}"
+            raise SchemaViolationError(message)
+
+    if isinstance(value, str):
+        shortest, longest = rules.get("minLength"), rules.get("maxLength")
+        if shortest is not None and len(value) < shortest:
+            message = f"{name} is shorter than {shortest} characters"
+            raise SchemaViolationError(message)
+        if longest is not None and len(value) > longest:
+            message = f"{name} is longer than {longest} characters"
+            raise SchemaViolationError(message)
+
+        pattern = rules.get("pattern")
+        if isinstance(pattern, str) and re.search(pattern, value) is None:
+            message = f"{name} does not match {pattern!r}"
+            raise SchemaViolationError(message)
+
+
 def require_approval(reason: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """F2: refuse a destructive call unless a human confirms it.
 

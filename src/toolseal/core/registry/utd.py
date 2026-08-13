@@ -17,7 +17,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, ClassVar
 
-from toolseal.core.translate.lattice import SecurityProperty
+from toolseal.core.properties import SecurityProperty
 from toolseal.errors import RegistryError
 
 SCHEMA_VERSION = 1

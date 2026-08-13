@@ -20,34 +20,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 
+# Re-exported, not defined here: both this module and registry.utd need the
+# vocabulary, and owning it in either one makes them import each other.
+from toolseal.core.properties import ANNOTATION_PROPERTIES, SecurityProperty
 from toolseal.errors import UsageError
 
-
-class SecurityProperty(StrEnum):
-    """The vocabulary shared by descriptors, the lattice, and taxonomy family G.
-
-    One vocabulary rather than three keeps measured evidence, audit findings and
-    generated guards directly comparable.
-    """
-
-    READ_ONLY = "readOnlyHint"
-    DESTRUCTIVE = "destructiveHint"
-    IDEMPOTENT = "idempotentHint"
-    OPEN_WORLD = "openWorldHint"
-    INPUT_CONSTRAINTS = "inputConstraints"
-    CLIENT_VALIDATION = "clientValidation"
-    ERROR_CHANNEL = "errorChannel"
-    DESCRIPTION_INTEGRITY = "descriptionIntegrity"
-
-
-ANNOTATION_PROPERTIES = frozenset(
-    {
-        SecurityProperty.READ_ONLY,
-        SecurityProperty.DESTRUCTIVE,
-        SecurityProperty.IDEMPOTENT,
-        SecurityProperty.OPEN_WORLD,
-    }
-)
+__all__ = ["ANNOTATION_PROPERTIES", "SecurityProperty"]
 
 
 class Evidence(StrEnum):
