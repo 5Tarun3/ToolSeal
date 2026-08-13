@@ -12,7 +12,7 @@
 id = "owasp-agentic-top10"
 kind = "standard"
 name = "OWASP Agentic AI Threats"
-version = "2025"
+version = "1.0"
 license = "CC-BY-SA-4.0"
 source_url = "https://genai.owasp.org/resource/agentic-ai-threats-and-mitigations/"
 text_included = false
