@@ -114,6 +114,25 @@ def test_quoted_text_included_is_refused() -> None:
         parse_catalogue(source)
 
 
+def test_complete_enumeration_defaults_false() -> None:
+    # The dangerous direction is assuming completeness, so an unlisted flag
+    # must mean "curated subset", not "the whole standard".
+    assert parse_catalogue(CATALOGUE).complete_enumeration is False
+
+
+def test_quoted_complete_enumeration_is_refused() -> None:
+    # Same trap as checkable and text_included: a quoted value is a typo, not
+    # something to coerce toward the safe default.
+    source = """
+    id = "example-std"
+    kind = "standard"
+    complete_enumeration = "true"
+    """
+
+    with pytest.raises(ConfigError, match="complete_enumeration"):
+        parse_catalogue(source)
+
+
 def test_resolve_returns_control() -> None:
     catalogue = parse_catalogue(CATALOGUE)
 
@@ -236,3 +255,26 @@ def test_agentic_threats_and_agentic_top10_are_distinct_documents() -> None:
     assert all(control_id.startswith("T") for control_id in threat_ids)
     assert all(control_id.startswith("ASI") for control_id in top10_ids)
     assert threat_ids.isdisjoint(top10_ids)
+
+
+def test_only_the_fully_enumerated_owasp_catalogues_claim_completeness() -> None:
+    # owasp-llm-top10, owasp-agentic-top10 and owasp-agentic-threats each list
+    # every published item, flagging non-assessable ones individually rather
+    # than omitting them - their percentage is coverage of the whole standard.
+    # nist-ai-rmf and iso-42001 ship curated shortlists drawn up before any
+    # check mapping existed; a coverage percentage over them is a percentage
+    # of that shortlist, not of the published standard, and must not claim
+    # otherwise.
+    catalogues = load_catalogues()
+
+    complete = {
+        "owasp-llm-top10",
+        "owasp-agentic-top10",
+        "owasp-agentic-threats",
+    }
+    curated = {"nist-ai-rmf", "iso-42001"}
+
+    for catalogue_id in complete:
+        assert catalogues[catalogue_id].complete_enumeration is True, catalogue_id
+    for catalogue_id in curated:
+        assert catalogues[catalogue_id].complete_enumeration is False, catalogue_id

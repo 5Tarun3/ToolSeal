@@ -30,6 +30,10 @@ version = "1.0"
 license = "CC-BY-SA-4.0"
 source_url = "https://genai.owasp.org/resource/agentic-ai-threats-and-mitigations/"
 text_included = false
+# The full published list (T1-T15) is enumerated below; items not assessable
+# from configuration are flagged checkable = false individually rather than
+# omitted, so this catalogue's denominator is the whole standard.
+complete_enumeration = true
 
 [[control]]
 id = "T1"

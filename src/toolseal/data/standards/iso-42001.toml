@@ -12,6 +12,11 @@
 # clause under "A.10 Third-party and customer relationships" that matches the
 # draft's original intent. A.9.2's title was corrected to match the verified
 # short label.
+#
+# This file lists a curated subset (4 of roughly three dozen Annex A
+# controls), not the complete standard - complete_enumeration is left unset
+# (false). A coverage figure computed over this file measures coverage of
+# that curated subset, not of ISO/IEC 42001 Annex A as a whole.
 
 id = "iso-42001"
 kind = "standard"

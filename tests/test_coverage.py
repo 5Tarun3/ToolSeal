@@ -60,6 +60,16 @@ def test_owasp_agentic_top10_checkable_controls_are_fully_covered() -> None:
     assert report.percentage == FULL_PERCENT
 
 
+def test_complete_enumeration_is_carried_through_the_report() -> None:
+    # A percentage travels into tables and papers without its provenance
+    # unless the flag rides along on the report itself, not just a docstring.
+    complete = coverage_for("owasp-llm-top10")
+    curated = coverage_for("nist-ai-rmf")
+
+    assert complete.complete_enumeration is True
+    assert curated.complete_enumeration is False
+
+
 def test_uncovered_controls_are_reported_not_hidden() -> None:
     # NIST is far broader than a config auditor reaches, and the report must
     # say so rather than quietly scoring only what it touches.

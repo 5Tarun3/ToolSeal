@@ -71,6 +71,19 @@ class Catalogue:
     text_included: bool = False
     """Whether control body text is reproduced here. False for paywalled sources."""
 
+    complete_enumeration: bool = False
+    """Whether ``controls`` lists the standard's controls as published, or a
+    curated subset.
+
+    A coverage percentage only means "coverage of the standard" when the
+    denominator is the standard's full list. Several catalogues here were
+    drawn up as shortlists before any check mapping existed, and their
+    percentages measure coverage of that shortlist, not of the standard.
+    Defaults to ``False`` - the safer assumption is incompleteness, since a
+    reader who assumes completeness by default would misread a curated
+    catalogue's percentage as reaching further than it does.
+    """
+
     def get(self, control_id: str) -> Control | None:
         return next((c for c in self.controls if c.id == control_id), None)
 
@@ -157,6 +170,7 @@ def parse_catalogue(text: str) -> Catalogue:
         source_url=str(data.get("source_url", "")),
         controls=controls,
         text_included=_optional_bool(data, "text_included", False, "catalogue"),
+        complete_enumeration=_optional_bool(data, "complete_enumeration", False, "catalogue"),
     )
 
 

@@ -12,6 +12,11 @@ Coverage is computed over checkable controls only. Scoring against controls no
 configuration file could ever satisfy - workforce training, signed agreements -
 would produce a number that says more about the standard's breadth than about
 this tool.
+
+Not every catalogue's denominator is the whole standard, though. Some were
+drawn up as curated subsets before any check mapping existed. `CoverageReport`
+carries `complete_enumeration` through from the catalogue so a percentage is
+never presented without saying which kind of denominator produced it.
 """
 
 from __future__ import annotations
@@ -44,6 +49,12 @@ class CoverageReport:
     catalogue_name: str
     entries: tuple[ControlCoverage, ...] = ()
     unmapped_checks: tuple[str, ...] = ()
+    complete_enumeration: bool = False
+    """Copied from the catalogue: whether `checkable_total` is the standard's
+    full checkable list, or a curated subset. A consumer formatting
+    `percentage` alongside other standards' percentages must see this - a
+    100% over a curated subset and a 100% over the full standard are not the
+    same claim."""
 
     @property
     def checkable_total(self) -> int:
@@ -104,4 +115,5 @@ def coverage_for(standard: str) -> CoverageReport:
         catalogue_name=catalogue.name,
         entries=entries,
         unmapped_checks=tuple(check.id for check in unmapped_checks()),
+        complete_enumeration=catalogue.complete_enumeration,
     )

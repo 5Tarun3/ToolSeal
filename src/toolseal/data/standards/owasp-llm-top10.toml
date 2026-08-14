@@ -9,6 +9,10 @@ version = "2025"
 license = "CC-BY-SA-4.0"
 source_url = "https://genai.owasp.org/llm-top-10/"
 text_included = false
+# The full published list (LLM01-LLM10) is enumerated below; items not
+# assessable from configuration are flagged checkable = false individually
+# rather than omitted, so this catalogue's denominator is the whole standard.
+complete_enumeration = true
 
 [[control]]
 id = "LLM01"

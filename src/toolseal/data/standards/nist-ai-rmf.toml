@@ -4,6 +4,11 @@
 # framework is far broader than this project's scope, and Task 5 reports that
 # gap rather than hiding it.
 #
+# This file lists a curated subset (7 of roughly 70 subcategories in the full
+# Core), not the complete standard - complete_enumeration is left unset
+# (false). A coverage figure computed over this file measures coverage of
+# that curated subset, not of the NIST AI RMF as a whole.
+#
 # Subcategory ids and titles verified against the NIST AI RMF Playbook
 # (airc.nist.gov/AI_RMF_Knowledge_Base/Playbook/{Govern,Map,Measure,Manage}),
 # which mirrors the AI RMF 1.0 Core (Tables 1-4) cited below. Titles here are
