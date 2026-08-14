@@ -23,6 +23,7 @@ from toolseal.core.audit import audit, extract
 from toolseal.core.audit.engine import audit_model
 from toolseal.core.model import Dependency, DependencySet, ProjectModel, RuntimeConfig
 from toolseal.core.policy import all_checks, checks_in
+from toolseal.core.policy.family_a import is_env_var_name, is_inert
 from toolseal.core.policy.family_c import AdvisoryLookupError, query_osv
 from toolseal.core.policy.model import (
     AuditReport,
@@ -163,7 +164,8 @@ def test_suppression_reason_is_recoverable() -> None:
 
 def test_credential_literal_is_found(tmp_path: Path) -> None:
     (tmp_path / "config.py").write_text(
-        'OPENAI_API_KEY = "sk-abcdefghijklmnopqrstuvwxyz01"\n', encoding="utf-8"
+        'OPENAI_API_KEY = "sk-abcdefghijklmnopqrst"\n',  # toolseal:allow A1 - detection under test
+        encoding="utf-8",
     )
 
     findings = [f for f in audit(tmp_path).findings if f.check_id == "A1"]
@@ -190,10 +192,51 @@ def test_example_file_with_names_only_is_clean(tmp_path: Path) -> None:
 
 def test_example_file_with_a_real_value_is_reported(tmp_path: Path) -> None:
     (tmp_path / ".env.example").write_text(
-        'ANTHROPIC_API_KEY="sk-ant-abcdefghijklmnopqrstuv"\n', encoding="utf-8"
+        'ANTHROPIC_API_KEY="'
+        'sk-ant-abcdefghijklmnopqrst"\n',  # toolseal:allow A1 - fake; a value (not name) is flagged
+        encoding="utf-8",
     )
 
     assert [f for f in audit(tmp_path).findings if f.check_id == "A1"]
+
+
+# --- is_env_var_name: naming a credential is not leaking it ----------------
+
+
+def test_an_env_var_name_as_a_value_is_inert() -> None:
+    # A1's own remediation is "reference the credential by name". A config
+    # line that does exactly that must not itself be the thing A1 reports.
+    assert is_env_var_name("FAKE_API_KEY")
+    assert is_inert("FAKE_API_KEY")
+
+
+def test_an_env_var_name_assignment_is_not_reported(tmp_path: Path) -> None:
+    (tmp_path / "config.py").write_text('credential_env_var = "FAKE_API_KEY"\n', encoding="utf-8")
+
+    assert not [f for f in audit(tmp_path).findings if f.check_id == "A1"]
+
+
+def test_all_caps_without_an_underscore_is_not_an_env_var_name() -> None:
+    # An AWS access key id is itself all-caps, so the underscore requirement
+    # is what keeps that credential shape out of the exemption.
+    assert not is_env_var_name("AKIAIOSFODNN7EXAMPLE")  # toolseal:allow A1 - fake AWS key shape
+    assert not is_inert("AKIAIOSFODNN7EXAMPLE")  # toolseal:allow A1 - fake AWS key shape
+
+
+def test_an_aws_shaped_assignment_is_still_reported(tmp_path: Path) -> None:
+    (tmp_path / "config.py").write_text(
+        'API_KEY = "AKIAIOSFODNN7EXAMPLE"\n',  # toolseal:allow A1 - real shape must stay caught
+        encoding="utf-8",
+    )
+
+    assert [f for f in audit(tmp_path).findings if f.check_id == "A1"]
+
+
+def test_lowercase_values_are_unaffected_by_the_exemption() -> None:
+    # The refinement is case-sensitive on purpose: it must not widen the hole
+    # for an ordinary lowercase or mixed-case secret.
+    assert not is_env_var_name("a-real-looking-secret-value")
+    assert not is_inert("a-real-looking-secret-value")
 
 
 def test_env_file_without_an_ignore_rule_is_reported(tmp_path: Path) -> None:
@@ -265,7 +308,10 @@ def test_advisory_lookup_failure_surfaces_as_unknown(monkeypatch: pytest.MonkeyP
 
 def test_extraction_skips_vendored_directories(tmp_path: Path) -> None:
     (tmp_path / ".venv").mkdir()
-    (tmp_path / ".venv" / "leaked.py").write_text("sk-aaaaaaaaaaaaaaaaaaaaaa", encoding="utf-8")
+    (tmp_path / ".venv" / "leaked.py").write_text(
+        "sk-aaaaaaaaaaaaaaaaaaaaaa",  # toolseal:allow A1 - fake; proves .venv paths are skipped
+        encoding="utf-8",
+    )
     (tmp_path / "main.py").write_text("x = 1\n", encoding="utf-8")
 
     paths = {str(entry.path) for entry in extract(tmp_path).files}
@@ -281,7 +327,8 @@ def test_shallow_ignore_rules_do_not_hide_findings(tmp_path: Path) -> None:
     nested = tmp_path / "nested"
     nested.mkdir()
     (nested / "config.py").write_text(
-        'API_KEY = "sk-abcdefghijklmnopqrstuvwxyz01"\n', encoding="utf-8"
+        'API_KEY = "sk-abcdefghijklmnopqrst"\n',  # toolseal:allow A1 - fake; must reach the scanner
+        encoding="utf-8",
     )
 
     assert [f for f in audit(tmp_path).findings if f.check_id == "A1"]
@@ -308,7 +355,8 @@ def test_clean_project_exits_zero(tmp_path: Path) -> None:
 
 def test_findings_produce_exit_code_one(tmp_path: Path) -> None:
     (tmp_path / "config.py").write_text(
-        'OPENAI_API_KEY = "sk-abcdefghijklmnopqrstuvwxyz01"\n', encoding="utf-8"
+        'OPENAI_API_KEY = "sk-abcdefghijklmnopqrst"\n',  # toolseal:allow A1 - drives the exit code
+        encoding="utf-8",
     )
 
     assert runner.invoke(app, ["audit", str(tmp_path)]).exit_code == ExitCode.FINDINGS
@@ -376,7 +424,8 @@ def test_sarif_declares_every_rule_not_only_the_failing_ones(tmp_path: Path) -> 
 
 def test_sarif_locations_are_relative(tmp_path: Path) -> None:
     (tmp_path / "config.py").write_text(
-        'OPENAI_API_KEY = "sk-abcdefghijklmnopqrstuvwxyz01"\n', encoding="utf-8"
+        'OPENAI_API_KEY = "sk-abcdefghijklmnopqrst"\n',  # toolseal:allow A1 - feeds SARIF location
+        encoding="utf-8",
     )
 
     log = to_sarif(audit(tmp_path))
@@ -391,7 +440,8 @@ def test_sarif_locations_are_relative(tmp_path: Path) -> None:
 
 def test_sarif_severity_narrowing_keeps_the_original(tmp_path: Path) -> None:
     (tmp_path / "config.py").write_text(
-        'OPENAI_API_KEY = "sk-abcdefghijklmnopqrstuvwxyz01"\n', encoding="utf-8"
+        'OPENAI_API_KEY = "sk-abcdefghijklmnopqrst"\n',  # toolseal:allow A1 - feeds SARIF severity
+        encoding="utf-8",
     )
 
     results = to_sarif(audit(tmp_path))["runs"][0]["results"]

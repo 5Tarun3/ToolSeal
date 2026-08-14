@@ -34,7 +34,8 @@ def test_allowlist_excludes_credential_bearing_variables() -> None:
 def test_a_secret_in_the_parent_environment_does_not_survive(
     monkeypatch: Any,
 ) -> None:
-    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-should-not-propagate")
+    value = "sk-ant-should-not-propagate"  # toolseal:allow A1 - must not reach minimal_environment
+    monkeypatch.setenv("ANTHROPIC_API_KEY", value)
     monkeypatch.setenv("PATH", "/usr/bin")
 
     env = guards_namespace()["minimal_environment"]()

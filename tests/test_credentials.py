@@ -108,7 +108,8 @@ def test_refuses_rather_than_falling_back_to_a_file(monkeypatch: pytest.MonkeyPa
     monkeypatch.setattr(KeyringStore, "available", lambda self: False)
 
     with pytest.raises(ConfigError, match="no OS keychain is available"):
-        KeyringStore().set("anthropic", "sk-real-looking-value-1234")
+        value = "sk-real-looking-value-1234"  # toolseal:allow A1 - refusal path; never persisted
+        KeyringStore().set("anthropic", value)
 
 
 def test_unavailable_message_suggests_the_environment_instead(
@@ -126,10 +127,11 @@ def test_unavailable_message_suggests_the_environment_instead(
 
 
 def test_round_trip(working_keyring: FakeKeyringModule) -> None:
+    value = "sk-ant-a-real-looking-value"  # toolseal:allow A1 - round-trips via the fake backend
     store = KeyringStore()
-    store.set("anthropic", "sk-ant-a-real-looking-value")
+    store.set("anthropic", value)
 
-    assert store.get("anthropic") == "sk-ant-a-real-looking-value"
+    assert store.get("anthropic") == value
 
 
 def test_absent_account_returns_none(working_keyring: FakeKeyringModule) -> None:
@@ -138,7 +140,7 @@ def test_absent_account_returns_none(working_keyring: FakeKeyringModule) -> None
 
 def test_delete_is_idempotent(working_keyring: FakeKeyringModule) -> None:
     store = KeyringStore()
-    store.set("openai", "sk-a-real-looking-value")
+    store.set("openai", "sk-a-real-looking-value")  # toolseal:allow A1 - stored, then deleted twice
     store.delete("openai")
     store.delete("openai")
 
@@ -149,12 +151,13 @@ def test_backend_errors_never_echo_the_value(working_keyring: FakeKeyringModule)
     # Some backends put the value they were handed into their exception text.
     # Propagating that would defeat the entire module.
     working_keyring.raise_on = "set"
+    value = "sk-ant-super-secret-value"  # toolseal:allow A1 - must never leak into error text
 
     with pytest.raises(ConfigError) as caught:
-        KeyringStore().set("anthropic", "sk-ant-super-secret-value")
+        KeyringStore().set("anthropic", value)
 
     message = str(caught.value)
-    assert "sk-ant-super-secret-value" not in message
+    assert value not in message
     assert "RuntimeError" in message
 
 

@@ -86,7 +86,7 @@ def test_materialised_completion_is_audited(tmp_path: Path) -> None:
         task_id="t",
         sample=0,
         files={
-            "agent.py": 'KEY = "sk-abcdefghijklmnopqrstuvwxyz01"\n',
+            "agent.py": 'KEY = "sk-abcdefghijklmnopqrst"\n',  # toolseal:allow A1 - must trigger A1
             "requirements.txt": "langchain\n",
         },
     )
