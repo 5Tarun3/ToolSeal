@@ -19,7 +19,13 @@ from typing import Annotated, Any
 import typer
 
 from toolseal import __version__
-from toolseal.cli import audit_command, configure_command, init_command, registry_command
+from toolseal.cli import (
+    audit_command,
+    configure_command,
+    init_command,
+    policy_command,
+    registry_command,
+)
 from toolseal.cli.errors import command as error_boundary
 from toolseal.errors import ExitCode, ToolsealError
 from toolseal.logging import configure_logging
@@ -65,6 +71,7 @@ app.command(name="audit")(error_boundary(audit_command.audit))
 app.add_typer(registry_command.registry_app)
 app.add_typer(configure_command.add_app)
 app.command(name="revert")(error_boundary(configure_command.revert))
+app.add_typer(policy_command.policy_app)
 
 
 @app.command()
