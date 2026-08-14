@@ -45,16 +45,6 @@ def c3() -> Any:
     return next(check for check in all_checks() if check.id == "C3")
 
 
-@pytest.fixture(autouse=True)
-def _clear_resolution_cache() -> None:
-    # The cache is process-lifetime by design (that's the point of P43's fix),
-    # which means it must be cleared between tests or one test's fake resolver
-    # would leak its answers into the next.
-    from toolseal.core.policy.family_c import _resolve_cached
-
-    _resolve_cached.cache_clear()
-
-
 @pytest.fixture
 def resolves(monkeypatch: pytest.MonkeyPatch) -> Any:
     """Install a fake resolver keyed by name."""
