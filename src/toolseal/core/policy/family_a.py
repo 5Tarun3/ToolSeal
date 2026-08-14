@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Final
 
 from toolseal.core.model import ProjectModel
+from toolseal.core.policy.controls import ControlRef
 from toolseal.core.policy.model import Check, Finding, Severity, register
 from toolseal.core.policy.suppress import is_suppressed
 
@@ -252,6 +253,11 @@ A1 = register(
         severity=Severity.CRITICAL,
         remediation="Store credentials in the OS keychain; keep only names in files.",
         run=_a1,
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM02"),
+            ControlRef("owasp-agentic-threats", "T3"),
+            ControlRef("owasp-agentic-top10", "ASI03"),
+        ),
     )
 )
 
@@ -263,6 +269,10 @@ A2 = register(
         severity=Severity.HIGH,
         remediation="Ignore .env and friends; untrack anything already committed.",
         run=_a2,
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM02"),
+            ControlRef("owasp-agentic-top10", "ASI03"),
+        ),
     )
 )
 
@@ -275,6 +285,11 @@ A3 = register(
         remediation="Separate credentials per provider and per environment.",
         run=_a3,
         applies=lambda model: len(model.providers) > 1,
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM02"),
+            ControlRef("owasp-agentic-threats", "T3"),
+            ControlRef("owasp-agentic-top10", "ASI03"),
+        ),
     )
 )
 
@@ -286,6 +301,10 @@ A4 = register(
         severity=Severity.HIGH,
         remediation="Add a redacting logging filter.",
         run=_a4,
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM02"),
+            ControlRef("owasp-agentic-top10", "ASI03"),
+        ),
     )
 )
 
@@ -298,5 +317,10 @@ A5 = register(
         remediation="Resolve the value at launch instead of writing it into config.",
         run=_a5,
         applies=lambda model: bool(model.mcp_servers),
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM02"),
+            ControlRef("owasp-agentic-threats", "T3"),
+            ControlRef("owasp-agentic-top10", "ASI03"),
+        ),
     )
 )

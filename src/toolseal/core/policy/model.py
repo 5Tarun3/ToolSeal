@@ -23,6 +23,7 @@ from enum import StrEnum
 from typing import Final
 
 from toolseal.core.model import ProjectModel
+from toolseal.core.policy.controls import ControlRef
 
 
 class Severity(StrEnum):
@@ -80,6 +81,22 @@ class Check:
     remediation: str
     run: Callable[[ProjectModel], Sequence[Finding]]
     applies: Callable[[ProjectModel], bool] = lambda _model: True
+    controls: tuple[ControlRef, ...] = ()
+    """External obligations this check bears on.
+
+    `reference/taxonomy.md` rule 1 already requires a grounding citation per
+    check; this is that citation in machine-readable form, so a failing check
+    can name the obligation it serves rather than only its own id.
+    """
+
+    unmapped_reason: str | None = None
+    """Why this check maps to no external control, when it maps to none.
+
+    A check that cites no published standard is either finding a gap the
+    standards have not caught up with, or is an opinion. Both are acceptable;
+    silently having neither a mapping nor a reason is not, and the coverage
+    gate refuses it.
+    """
 
     def evaluate(self, model: ProjectModel) -> CheckResult:
         if not self.applies(model):

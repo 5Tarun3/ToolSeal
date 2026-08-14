@@ -20,6 +20,7 @@ from collections.abc import Sequence
 from typing import Any, Final
 
 from toolseal.core.model import Dependency, ProjectModel
+from toolseal.core.policy.controls import ControlRef
 from toolseal.core.policy.model import Check, Finding, Severity, register
 
 OSV_BATCH_URL: Final = "https://api.osv.dev/v1/querybatch"
@@ -149,6 +150,11 @@ C1 = register(
         severity=Severity.HIGH,
         remediation="Pin dependencies and commit a lockfile.",
         run=_c1,
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM03"),
+            ControlRef("nist-ai-rmf", "GOVERN-6.1"),
+            ControlRef("owasp-agentic-top10", "ASI04"),
+        ),
     )
 )
 
@@ -161,6 +167,11 @@ C2 = register(
         remediation="Upgrade past the advisory, or record an accepted risk.",
         run=_c2,
         applies=lambda model: any(d.resolved_version for d in model.dependencies.declared),
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM03"),
+            ControlRef("nist-ai-rmf", "MAP-4.1"),
+            ControlRef("owasp-agentic-top10", "ASI04"),
+        ),
     )
 )
 
@@ -208,6 +219,11 @@ C4 = register(
         remediation="Install from an indexed, integrity-checked source.",
         run=_c4,
         applies=lambda model: any(d.source is not None for d in model.dependencies.declared),
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM03"),
+            ControlRef("nist-ai-rmf", "GOVERN-6.1"),
+            ControlRef("owasp-agentic-top10", "ASI04"),
+        ),
     )
 )
 
@@ -220,5 +236,10 @@ C5 = register(
         remediation="Generate an SBOM at scaffold time.",
         run=_c5,
         applies=lambda model: bool(model.dependencies.declared),
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM03"),
+            ControlRef("iso-42001", "A.10.3"),
+            ControlRef("owasp-agentic-top10", "ASI04"),
+        ),
     )
 )

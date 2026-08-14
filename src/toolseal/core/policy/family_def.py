@@ -13,6 +13,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from toolseal.core.model import ProjectModel
+from toolseal.core.policy.controls import ControlRef
 from toolseal.core.policy.model import Check, Finding, Severity, register
 
 
@@ -168,6 +169,11 @@ D1 = register(
         remediation="Use an https endpoint.",
         run=_d1,
         applies=_remote,
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM02"),
+            ControlRef("owasp-agentic-threats", "T9"),
+            ControlRef("owasp-agentic-top10", "ASI07"),
+        ),
     )
 )
 
@@ -180,6 +186,12 @@ D2 = register(
         remediation="Configure authentication for the remote server.",
         run=_d2,
         applies=_remote,
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM03"),
+            ControlRef("owasp-agentic-threats", "T9"),
+            ControlRef("owasp-agentic-top10", "ASI07"),
+            ControlRef("owasp-agentic-top10", "ASI03"),
+        ),
     )
 )
 
@@ -192,6 +204,11 @@ D3 = register(
         remediation="Use the vendor default, or declare the override.",
         run=_d3,
         applies=_remote,
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM03"),
+            ControlRef("owasp-llm-top10", "LLM02"),
+            ControlRef("owasp-agentic-top10", "ASI04"),
+        ),
     )
 )
 
@@ -204,6 +221,11 @@ E1 = register(
         remediation="Configure isolation, or remove the tool.",
         run=_e1,
         applies=lambda model: bool(model.tools),
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM05"),
+            ControlRef("owasp-agentic-threats", "T11"),
+            ControlRef("owasp-agentic-top10", "ASI05"),
+        ),
     )
 )
 
@@ -215,6 +237,11 @@ E2 = register(
         severity=Severity.HIGH,
         remediation="Launch with an explicit, minimal environment.",
         run=_e2,
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM06"),
+            ControlRef("owasp-agentic-threats", "T3"),
+            ControlRef("owasp-agentic-top10", "ASI03"),
+        ),
     )
 )
 
@@ -226,6 +253,10 @@ E3 = register(
         severity=Severity.MEDIUM,
         remediation="Set timeouts on tool calls.",
         run=_e3,
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM10"),
+            ControlRef("owasp-agentic-threats", "T4"),
+        ),
     )
 )
 
@@ -237,6 +268,10 @@ F1 = register(
         severity=Severity.MEDIUM,
         remediation="Configure structured invocation logging.",
         run=_f1,
+        controls=(
+            ControlRef("owasp-agentic-threats", "T8"),
+            ControlRef("nist-ai-rmf", "MANAGE-4.1"),
+        ),
     )
 )
 
@@ -249,5 +284,10 @@ F2 = register(
         remediation="Wrap destructive tools in an approval step.",
         run=_f2,
         applies=lambda model: bool(model.tools),
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM06"),
+            ControlRef("owasp-agentic-threats", "T2"),
+            ControlRef("owasp-agentic-top10", "ASI02"),
+        ),
     )
 )

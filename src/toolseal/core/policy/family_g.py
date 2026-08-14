@@ -19,6 +19,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from toolseal.core.model import ProjectModel, TranslationRecord
+from toolseal.core.policy.controls import ControlRef
 from toolseal.core.policy.model import Check, Finding, Severity, register
 from toolseal.core.translate.lattice import ANNOTATION_PROPERTIES
 
@@ -145,6 +146,11 @@ G1 = register(
         remediation="Emit a compensating guard and record the substitution.",
         run=_g1,
         applies=_translated,
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM06"),
+            ControlRef("owasp-agentic-threats", "T2"),
+            ControlRef("owasp-agentic-top10", "ASI02"),
+        ),
     )
 )
 
@@ -157,6 +163,11 @@ G2 = register(
         remediation="Validate arguments against the declared schema before dispatch.",
         run=_g2,
         applies=_translated,
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM05"),
+            ControlRef("owasp-agentic-threats", "T2"),
+            ControlRef("owasp-agentic-top10", "ASI02"),
+        ),
     )
 )
 
@@ -169,6 +180,7 @@ G3 = register(
         remediation="Map error results onto the framework's failure channel.",
         run=_g3,
         applies=_translated,
+        controls=(ControlRef("owasp-llm-top10", "LLM05"),),
     )
 )
 
@@ -181,6 +193,11 @@ G4 = register(
         remediation="Emit a guard, or record the property as unsupported.",
         run=_g4,
         applies=_translated,
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM06"),
+            ControlRef("nist-ai-rmf", "MEASURE-2.7"),
+            ControlRef("owasp-agentic-top10", "ASI02"),
+        ),
     )
 )
 
@@ -193,5 +210,10 @@ G5 = register(
         remediation="Preserve the author's description verbatim.",
         run=_g5,
         applies=_translated,
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM01"),
+            ControlRef("nist-ai-rmf", "MEASURE-2.7"),
+            ControlRef("owasp-agentic-top10", "ASI01"),
+        ),
     )
 )

@@ -19,6 +19,7 @@ from collections.abc import Sequence
 
 from toolseal.core.manifest import Manifest
 from toolseal.core.model import ProjectModel
+from toolseal.core.policy.controls import ControlRef
 from toolseal.core.policy.model import Check, Finding, Severity, register
 
 
@@ -131,6 +132,11 @@ B1 = register(
         remediation="Bind an explicit, task-scoped tool list.",
         run=_b1,
         applies=lambda model: bool(model.agents),
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM06"),
+            ControlRef("owasp-agentic-threats", "T2"),
+            ControlRef("owasp-agentic-top10", "ASI02"),
+        ),
     )
 )
 
@@ -143,6 +149,11 @@ B2 = register(
         remediation="Remove the tool, or record why it is needed.",
         run=_b2,
         applies=lambda model: bool(model.tools),
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM06"),
+            ControlRef("owasp-agentic-threats", "T11"),
+            ControlRef("owasp-agentic-top10", "ASI05"),
+        ),
     )
 )
 
@@ -155,6 +166,11 @@ B3 = register(
         remediation="Confine filesystem access to the workspace.",
         run=_b3,
         applies=lambda model: bool(model.tools),
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM06"),
+            ControlRef("owasp-agentic-threats", "T3"),
+            ControlRef("owasp-agentic-top10", "ASI03"),
+        ),
     )
 )
 
@@ -167,6 +183,11 @@ B4 = register(
         remediation="Narrow the launch configuration to the declared scope.",
         run=_b4,
         applies=lambda model: bool(model.mcp_servers),
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM06"),
+            ControlRef("owasp-agentic-threats", "T3"),
+            ControlRef("owasp-agentic-top10", "ASI02"),
+        ),
     )
 )
 
@@ -179,5 +200,11 @@ B5 = register(
         remediation="Pin the resolved tool list.",
         run=_b5,
         applies=lambda model: bool(model.agents),
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM03"),
+            ControlRef("owasp-agentic-threats", "T2"),
+            ControlRef("nist-ai-rmf", "GOVERN-6.1"),
+            ControlRef("owasp-agentic-top10", "ASI04"),
+        ),
     )
 )
