@@ -120,7 +120,10 @@ def _env_file(credential_env_var: str | None) -> str:
     """
     if credential_env_var is None:
         return "# Ollama needs no key\nOLLAMA_HOST=http://localhost:11434\n"
-    return f"{credential_env_var}=sk-paste-your-real-key-here-0123456789abcdef\n"
+    # The manual baseline deliberately writes a plaintext key placeholder: reproducing
+    # what the official quickstarts instruct is the entire point of the control condition.
+    key = "sk-paste-key-here-00000000"  # toolseal:allow A1 - reproduces the quickstart's pasted key
+    return f"{credential_env_var}={key}\n"
 
 
 def build(provider_id: str, framework_id: str) -> Baseline:

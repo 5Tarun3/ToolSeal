@@ -33,3 +33,8 @@ docs/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Agent working directory: scratch artifacts, never part of the project.
+# Declared here as well as in .superpowers/sdd/.gitignore so that tools reading
+# only the root ignore file - `toolseal audit` among them - skip it too.
+.superpowers/

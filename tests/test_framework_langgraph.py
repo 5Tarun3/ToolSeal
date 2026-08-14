@@ -213,7 +213,8 @@ def test_generated_redaction_actually_redacts(tmp_path: Path) -> None:
     redact = namespace["redact"]
     assert callable(redact)
 
-    assert "sk-abcdefghijklmnop1234" not in redact('OPENAI_API_KEY="sk-abcdefghijklmnop1234"')
+    key = "sk-abcdefghijklmnop1234"  # toolseal:allow A1 - redaction filter needs a key-shaped input
+    assert key not in redact(f'OPENAI_API_KEY="{key}"')
     assert redact("resolved 14 dependencies") == "resolved 14 dependencies"
 
 
