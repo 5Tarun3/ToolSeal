@@ -193,6 +193,18 @@ near-miss of an established name or a different owner (**lookalike**).
 package indexes before install; unverified names are refused by `add`.
 *Grounding:* slopsquatting [P5], which names *"no real-time package-existence
 validation in coding tools"* as an open gap. This is the ToolGate component.
+*Evaluated at* both `add` time (refusing an unverified name outright) *and*
+`audit` time — a project `toolseal` did not scaffold gets every declared
+dependency and MCP server name resolved and classified. An unreachable
+registry reports `unknown`, never a pass.
+*Limitation:* lookalike detection depends on a shipped list of established
+names (`src/toolseal/data/known_packages.toml`); a typosquat of a name absent
+from that list reads as phantom if unregistered, and is missed entirely if the
+squatter registered it. Phantom detection needs no list and is unaffected.
+
+| Check | Control mapping |
+| --- | --- |
+| `C3` | owasp-llm-top10:LLM03 · owasp-agentic-threats:T9 · nist-ai-rmf:GOVERN-6.1 · owasp-agentic-top10:ASI04 |
 
 **C4 — Install from an unverified source**
 *Detects:* `curl | bash`, a floating git ref, a plain-HTTP source, or any

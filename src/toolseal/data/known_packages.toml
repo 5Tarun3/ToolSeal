@@ -1,0 +1,19 @@
+# Established package names, for C3's lookalike detection.
+#
+# `nearest_known()` needs a candidate set: a typosquat is only detectable
+# against the name it imitates. `add` gets this from its resolution context;
+# `audit` has no equivalent, so this list is it.
+#
+# LIMITATION, stated plainly: lookalike detection is only as good as this list.
+# A typosquat of a package not named here reads as PHANTOM if it does not exist,
+# and is missed entirely if the squatter registered it. Phantom detection needs
+# no list and is unaffected.
+
+names = [
+  "langchain", "langchain-core", "langchain-community", "langgraph",
+  "langchain-openai", "langchain-anthropic", "langchain-ollama",
+  "langchain-mcp-adapters", "crewai", "crewai-tools",
+  "openai", "anthropic", "ollama", "google-generativeai",
+  "mcp", "fastmcp", "typer", "pydantic", "httpx", "keyring",
+  "pytest", "ruff", "mypy", "requests",
+]

@@ -17,25 +17,15 @@ from __future__ import annotations
 from toolseal.core.policy.controls import load_catalogues, resolve
 from toolseal.core.policy.model import all_checks
 
-REGISTERED_CHECK_COUNT = 27
+REGISTERED_CHECK_COUNT = 28
 DOCUMENTED_CHECK_COUNT = 28
 
 
-def test_the_engine_registers_every_check_it_claims_to_except_c3() -> None:
-    # reference/taxonomy.md documents 28 checks; the engine registers 27.
-    # C3 - unverified package or MCP server name - is enforced by ToolGate at
-    # `add` time and is never evaluated by `audit`, so a project toolseal did
-    # not scaffold is never checked for phantom or lookalike names.
-    #
-    # Asserted rather than quietly accepted: an audit that silently omits a
-    # documented check over-reports the posture of everything it scans. If C3
-    # is ever registered, this test fails and is the reminder to attach its
-    # control mapping and update the count.
+def test_the_engine_registers_every_check_it_claims_to() -> None:
     registered = {check.id for check in all_checks()}
 
     assert len(registered) == REGISTERED_CHECK_COUNT
-    assert "C3" not in registered
-    assert REGISTERED_CHECK_COUNT == DOCUMENTED_CHECK_COUNT - 1
+    assert REGISTERED_CHECK_COUNT == DOCUMENTED_CHECK_COUNT
 
 
 def test_every_control_reference_resolves() -> None:

@@ -345,7 +345,7 @@ def test_the_whole_taxonomy_is_registered() -> None:
     # mismatch here is either an unimplemented check or an undocumented one.
     assert {c.id for c in checks_in("A")} == {"A1", "A2", "A3", "A4", "A5"}
     assert {c.id for c in checks_in("B")} == {"B1", "B2", "B3", "B4", "B5"}
-    assert {c.id for c in checks_in("C")} == {"C1", "C2", "C4", "C5"}
+    assert {c.id for c in checks_in("C")} == {"C1", "C2", "C3", "C4", "C5"}
     assert {c.id for c in checks_in("D")} == {"D1", "D2", "D3"}
     assert {c.id for c in checks_in("E")} == {"E1", "E2", "E3"}
     assert {c.id for c in checks_in("F")} == {"F1", "F2"}

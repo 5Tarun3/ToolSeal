@@ -14,14 +14,18 @@ from __future__ import annotations
 
 import json
 import re
+import tomllib
 import urllib.error
 import urllib.request
 from collections.abc import Sequence
+from importlib import resources
 from typing import Any, Final
 
 from toolseal.core.model import Dependency, ProjectModel
 from toolseal.core.policy.controls import ControlRef
 from toolseal.core.policy.model import Check, Finding, Severity, register
+from toolseal.core.registry.resolve import Resolution, resolve
+from toolseal.errors import ConfigError
 
 OSV_BATCH_URL: Final = "https://api.osv.dev/v1/querybatch"
 OSV_TIMEOUT_SECONDS: Final = 20.0
@@ -29,6 +33,9 @@ OSV_MAX_BATCH: Final = 100
 
 # A specifier that pins to exactly one version.
 PINNED: Final = re.compile(r"^\s*==\s*[^,\s]+\s*$")
+
+KNOWN_PACKAGES_PACKAGE: Final = "toolseal.data"
+KNOWN_PACKAGES_FILE: Final = "known_packages.toml"
 
 
 class AdvisoryLookupError(RuntimeError):
@@ -170,6 +177,93 @@ C2 = register(
         controls=(
             ControlRef("owasp-llm-top10", "LLM03"),
             ControlRef("nist-ai-rmf", "MAP-4.1"),
+            ControlRef("owasp-agentic-top10", "ASI04"),
+        ),
+    )
+)
+
+
+def known_package_names() -> frozenset[str]:
+    """Established package names, for C3's lookalike detection.
+
+    Read through `importlib.resources` from the `toolseal.data` package, the
+    same mechanism `controls.load_catalogues()` uses, so this works from an
+    installed wheel as well as from a checkout.
+    """
+    resource = resources.files(KNOWN_PACKAGES_PACKAGE) / KNOWN_PACKAGES_FILE
+    try:
+        text = resource.read_text(encoding="utf-8")
+    except (FileNotFoundError, OSError) as exc:
+        message = f"known-package list {KNOWN_PACKAGES_FILE!r} is missing: {exc}"
+        raise ConfigError(message) from None
+
+    try:
+        data: dict[str, Any] = tomllib.loads(text)
+    except tomllib.TOMLDecodeError as exc:
+        message = f"known-package list is not valid TOML: {exc}"
+        raise ConfigError(message) from None
+
+    names = data.get("names")
+    if not isinstance(names, list) or not all(isinstance(n, str) for n in names):
+        message = "known-package list field 'names' must be a list of strings"
+        raise ConfigError(message)
+
+    return frozenset(names)
+
+
+def _c3(model: ProjectModel) -> Sequence[Finding]:
+    known = known_package_names()
+
+    # Deduplicated: one audit must not mean repeat requests for a name the
+    # project happens to declare twice.
+    names = sorted(
+        {dependency.name for dependency in model.dependencies.declared}
+        | {server.name for server in model.mcp_servers}
+    )
+
+    findings: list[Finding] = []
+    for name in names:
+        # ResolutionError propagates on purpose. An unreachable registry must
+        # reach the engine and be recorded as UNKNOWN; swallowing it here would
+        # report "we could not look" as "we looked and it was fine".
+        result = resolve(name, known=known)
+        if result.resolution is Resolution.EXISTS:
+            continue
+
+        findings.append(
+            Finding(
+                check_id="C3",
+                severity=Severity.CRITICAL,
+                title=(
+                    "Package name resembles an established one"
+                    if result.resolution is Resolution.LOOKALIKE
+                    else "Package name resolves nowhere"
+                ),
+                detail=f"{name}: {result.detail}",
+                location=name,
+                remediation=(
+                    f"Confirm {name!r} is the package intended"
+                    + (f", not {result.resembles!r}" if result.resembles else "")
+                    + "; unverified names must not be installed."
+                ),
+            )
+        )
+    return findings
+
+
+C3 = register(
+    Check(
+        id="C3",
+        family="C",
+        title="Unverified package or MCP server name",
+        severity=Severity.CRITICAL,
+        remediation="Verify the name against its registry before installing it.",
+        run=_c3,
+        applies=lambda model: bool(model.dependencies.declared) or bool(model.mcp_servers),
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM03"),
+            ControlRef("owasp-agentic-threats", "T9"),
+            ControlRef("nist-ai-rmf", "GOVERN-6.1"),
             ControlRef("owasp-agentic-top10", "ASI04"),
         ),
     )
