@@ -16,7 +16,7 @@ from toolseal.cli.errors import command as error_boundary
 from toolseal.core.policy.controls import ControlRef, load_catalogues, resolve
 from toolseal.core.policy.coverage import coverage_for
 from toolseal.core.policy.model import Check, all_checks
-from toolseal.errors import UsageError
+from toolseal.errors import ConfigError, UsageError
 
 policy_app = typer.Typer(
     name="policy",
@@ -54,7 +54,13 @@ def _explain_check(check: Check) -> None:
 def _explain_control(raw: str) -> None:
     standard, _, control_id = raw.partition(":")
     ref = ControlRef(standard.strip(), control_id.strip())
-    control = resolve(ref)
+    try:
+        control = resolve(ref)
+    except ConfigError as exc:
+        # A malformed subject typed at the CLI is a usage mistake, not an
+        # internal failure - `resolve()` itself keeps raising `ConfigError`
+        # unchanged for its other callers, this is a boundary-only translation.
+        raise UsageError(str(exc)) from None
 
     typer.echo(f"{ref}  {control.title}")
     typer.echo("")

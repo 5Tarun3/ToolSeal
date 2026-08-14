@@ -143,3 +143,15 @@ def test_explain_a_control_nobody_checks_says_so() -> None:
 
     assert result.exit_code == 0
     assert "not assessable" in result.stdout.lower()
+
+
+def test_explain_a_malformed_control_subject_is_a_usage_error() -> None:
+    # A typo in the standard name ("bogus:LLM01") is the caller's mistake, not
+    # an internal failure - it must exit USAGE (2), matching every other bad
+    # argument, not INTERNAL (3).
+    from toolseal.errors import ExitCode
+
+    result = runner.invoke(app, ["policy", "explain", "bogus:LLM01"])
+
+    assert result.exit_code == ExitCode.USAGE
+    assert "bogus" in result.output
