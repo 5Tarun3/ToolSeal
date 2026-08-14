@@ -189,7 +189,11 @@ def test_owasp_llm_catalogue_ships_and_loads() -> None:
     assert catalogue.get("LLM06") is not None
 
 
-def test_owasp_llm_controls_are_all_checkable_or_say_why() -> None:
+def test_owasp_llm_controls_all_have_a_title() -> None:
+    # Despite the old name, this checks titles only - it does not assert
+    # anything about `checkable` or about a `checkable = false` control
+    # carrying a stated reason. `test_only_checkable_controls_are_assessable`
+    # and the shipped catalogues' inline comments cover that ground instead.
     catalogue = load_catalogues()["owasp-llm-top10"]
 
     for control in catalogue.controls:
