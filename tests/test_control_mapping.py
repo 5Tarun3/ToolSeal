@@ -14,6 +14,8 @@ severity risk. This is the test that keeps us honest about which we have.
 
 from __future__ import annotations
 
+import re
+
 from toolseal.core.policy.controls import load_catalogues, resolve
 from toolseal.core.policy.model import all_checks
 
@@ -82,18 +84,49 @@ def test_accountability_has_no_home_in_either_ranked_list() -> None:
 
 # --- the drift guard -------------------------------------------------------
 
+_TABLE_ROW: re.Pattern[str] = re.compile(r"^\| `([A-Z]\d+)` \| (.+) \|$", re.MULTILINE)
 
-def test_every_mapping_appears_in_the_taxonomy_document() -> None:
-    # taxonomy.md is normative and the paper cites it. A mapping that exists
-    # only in code is a claim the published document does not make. This is the
-    # drift guard the taxonomy's own Open items asks for, extended to controls.
+
+def _table_in(document: str) -> dict[str, frozenset[str]]:
+    """Parse the `## Control mapping` table into ``{check_id: {"std:ctrl", ...}}``.
+
+    Bounded to the section between the `## Control mapping` and `## Totals`
+    headings, so the family tables above it (`| ID | Check | Severity |`) and
+    anything below Totals can never be mistaken for this one.
+    """
+    start = document.index("## Control mapping")
+    end = document.index("## Totals", start)
+    section = document[start:end]
+    return {
+        check_id: frozenset(ref.strip() for ref in cell.split("·"))
+        for check_id, cell in _TABLE_ROW.findall(section)
+    }
+
+
+def test_the_document_table_matches_the_code_row_for_row() -> None:
+    # `str(ref) in document` only proves a citation survives *somewhere* in the
+    # file - it cannot catch two rows swapped, a row left behind for a check
+    # that was withdrawn or never registered, or a row carrying one control the
+    # code does not. Parsing the table and comparing it to the code set-for-set
+    # closes all three; this is what makes the intro's "cannot drift apart" and
+    # Open items' "this document agree" literally true rather than aspirational.
     from pathlib import Path
 
     document = Path("reference/taxonomy.md").read_text(encoding="utf-8")
+    documented = _table_in(document)
+    coded = {check.id: frozenset(str(ref) for ref in check.controls) for check in all_checks()}
 
-    for check in all_checks():
-        for ref in check.controls:
-            assert str(ref) in document, f"{check.id} cites {ref}, which taxonomy.md omits"
+    missing_rows = set(coded) - set(documented)
+    assert not missing_rows, f"checks with no row in taxonomy.md: {sorted(missing_rows)}"
+
+    stale_rows = set(documented) - set(coded)
+    assert not stale_rows, f"taxonomy.md rows for unregistered checks: {sorted(stale_rows)}"
+
+    for check_id in coded:
+        assert documented[check_id] == coded[check_id], (
+            f"{check_id}: taxonomy.md says {sorted(documented[check_id])}, "
+            f"code says {sorted(coded[check_id])}"
+        )
 
 
 def test_the_document_declares_the_catalogues_it_cites() -> None:

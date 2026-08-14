@@ -414,10 +414,13 @@ approximate mapping, because a citation that does not quite fit is worse than an
 honest gap — and this particular gap is a finding about the standards, not about
 the taxonomy.
 
-**`E3` and `G3` carry no agentic mapping**, for the same reason. Resource bounds
-map to `ASI08 Cascading Failures`, and error-channel semantics to nothing at
-all; `ASI08` is marked `checkable = false`, so citing it would add a reference
-that no coverage figure counts. Left unmapped rather than padded.
+**`G3` carries no agentic mapping at all**, and neither `G3` nor `E3` maps
+into the ranked agentic Top 10. Error-channel semantics correspond to nothing
+in either agentic catalogue, so `G3` cites only `owasp-llm-top10:LLM05`. `E3`
+does carry a threat-taxonomy citation (`owasp-agentic-threats:T4`); its
+nearest fit in the ranked list is `ASI08 Cascading Failures`, but `ASI08` is
+marked `checkable = false`, so citing it would add a reference that no
+coverage figure counts. Left out of the ranked list rather than padded.
 
 **Coverage is computed over *checkable* controls only.** Five of the ten OWASP
 LLM risks — prompt injection, data and model poisoning, system-prompt leakage,
@@ -452,10 +455,13 @@ denominator describes the whole standard rather than the convenient part of it.
 
 ## Open items
 
-- **Drift guard.** Implemented: `tests/test_control_mapping.py` asserts the
-  implemented check ids, their control references, and this document agree. The
-  severity half of that guard is still open — the test does not yet compare
-  severities against the tables above.
+- **Drift guard.** Implemented, and row-level: `tests/test_control_mapping.py`
+  parses the Control mapping table and asserts, per check, that the
+  implemented check ids and their exact control sets agree with this document
+  — no missing row, no stale row for a withdrawn or unregistered check, no row
+  carrying a control the code does not. The control half is genuinely closed.
+  The severity half is still open — the test does not compare severities
+  against the family tables above, so those can still drift unnoticed.
 - `C2` inherits severity from the advisory; the mapping from CVSS to the four
   levels here is not yet fixed.
 - Family G currently assumes MCP as the source abstraction. The expressiveness
