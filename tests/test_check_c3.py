@@ -17,10 +17,11 @@ from typing import Any
 
 import pytest
 
-from toolseal.core.model import Dependency, DependencySet, ProjectModel
+from toolseal.core.model import Dependency, DependencySet, MCPServerBinding, ProjectModel, Transport
 from toolseal.core.policy import all_checks
+from toolseal.core.policy.family_c import mcp_package_name
 from toolseal.core.policy.model import Verdict
-from toolseal.core.registry.resolve import Resolution, ResolutionResult
+from toolseal.core.registry.resolve import Channel, Resolution, ResolutionResult
 from toolseal.errors import ResolutionError
 
 MIN_KNOWN_NAMES = 20
@@ -35,8 +36,22 @@ def model_with(*names: str) -> ProjectModel:
     )
 
 
+def model_with_servers(*servers: MCPServerBinding) -> ProjectModel:
+    return ProjectModel(root=Path(), mcp_servers=tuple(servers))
+
+
 def c3() -> Any:
     return next(check for check in all_checks() if check.id == "C3")
+
+
+@pytest.fixture(autouse=True)
+def _clear_resolution_cache() -> None:
+    # The cache is process-lifetime by design (that's the point of P43's fix),
+    # which means it must be cleared between tests or one test's fake resolver
+    # would leak its answers into the next.
+    from toolseal.core.policy.family_c import _resolve_cached
+
+    _resolve_cached.cache_clear()
 
 
 @pytest.fixture
@@ -118,3 +133,178 @@ def test_known_packages_ship_and_are_non_empty() -> None:
 
     assert "langchain" in names
     assert len(names) >= MIN_KNOWN_NAMES
+
+
+# --- memoisation persists beyond one audit ----------------------------------
+
+
+def test_resolution_is_memoised_across_audits_in_one_process(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # "the life of a process", not "the life of one evaluate() call": a batch
+    # of audits sharing a process must not re-resolve a name they already
+    # settled.
+    calls: list[str] = []
+
+    def fake(name: str, **kwargs: Any) -> ResolutionResult:
+        calls.append(name)
+        return ResolutionResult(name, Resolution.EXISTS)
+
+    monkeypatch.setattr("toolseal.core.policy.family_c.resolve", fake)
+    c3().evaluate(model_with("langchain"))
+    c3().evaluate(model_with("langchain"))
+
+    assert calls == ["langchain"]
+
+
+# --- MCP servers: the package installed, not the config key ----------------
+
+
+def test_mcp_package_name_is_extracted_from_a_dash_y_npx_invocation() -> None:
+    server = MCPServerBinding(
+        name="filesystem",
+        transport=Transport.STDIO,
+        command="npx",
+        args=("-y", "@modelcontextprotocol/server-filesystem"),
+    )
+
+    assert mcp_package_name(server) == "@modelcontextprotocol/server-filesystem"
+
+
+def test_mcp_package_name_is_extracted_after_a_package_flag() -> None:
+    server = MCPServerBinding(
+        name="fs",
+        transport=Transport.STDIO,
+        command="npx",
+        args=("--package", "@modelcontextprotocol/server-filesystem", "server-filesystem"),
+    )
+
+    assert mcp_package_name(server) == "@modelcontextprotocol/server-filesystem"
+
+
+def test_mcp_package_name_is_none_with_no_recognisable_flag() -> None:
+    server = MCPServerBinding(
+        name="custom",
+        transport=Transport.STDIO,
+        command="./run-my-server.sh",
+        args=("--port", "8080"),
+    )
+
+    assert mcp_package_name(server) is None
+
+
+def test_a_scoped_npx_package_is_resolved_from_args(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The verified live case: name is a local alias ("filesystem"), the real
+    # package sits in args. Only the args-derived name may be looked up - if
+    # the check queried `server.name` instead, this fake would raise KeyError.
+    outcomes = {
+        "@modelcontextprotocol/server-filesystem": ResolutionResult(
+            "@modelcontextprotocol/server-filesystem", Resolution.EXISTS
+        )
+    }
+
+    def fake(name: str, **kwargs: Any) -> ResolutionResult:
+        return outcomes[name]
+
+    monkeypatch.setattr("toolseal.core.policy.family_c.resolve", fake)
+    server = MCPServerBinding(
+        name="filesystem",
+        transport=Transport.STDIO,
+        command="npx",
+        args=("-y", "@modelcontextprotocol/server-filesystem"),
+    )
+
+    result = c3().evaluate(model_with_servers(server))
+
+    assert result.verdict is Verdict.PASS
+
+
+def test_a_config_key_that_is_not_the_real_package_is_never_queried(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # `toolseal add mcp` writes the config key as name.split("/")[-1] -
+    # "server-filesystem" for the real package
+    # "@modelcontextprotocol/server-filesystem". Resolving the key would 404
+    # and produce a false CRITICAL against toolseal's own scaffold.
+    calls: list[str] = []
+
+    def fake(name: str, **kwargs: Any) -> ResolutionResult:
+        calls.append(name)
+        return ResolutionResult(name, Resolution.EXISTS)
+
+    monkeypatch.setattr("toolseal.core.policy.family_c.resolve", fake)
+    server = MCPServerBinding(
+        name="server-filesystem",
+        transport=Transport.STDIO,
+        command="npx",
+        args=("-y", "@modelcontextprotocol/server-filesystem"),
+    )
+
+    c3().evaluate(model_with_servers(server))
+
+    assert calls == ["@modelcontextprotocol/server-filesystem"]
+
+
+def test_a_server_whose_args_yield_no_package_contributes_no_finding(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+
+    def fake(name: str, **kwargs: Any) -> ResolutionResult:
+        calls.append(name)
+        return ResolutionResult(name, Resolution.EXISTS)
+
+    monkeypatch.setattr("toolseal.core.policy.family_c.resolve", fake)
+    server = MCPServerBinding(
+        name="custom",
+        transport=Transport.STDIO,
+        command="./run-my-server.sh",
+        args=("--port", "8080"),
+    )
+
+    result = c3().evaluate(model_with_servers(server))
+
+    assert calls == []
+    assert result.verdict is Verdict.PASS
+    assert result.findings == ()
+
+
+# --- channel selection: PyPI for dependencies, npm for MCP packages ---------
+
+
+def test_a_dependency_is_resolved_against_pypi_only(monkeypatch: pytest.MonkeyPatch) -> None:
+    # A hallucinated Python name that happens to collide with an npm package
+    # must not be marked verified. Pinning this proves the express/PyPI-404
+    # vs npm-200 collision from the review can no longer pass.
+    seen: list[tuple[Channel, ...]] = []
+
+    def fake(name: str, *, channels: tuple[Channel, ...], **kwargs: Any) -> ResolutionResult:
+        seen.append(channels)
+        return ResolutionResult(name, Resolution.EXISTS)
+
+    monkeypatch.setattr("toolseal.core.policy.family_c.resolve", fake)
+    c3().evaluate(model_with("express"))
+
+    assert seen == [(Channel.PYPI,)]
+
+
+def test_an_mcp_server_package_is_resolved_against_npm_only(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seen: list[tuple[Channel, ...]] = []
+
+    def fake(name: str, *, channels: tuple[Channel, ...], **kwargs: Any) -> ResolutionResult:
+        seen.append(channels)
+        return ResolutionResult(name, Resolution.EXISTS)
+
+    monkeypatch.setattr("toolseal.core.policy.family_c.resolve", fake)
+    server = MCPServerBinding(
+        name="filesystem",
+        transport=Transport.STDIO,
+        command="npx",
+        args=("-y", "@modelcontextprotocol/server-filesystem"),
+    )
+
+    c3().evaluate(model_with_servers(server))
+
+    assert seen == [(Channel.NPM,)]

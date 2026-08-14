@@ -13,19 +13,23 @@ render the same way.
 from __future__ import annotations
 
 import json
+import logging
 import re
 import tomllib
 import urllib.error
 import urllib.request
 from collections.abc import Sequence
+from functools import cache
 from importlib import resources
 from typing import Any, Final
 
-from toolseal.core.model import Dependency, ProjectModel
+from toolseal.core.model import Dependency, MCPServerBinding, ProjectModel
 from toolseal.core.policy.controls import ControlRef
 from toolseal.core.policy.model import Check, Finding, Severity, register
-from toolseal.core.registry.resolve import Resolution, resolve
+from toolseal.core.registry.resolve import Channel, Resolution, ResolutionResult, resolve
 from toolseal.errors import ConfigError
+
+log = logging.getLogger(__name__)
 
 OSV_BATCH_URL: Final = "https://api.osv.dev/v1/querybatch"
 OSV_TIMEOUT_SECONDS: Final = 20.0
@@ -211,22 +215,57 @@ def known_package_names() -> frozenset[str]:
     return frozenset(names)
 
 
-def _c3(model: ProjectModel) -> Sequence[Finding]:
-    known = known_package_names()
+# The argument that carries the package name in an npx-style invocation
+# (`npx -y <package>`, or `npx --package <package> <bin>`). This is the one
+# reliable general form; anything else (a bare command, a shell wrapper, a
+# non-npx launcher) has no convention this can extract without guessing.
+_PACKAGE_NAME_FLAGS: Final = frozenset({"-y", "--package"})
 
-    # Deduplicated: one audit must not mean repeat requests for a name the
-    # project happens to declare twice.
-    names = sorted(
-        {dependency.name for dependency in model.dependencies.declared}
-        | {server.name for server in model.mcp_servers}
-    )
 
+def mcp_package_name(server: MCPServerBinding) -> str | None:
+    """The registry package *server* actually installs, if it can be told.
+
+    ``MCPServerBinding.name`` is the local alias under which a server is keyed
+    in ``mcpServers`` - the JSON object key a project or `toolseal add mcp`
+    chose for convenience - not necessarily the package that gets installed.
+    The package name lives in ``args``, after ``-y`` or ``--package`` for an
+    npx-style launch.
+
+    Returns ``None``, rather than a guess, when no such flag is present. A
+    wrong guess here would resolve the wrong name and report it as either
+    verified or squattable when it is neither.
+    """
+    args = server.args
+    for index, token in enumerate(args):
+        if token in _PACKAGE_NAME_FLAGS and index + 1 < len(args):
+            return args[index + 1]
+    return None
+
+
+@cache
+def _resolve_cached(
+    name: str, channels: tuple[Channel, ...], known: frozenset[str]
+) -> ResolutionResult:
+    """`resolve`, memoised for the life of the process.
+
+    A name declared twice in one project, or shared between the dependency and
+    MCP server lists, must cost one registry lookup, not two - and a batch of
+    audits run in one process (the evaluation harness, for instance) should not
+    re-resolve a name it has already settled. Exceptions are not cached:
+    `ResolutionError` must keep propagating on every call, not just the first.
+    """
+    return resolve(name, channels=channels, known=known)
+
+
+def _findings_for(
+    names: Sequence[str], *, channels: tuple[Channel, ...], known: frozenset[str]
+) -> list[Finding]:
     findings: list[Finding] = []
     for name in names:
         # ResolutionError propagates on purpose. An unreachable registry must
         # reach the engine and be recorded as UNKNOWN; swallowing it here would
         # report "we could not look" as "we looked and it was fine".
-        result = resolve(name, known=known)
+        result = _resolve_cached(name, channels, known)
         if result.resolution is Resolution.EXISTS:
             continue
 
@@ -249,6 +288,39 @@ def _c3(model: ProjectModel) -> Sequence[Finding]:
             )
         )
     return findings
+
+
+def _c3(model: ProjectModel) -> Sequence[Finding]:
+    known = known_package_names()
+
+    # Dependencies extracted from requirements.txt / pyproject.toml are always
+    # Python packages. Checking npm first (resolve()'s default) would let a
+    # hallucinated name that happens to exist in npm's much larger namespace
+    # come back "verified" - the exact slopsquatting case this check exists
+    # for. So dependencies are resolved against PyPI only.
+    dependency_names = sorted({dependency.name for dependency in model.dependencies.declared})
+
+    # MCP servers are resolved by the package their args actually install, not
+    # by the config key. A server whose package cannot be extracted from its
+    # args contributes no finding - but that is a decision, not a silent
+    # drop, so it is logged.
+    server_packages: set[str] = set()
+    for server in model.mcp_servers:
+        package = mcp_package_name(server)
+        if package is None:
+            log.info(
+                "C3: %s's launch args carry no extractable package name "
+                "(no -y/--package token in %r); not resolved",
+                server.name,
+                server.args,
+            )
+            continue
+        server_packages.add(package)
+
+    return [
+        *_findings_for(dependency_names, channels=(Channel.PYPI,), known=known),
+        *_findings_for(sorted(server_packages), channels=(Channel.NPM,), known=known),
+    ]
 
 
 C3 = register(

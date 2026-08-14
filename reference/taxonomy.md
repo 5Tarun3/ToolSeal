@@ -195,8 +195,19 @@ package indexes before install; unverified names are refused by `add`.
 validation in coding tools"* as an open gap. This is the ToolGate component.
 *Evaluated at* both `add` time (refusing an unverified name outright) *and*
 `audit` time — a project `toolseal` did not scaffold gets every declared
-dependency and MCP server name resolved and classified. An unreachable
+dependency resolved and classified. Dependencies are resolved against PyPI
+only, since extraction only ever produces Python dependencies; querying npm
+first (a much larger namespace) would let a hallucinated name that happens to
+collide with an unrelated npm package come back "verified". An unreachable
 registry reports `unknown`, never a pass.
+*MCP servers:* `MCPServerBinding.name` is the local alias under which a server
+is keyed in `mcpServers` (the JSON object key), not the package that gets
+installed — the package is a token in `args`. `audit` extracts it from an
+npx-style invocation (the argument after `-y` or `--package`) and resolves
+*that*, against npm, since MCP server packages are npm-published; the config
+key itself is never resolved. When no such flag is present, the package name
+cannot be determined from static config and that server is not resolved — a
+scope limitation, not a guess.
 *Limitation:* lookalike detection depends on a shipped list of established
 names (`src/toolseal/data/known_packages.toml`); a typosquat of a name absent
 from that list reads as phantom if unregistered, and is missed entirely if the
