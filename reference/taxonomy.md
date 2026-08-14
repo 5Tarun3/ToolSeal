@@ -440,6 +440,14 @@ properties that no configuration file can answer, as are most of the agentic
 threats. They stay in the catalogues marked `checkable = false` so the
 denominator describes the whole standard rather than the convenient part of it.
 
+**Coverage counts citations, not adequacy.** A checkable control is "covered"
+the moment one check cites it — `ControlCoverage.is_covered` is
+`bool(check_ids)`. That is a statement about the denominator, not the
+numerator: a citation records that a check was judged relevant to the
+obligation, not that the check discharges it. Whether a given check actually
+addresses what a control demands is a judgment the percentage does not make
+and this document does not claim to have made for it.
+
 ## Totals
 
 | Family | Checks | Applies when |
