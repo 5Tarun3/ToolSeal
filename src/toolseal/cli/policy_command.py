@@ -54,8 +54,15 @@ def _explain_check(check: Check) -> None:
 def _explain_control(raw: str) -> None:
     standard, _, control_id = raw.partition(":")
     ref = ControlRef(standard.strip(), control_id.strip())
+
+    # Loading the catalogues happens outside the try: a malformed *shipped*
+    # catalogue is a packaging fault, and must keep surfacing as INTERNAL, not
+    # get relabelled as the caller's mistake just because it also raises
+    # ConfigError. Only the reference lookup below - unknown standard, unknown
+    # control id, both genuine typos in what the user typed - is a usage error.
+    catalogues = load_catalogues()
     try:
-        control = resolve(ref)
+        control = resolve(ref, catalogues)
     except ConfigError as exc:
         # A malformed subject typed at the CLI is a usage mistake, not an
         # internal failure - `resolve()` itself keeps raising `ConfigError`

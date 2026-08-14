@@ -155,3 +155,24 @@ def test_explain_a_malformed_control_subject_is_a_usage_error() -> None:
 
     assert result.exit_code == ExitCode.USAGE
     assert "bogus" in result.output
+
+
+def test_explain_a_broken_shipped_catalogue_is_still_internal(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # A malformed *shipped* catalogue (a packaging fault) must not be
+    # relabelled as the user's mistake just because loading it also raises
+    # ConfigError - only the reference lookup itself, on an already-loaded
+    # catalogue set, is a usage error. This is what distinguishes it from
+    # test_explain_a_malformed_control_subject_is_a_usage_error above.
+    from toolseal.errors import ConfigError, ExitCode
+
+    def broken() -> dict[str, object]:
+        message = "catalogue is not valid TOML"
+        raise ConfigError(message)
+
+    monkeypatch.setattr(policy_command, "load_catalogues", broken)
+
+    result = runner.invoke(app, ["policy", "explain", "owasp-llm-top10:LLM01"])
+
+    assert result.exit_code == ExitCode.INTERNAL
