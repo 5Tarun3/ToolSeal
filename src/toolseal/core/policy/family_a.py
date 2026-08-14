@@ -46,6 +46,11 @@ _INERT: Final = re.compile(
     re.IGNORECASE,
 )
 
+# An environment variable's name. Case-sensitive, and at least one underscore
+# is required: that is what keeps all-caps credential formats such as an AWS
+# access key id outside the exemption.
+_ENV_VAR_NAME: Final = re.compile(r"^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$")
+
 # Files that exist to show the shape of a credential.
 EXAMPLE_FILENAMES: Final = frozenset({".env.example", ".env.sample", ".env.template"})
 
@@ -66,9 +71,25 @@ def _is_env_file(name: str) -> bool:
     return name == ".env" or name.startswith(".env.")
 
 
+def is_env_var_name(value: str) -> bool:
+    """Whether *value* is the *name* of an environment variable rather than a secret.
+
+    ``A1``'s own remediation is that configuration should reference a credential
+    **by name rather than by value**. A scanner that reports the name as a secret
+    therefore penalises the exact pattern this check prescribes, and would make a
+    toolseal-scaffolded project fail its own audit.
+
+    Matched case-sensitively, and an underscore is required. Real credentials are
+    mixed-case or hyphenated, and the underscore requirement is what keeps
+    all-caps key formats - an AWS access key id such as ``AKIA...`` - outside
+    this exemption.
+    """
+    return _ENV_VAR_NAME.match(value) is not None
+
+
 def is_inert(value: str) -> bool:
     """Whether a matched value is a placeholder rather than a credential."""
-    return _INERT.match(value) is not None
+    return _INERT.match(value) is not None or is_env_var_name(value)
 
 
 def scannable_files(model: ProjectModel) -> Iterator[tuple[Path, str]]:
