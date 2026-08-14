@@ -12,6 +12,7 @@ make the check worse than not having it.
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -308,3 +309,115 @@ def test_an_mcp_server_package_is_resolved_against_npm_only(
     c3().evaluate(model_with_servers(server))
 
     assert seen == [(Channel.NPM,)]
+
+
+# --- version-pinned npx specs: strip before resolving -----------------------
+
+
+@pytest.mark.parametrize(
+    ("token", "expected"),
+    [
+        ("@upstash/context7-mcp@latest", "@upstash/context7-mcp"),
+        ("@upstash/context7-mcp@1.2.3", "@upstash/context7-mcp"),
+        ("@playwright/mcp@latest", "@playwright/mcp"),
+        ("pkg@1.2.3", "pkg"),
+        ("pkg@latest", "pkg"),
+        # unsuffixed forms must pass through unchanged.
+        ("@upstash/context7-mcp", "@upstash/context7-mcp"),
+        ("pkg", "pkg"),
+    ],
+)
+def test_mcp_package_name_strips_a_version_suffix(token: str, expected: str) -> None:
+    server = MCPServerBinding(
+        name="ctx7", transport=Transport.STDIO, command="npx", args=("-y", token)
+    )
+
+    assert mcp_package_name(server) == expected
+
+
+def test_a_version_pinned_npx_spec_no_longer_produces_a_false_critical(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Reproduces the review's exact failure shape: "@upstash/context7-mcp@latest"
+    # is what that project's own README tells users to run. Resolving the spec
+    # with the version tail still attached 404s against npm and would flip
+    # report.blocking - the same false-blocking-CRITICAL bug class the
+    # config-key fix above closed, re-entering through a different input.
+    outcomes = {
+        "@upstash/context7-mcp": ResolutionResult("@upstash/context7-mcp", Resolution.EXISTS)
+    }
+
+    def fake(name: str, **kwargs: Any) -> ResolutionResult:
+        # KeyError if the version tail were still attached - proves the spec
+        # actually reaching the resolver is the stripped form.
+        return outcomes[name]
+
+    monkeypatch.setattr("toolseal.core.policy.family_c.resolve", fake)
+    server = MCPServerBinding(
+        name="context7",
+        transport=Transport.STDIO,
+        command="npx",
+        args=("-y", "@upstash/context7-mcp@latest"),
+    )
+
+    result = c3().evaluate(model_with_servers(server))
+
+    assert result.verdict is Verdict.PASS
+    assert result.findings == ()
+
+
+# --- unextractable packages: visible by default, remote servers exempt -----
+
+
+def test_an_unextractable_local_server_logs_at_warning_not_info(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    # `configure_logging` pins the root logger to WARNING unless --verbose, so
+    # an INFO-level log is invisible on a plain `toolseal audit` - that is a
+    # silent skip with a log line nobody sees. Must be WARNING to actually
+    # satisfy "not a silent skip".
+    monkeypatch.setattr(
+        "toolseal.core.policy.family_c.resolve",
+        lambda name, **kwargs: ResolutionResult(name, Resolution.EXISTS),
+    )
+    server = MCPServerBinding(
+        name="custom",
+        transport=Transport.STDIO,
+        command="./run-my-server.sh",
+        args=("--port", "8080"),
+    )
+
+    with caplog.at_level(logging.WARNING, logger="toolseal.core.policy.family_c"):
+        result = c3().evaluate(model_with_servers(server))
+
+    assert result.verdict is Verdict.PASS
+    assert len(caplog.records) == 1
+    assert caplog.records[0].levelno == logging.WARNING
+    assert "custom" in caplog.text
+
+
+def test_a_remote_server_is_skipped_rather_than_reported_as_unextractable(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    # A remote/SSE server has args=() and a url by construction - it has no
+    # package to install, so it must not be logged as an extraction failure.
+    calls: list[str] = []
+
+    def fake(name: str, **kwargs: Any) -> ResolutionResult:
+        calls.append(name)
+        return ResolutionResult(name, Resolution.EXISTS)
+
+    monkeypatch.setattr("toolseal.core.policy.family_c.resolve", fake)
+    server = MCPServerBinding(
+        name="remote-tool",
+        transport=Transport.STREAMABLE_HTTP,
+        url="https://example.invalid/mcp",
+    )
+
+    with caplog.at_level(logging.WARNING, logger="toolseal.core.policy.family_c"):
+        result = c3().evaluate(model_with_servers(server))
+
+    assert calls == []
+    assert result.verdict is Verdict.PASS
+    assert result.findings == ()
+    assert caplog.records == []

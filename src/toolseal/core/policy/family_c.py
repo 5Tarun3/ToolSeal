@@ -222,6 +222,20 @@ def known_package_names() -> frozenset[str]:
 _PACKAGE_NAME_FLAGS: Final = frozenset({"-y", "--package"})
 
 
+def _without_version(token: str) -> str:
+    """Strip a trailing ``@version`` from an npm package spec.
+
+    A scoped name already carries a leading ``@`` (``@scope/pkg``), so only a
+    *second* ``@`` - one that appears after position 0 - is a version
+    separator; an unscoped name's only ``@``, if any, is the version
+    separator. `rfind`/`find` both return ``-1`` when the character is
+    absent, and ``-1 > 0`` is false, so an unsuffixed name of either shape
+    passes through unchanged.
+    """
+    at_index = token.rfind("@") if token.startswith("@") else token.find("@")
+    return token[:at_index] if at_index > 0 else token
+
+
 def mcp_package_name(server: MCPServerBinding) -> str | None:
     """The registry package *server* actually installs, if it can be told.
 
@@ -229,7 +243,10 @@ def mcp_package_name(server: MCPServerBinding) -> str | None:
     in ``mcpServers`` - the JSON object key a project or `toolseal add mcp`
     chose for convenience - not necessarily the package that gets installed.
     The package name lives in ``args``, after ``-y`` or ``--package`` for an
-    npx-style launch.
+    npx-style launch, and a version pin (``@upstash/context7-mcp@latest``,
+    ``pkg@1.2.3``) - the shape those projects' own READMEs ship - is stripped
+    before resolving, since neither the npm registry lookup nor PyPI's takes
+    one.
 
     Returns ``None``, rather than a guess, when no such flag is present. A
     wrong guess here would resolve the wrong name and report it as either
@@ -238,7 +255,7 @@ def mcp_package_name(server: MCPServerBinding) -> str | None:
     args = server.args
     for index, token in enumerate(args):
         if token in _PACKAGE_NAME_FLAGS and index + 1 < len(args):
-            return args[index + 1]
+            return _without_version(args[index + 1])
     return None
 
 
@@ -303,12 +320,20 @@ def _c3(model: ProjectModel) -> Sequence[Finding]:
     # MCP servers are resolved by the package their args actually install, not
     # by the config key. A server whose package cannot be extracted from its
     # args contributes no finding - but that is a decision, not a silent
-    # drop, so it is logged.
+    # drop, so it is logged at a level visible on a plain `toolseal audit`
+    # (WARNING is the default root level; INFO is not).
     server_packages: set[str] = set()
     for server in model.mcp_servers:
+        if server.is_remote:
+            # A remote/SSE server has no launch args by construction - it has
+            # a URL, not a package to install. Reporting "no extractable
+            # package name" against it would misname what is actually a
+            # not-applicable case, not an extraction failure.
+            continue
+
         package = mcp_package_name(server)
         if package is None:
-            log.info(
+            log.warning(
                 "C3: %s's launch args carry no extractable package name "
                 "(no -y/--package token in %r); not resolved",
                 server.name,
