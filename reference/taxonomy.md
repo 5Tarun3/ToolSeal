@@ -428,10 +428,18 @@ the taxonomy.
 **`G3` carries no agentic mapping at all**, and neither `G3` nor `E3` maps
 into the ranked agentic Top 10. Error-channel semantics correspond to nothing
 in either agentic catalogue, so `G3` cites only `owasp-llm-top10:LLM05`. `E3`
-does carry a threat-taxonomy citation (`owasp-agentic-threats:T4`); its
-nearest fit in the ranked list is `ASI08 Cascading Failures`, but `ASI08` is
-marked `checkable = false`, so citing it would add a reference that no
-coverage figure counts. Left out of the ranked list rather than padded.
+does carry a threat-taxonomy citation (`owasp-agentic-threats:T4`); the
+nearest-sounding entry in the ranked list, `ASI08 Cascading Failures`, is
+about a systemic runtime failure mode — one unbounded call triggering
+downstream collapse across an agent system — not about the presence or
+absence of a per-call timeout, which is what `E3` actually checks. The fit is
+poor enough that citing it would misrepresent what `E3` detects, independent
+of whether `ASI08` happens to be checkable. Left out of the ranked list rather
+than padded. (`G5`, by contrast, legitimately cites two non-checkable
+controls — `owasp-llm-top10:LLM01` and `owasp-agentic-top10:ASI01` — because
+those *are* good fits for what a mutated tool description enables; a
+non-checkable control is not disqualified from being cited, only from
+counting toward the coverage denominator.)
 
 **Coverage is computed over *checkable* controls only.** Five of the ten OWASP
 LLM risks — prompt injection, data and model poisoning, system-prompt leakage,
