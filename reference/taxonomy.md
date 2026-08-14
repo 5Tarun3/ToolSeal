@@ -202,10 +202,6 @@ names (`src/toolseal/data/known_packages.toml`); a typosquat of a name absent
 from that list reads as phantom if unregistered, and is missed entirely if the
 squatter registered it. Phantom detection needs no list and is unaffected.
 
-| Check | Control mapping |
-| --- | --- |
-| `C3` | owasp-llm-top10:LLM03 · owasp-agentic-threats:T9 · nist-ai-rmf:GOVERN-6.1 · owasp-agentic-top10:ASI04 |
-
 **C4 — Install from an unverified source**
 *Detects:* `curl | bash`, a floating git ref, a plain-HTTP source, or any
 install path without an integrity check.
@@ -362,6 +358,74 @@ surviving translation matters.
 
 ---
 
+## Control mapping
+
+Every check cites the published obligations it bears on. The mapping is held in
+the check definitions and verified against the shipped catalogues by
+`tests/test_control_mapping.py`, so this table and the code cannot drift apart.
+
+Catalogues: `owasp-llm-top10`, `owasp-agentic-threats`, `owasp-agentic-top10`,
+`nist-ai-rmf`, `iso-42001` (clause identifiers only; the standard is paywalled
+and its text is not reproduced).
+
+The two agentic catalogues are different documents, not two names for one.
+`owasp-agentic-threats` holds the `T1`–`T15` taxonomy from *Agentic AI – Threats
+and Mitigations* (v1.0, February 2025); `owasp-agentic-top10` holds the ranked
+`ASI01`–`ASI10` list from *OWASP Top 10 for Agentic Applications* (December
+2025). Conflating them is the mistake this table exists to prevent.
+
+| Check | Controls |
+| --- | --- |
+| `A1` | owasp-llm-top10:LLM02 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI03 |
+| `A2` | owasp-llm-top10:LLM02 · owasp-agentic-top10:ASI03 |
+| `A3` | owasp-llm-top10:LLM02 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI03 |
+| `A4` | owasp-llm-top10:LLM02 · owasp-agentic-top10:ASI03 |
+| `A5` | owasp-llm-top10:LLM02 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI03 |
+| `B1` | owasp-llm-top10:LLM06 · owasp-agentic-threats:T2 · owasp-agentic-top10:ASI02 |
+| `B2` | owasp-llm-top10:LLM06 · owasp-agentic-threats:T11 · owasp-agentic-top10:ASI05 |
+| `B3` | owasp-llm-top10:LLM06 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI03 |
+| `B4` | owasp-llm-top10:LLM06 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI02 |
+| `B5` | owasp-llm-top10:LLM03 · owasp-agentic-threats:T2 · nist-ai-rmf:GOVERN-6.1 · owasp-agentic-top10:ASI04 |
+| `C1` | owasp-llm-top10:LLM03 · nist-ai-rmf:GOVERN-6.1 · owasp-agentic-top10:ASI04 |
+| `C2` | owasp-llm-top10:LLM03 · nist-ai-rmf:MAP-4.1 · owasp-agentic-top10:ASI04 |
+| `C3` | owasp-llm-top10:LLM03 · owasp-agentic-threats:T9 · nist-ai-rmf:GOVERN-6.1 · owasp-agentic-top10:ASI04 |
+| `C4` | owasp-llm-top10:LLM03 · nist-ai-rmf:GOVERN-6.1 · owasp-agentic-top10:ASI04 |
+| `C5` | owasp-llm-top10:LLM03 · iso-42001:A.10.3 · owasp-agentic-top10:ASI04 |
+| `D1` | owasp-llm-top10:LLM02 · owasp-agentic-threats:T9 · owasp-agentic-top10:ASI07 |
+| `D2` | owasp-llm-top10:LLM03 · owasp-agentic-threats:T9 · owasp-agentic-top10:ASI07 · owasp-agentic-top10:ASI03 |
+| `D3` | owasp-llm-top10:LLM03 · owasp-llm-top10:LLM02 · owasp-agentic-top10:ASI04 |
+| `E1` | owasp-llm-top10:LLM05 · owasp-agentic-threats:T11 · owasp-agentic-top10:ASI05 |
+| `E2` | owasp-llm-top10:LLM06 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI03 |
+| `E3` | owasp-llm-top10:LLM10 · owasp-agentic-threats:T4 |
+| `F1` | owasp-agentic-threats:T8 · nist-ai-rmf:MANAGE-4.1 |
+| `F2` | owasp-llm-top10:LLM06 · owasp-agentic-threats:T2 · owasp-agentic-top10:ASI02 |
+| `G1` | owasp-llm-top10:LLM06 · owasp-agentic-threats:T2 · owasp-agentic-top10:ASI02 |
+| `G2` | owasp-llm-top10:LLM05 · owasp-agentic-threats:T2 · owasp-agentic-top10:ASI02 |
+| `G3` | owasp-llm-top10:LLM05 |
+| `G4` | owasp-llm-top10:LLM06 · nist-ai-rmf:MEASURE-2.7 · owasp-agentic-top10:ASI02 |
+| `G5` | owasp-llm-top10:LLM01 · nist-ai-rmf:MEASURE-2.7 · owasp-agentic-top10:ASI01 |
+
+**`F1` is the sharpest gap in the whole table.** Tool-invocation logging appears
+in neither the OWASP LLM Top 10 nor the agentic Top 10 — only in the broader
+threat taxonomy, as `owasp-agentic-threats:T8`, and in
+`nist-ai-rmf:MANAGE-4.1`. Two of the four ranked lists this project maps against
+have no place for accountability at all. Recorded rather than forced into an
+approximate mapping, because a citation that does not quite fit is worse than an
+honest gap — and this particular gap is a finding about the standards, not about
+the taxonomy.
+
+**`E3` and `G3` carry no agentic mapping**, for the same reason. Resource bounds
+map to `ASI08 Cascading Failures`, and error-channel semantics to nothing at
+all; `ASI08` is marked `checkable = false`, so citing it would add a reference
+that no coverage figure counts. Left unmapped rather than padded.
+
+**Coverage is computed over *checkable* controls only.** Five of the ten OWASP
+LLM risks — prompt injection, data and model poisoning, system-prompt leakage,
+embedding weaknesses, and misinformation — are runtime or data-quality
+properties that no configuration file can answer, as are most of the agentic
+threats. They stay in the catalogues marked `checkable = false` so the
+denominator describes the whole standard rather than the convenient part of it.
+
 ## Totals
 
 | Family | Checks | Applies when |
@@ -388,9 +452,10 @@ surviving translation matters.
 
 ## Open items
 
-- **Drift guard.** When the audit engine encodes these checks (P9, P26), add a
-  test asserting that the implemented check IDs and severities match this
-  document exactly. Until then the two can diverge.
+- **Drift guard.** Implemented: `tests/test_control_mapping.py` asserts the
+  implemented check ids, their control references, and this document agree. The
+  severity half of that guard is still open — the test does not yet compare
+  severities against the tables above.
 - `C2` inherits severity from the advisory; the mapping from CVSS to the four
   levels here is not yet fixed.
 - Family G currently assumes MCP as the source abstraction. The expressiveness

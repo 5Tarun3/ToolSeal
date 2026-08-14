@@ -78,3 +78,28 @@ def test_accountability_has_no_home_in_either_ranked_list() -> None:
     assert not any(ref.standard == "owasp-agentic-top10" for ref in f1.controls)
     assert any(ref.standard == "owasp-agentic-threats" for ref in f1.controls)
     assert any(ref.standard == "nist-ai-rmf" for ref in f1.controls)
+
+
+# --- the drift guard -------------------------------------------------------
+
+
+def test_every_mapping_appears_in_the_taxonomy_document() -> None:
+    # taxonomy.md is normative and the paper cites it. A mapping that exists
+    # only in code is a claim the published document does not make. This is the
+    # drift guard the taxonomy's own Open items asks for, extended to controls.
+    from pathlib import Path
+
+    document = Path("reference/taxonomy.md").read_text(encoding="utf-8")
+
+    for check in all_checks():
+        for ref in check.controls:
+            assert str(ref) in document, f"{check.id} cites {ref}, which taxonomy.md omits"
+
+
+def test_the_document_declares_the_catalogues_it_cites() -> None:
+    from pathlib import Path
+
+    document = Path("reference/taxonomy.md").read_text(encoding="utf-8")
+
+    for catalogue_id in load_catalogues():
+        assert catalogue_id in document, f"taxonomy.md never mentions {catalogue_id}"
