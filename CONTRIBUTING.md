@@ -19,7 +19,8 @@ uv run pytest
 ```
 
 If you change dependencies, commit the updated `uv.lock` — CI installs with
-`--locked` and will fail if the lockfile is stale.
+`--locked` and will fail if the lockfile is stale — and regenerate `sbom.json`
+with `uv run python scripts/generate_sbom.py`.
 
 ## Conventions
 

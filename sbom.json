@@ -1,0 +1,37 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:pypi/keyring@25.7.0",
+      "name": "keyring",
+      "purl": "pkg:pypi/keyring@25.7.0",
+      "type": "library",
+      "version": "25.7.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/typer@0.27.1",
+      "name": "typer",
+      "purl": "pkg:pypi/typer@0.27.1",
+      "type": "library",
+      "version": "0.27.1"
+    }
+  ],
+  "metadata": {
+    "component": {
+      "bom-ref": "toolseal",
+      "name": "toolseal",
+      "type": "application"
+    },
+    "tools": {
+      "components": [
+        {
+          "name": "toolseal",
+          "type": "application",
+          "version": "0.0.1"
+        }
+      ]
+    }
+  },
+  "specVersion": "1.6",
+  "version": 1
+}
