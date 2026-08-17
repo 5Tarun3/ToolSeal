@@ -67,19 +67,27 @@ def test_overprovisioning_checks_cite_excessive_agency() -> None:
     assert any(ref.control == "LLM06" for ref in b1.controls)
 
 
-def test_accountability_has_no_home_in_either_ranked_list() -> None:
-    # F1 is the sharpest margin in the mapping. Tool-invocation logging is
-    # absent from both the OWASP LLM Top 10 and the agentic Top 10; it survives
-    # only in the broader threat taxonomy (T8) and in NIST (MANAGE-4.1). That is
-    # a finding about the standards rather than about our taxonomy, so it is
-    # pinned here: if a future revision of either ranked list adds an
-    # accountability entry, this test fails and reminds us to map it.
+def test_accountability_has_no_checkable_home_in_either_ranked_list() -> None:
+    # F1 cites owasp-agentic-top10:ASI08 and ASI09 - the OWASP threat
+    # taxonomy's own crosswalk for T8 says it is "carried directly into"
+    # both - but every control resolved from that catalogue on F1 is
+    # checkable = false: accountability is absorbed into two composite,
+    # runtime failure categories rather than named as its own checkable
+    # ranked-list entry. The OWASP LLM Top 10 still has no place for it at
+    # all. That is a finding about the standards rather than about our
+    # taxonomy, so it is pinned here: if a future revision of either ranked
+    # list adds a *checkable* accountability entry, this test fails and
+    # reminds us to map it.
+    catalogues = load_catalogues()
     f1 = next(check for check in all_checks() if check.id == "F1")
 
     assert not any(ref.standard == "owasp-llm-top10" for ref in f1.controls)
-    assert not any(ref.standard == "owasp-agentic-top10" for ref in f1.controls)
     assert any(ref.standard == "owasp-agentic-threats" for ref in f1.controls)
     assert any(ref.standard == "nist-ai-rmf" for ref in f1.controls)
+
+    agentic_top10_refs = [ref for ref in f1.controls if ref.standard == "owasp-agentic-top10"]
+    assert {ref.control for ref in agentic_top10_refs} == {"ASI08", "ASI09"}
+    assert all(not resolve(ref, catalogues).checkable for ref in agentic_top10_refs)
 
 
 # --- the drift guard -------------------------------------------------------

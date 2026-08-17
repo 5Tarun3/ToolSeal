@@ -407,8 +407,8 @@ and Mitigations* (v1.0, February 2025); `owasp-agentic-top10` holds the ranked
 | `D3` | owasp-llm-top10:LLM03 · owasp-llm-top10:LLM02 · owasp-agentic-top10:ASI04 |
 | `E1` | owasp-llm-top10:LLM05 · owasp-agentic-threats:T11 · owasp-agentic-top10:ASI05 |
 | `E2` | owasp-llm-top10:LLM06 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI03 |
-| `E3` | owasp-llm-top10:LLM10 · owasp-agentic-threats:T4 |
-| `F1` | owasp-agentic-threats:T8 · nist-ai-rmf:MANAGE-4.1 |
+| `E3` | owasp-llm-top10:LLM10 · owasp-agentic-threats:T4 · owasp-agentic-top10:ASI02 |
+| `F1` | owasp-agentic-threats:T8 · owasp-agentic-top10:ASI08 · owasp-agentic-top10:ASI09 · nist-ai-rmf:MANAGE-4.1 |
 | `F2` | owasp-llm-top10:LLM06 · owasp-agentic-threats:T2 · owasp-agentic-top10:ASI02 |
 | `G1` | owasp-llm-top10:LLM06 · owasp-agentic-threats:T2 · owasp-agentic-top10:ASI02 |
 | `G2` | owasp-llm-top10:LLM05 · owasp-agentic-threats:T2 · owasp-agentic-top10:ASI02 |
@@ -416,30 +416,43 @@ and Mitigations* (v1.0, February 2025); `owasp-agentic-top10` holds the ranked
 | `G4` | owasp-llm-top10:LLM06 · nist-ai-rmf:MEASURE-2.7 · owasp-agentic-top10:ASI02 |
 | `G5` | owasp-llm-top10:LLM01 · nist-ai-rmf:MEASURE-2.7 · owasp-agentic-top10:ASI01 |
 
-**`F1` is the sharpest gap in the whole table.** Tool-invocation logging appears
-in neither the OWASP LLM Top 10 nor the agentic Top 10 — only in the broader
-threat taxonomy, as `owasp-agentic-threats:T8`, and in
-`nist-ai-rmf:MANAGE-4.1`. Two of the four ranked lists this project maps against
-have no place for accountability at all. Recorded rather than forced into an
-approximate mapping, because a citation that does not quite fit is worse than an
-honest gap — and this particular gap is a finding about the standards, not about
-the taxonomy.
+**`F1` has no *checkable* home in either ranked Top 10.** The OWASP Agentic AI
+threat taxonomy's own crosswalk for `T8 — Repudiation & Untraceability` (the
+control `F1` already cites) states it is "carried directly into ASI08
+(Cascading Failures) and ASI09 (Human-Agent Trust Exploitation)", so `F1`
+cites `owasp-agentic-top10:ASI08` and `owasp-agentic-top10:ASI09` alongside
+`owasp-agentic-threats:T8` and `nist-ai-rmf:MANAGE-4.1`. Both `ASI08` and
+`ASI09` are `checkable = false`: accountability is absorbed into two
+composite, runtime failure categories rather than named as its own checkable
+entry in the ranked agentic list, and the OWASP LLM Top 10 has no place for
+it at all. The gap this table records is therefore narrower than an earlier
+version claimed — accountability is not cited by *nothing* in the ranked
+lists — but it is real: no ranked list, agentic or otherwise, gives
+tool-invocation logging a checkable entry of its own, so it cannot count
+toward this project's checkable-coverage figure against either Top 10.
 
-**`G3` carries no agentic mapping at all**, and neither `G3` nor `E3` maps
-into the ranked agentic Top 10. Error-channel semantics correspond to nothing
-in either agentic catalogue, so `G3` cites only `owasp-llm-top10:LLM05`. `E3`
-does carry a threat-taxonomy citation (`owasp-agentic-threats:T4`); the
-nearest-sounding entry in the ranked list, `ASI08 Cascading Failures`, is
-about a systemic runtime failure mode — one unbounded call triggering
-downstream collapse across an agent system — not about the presence or
-absence of a per-call timeout, which is what `E3` actually checks. The fit is
-poor enough that citing it would misrepresent what `E3` detects, independent
-of whether `ASI08` happens to be checkable. Left out of the ranked list rather
-than padded. (`G5`, by contrast, legitimately cites two non-checkable
-controls — `owasp-llm-top10:LLM01` and `owasp-agentic-top10:ASI01` — because
-those *are* good fits for what a mutated tool description enables; a
-non-checkable control is not disqualified from being cited, only from
-counting toward the coverage denominator.)
+**`G3` carries no agentic mapping at all.** Error-channel semantics
+correspond to nothing in either agentic catalogue, so `G3` cites only
+`owasp-llm-top10:LLM05`.
+
+**`E3` does map into the ranked agentic Top 10, via `owasp-agentic-top10:ASI02`.**
+An earlier version of this document reasoned by semantic proximity — that
+`ASI08 Cascading Failures` was `E3`'s "nearest-sounding" entry in the ranked
+list, and too poor a fit to cite regardless of its checkability — and left
+the ranked list out of `E3` entirely. That reasoning was never checked
+against a primary source, and it was wrong: the threat taxonomy's own
+crosswalk for `T4 — Resource Overload` (the control `E3` already cites)
+states plainly that `T4` is "Mapped under ASI02 (Tool Misuse &
+Exploitation)", and the summary crosswalk table repeats it. `E3` cites
+`owasp-agentic-top10:ASI02` on that authority, not on a resemblance
+judgment — `ASI02` is `checkable = true`, and now counts toward the ranked
+agentic Top 10's coverage denominator. (`G5`, for comparison, legitimately
+cites two non-checkable controls — `owasp-llm-top10:LLM01` and
+`owasp-agentic-top10:ASI01` — because those *are* good fits for what a
+mutated tool description enables; a non-checkable control is not
+disqualified from being cited, only from counting toward the coverage
+denominator. `F1`'s citations of `ASI08`/`ASI09` above rest on the same
+principle.)
 
 **Coverage is computed over *checkable* controls only.** Five of the ten OWASP
 LLM risks — prompt injection, data and model poisoning, system-prompt leakage,

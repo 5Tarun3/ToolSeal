@@ -256,6 +256,7 @@ E3 = register(
         controls=(
             ControlRef("owasp-llm-top10", "LLM10"),
             ControlRef("owasp-agentic-threats", "T4"),
+            ControlRef("owasp-agentic-top10", "ASI02"),
         ),
     )
 )
@@ -270,6 +271,8 @@ F1 = register(
         run=_f1,
         controls=(
             ControlRef("owasp-agentic-threats", "T8"),
+            ControlRef("owasp-agentic-top10", "ASI08"),
+            ControlRef("owasp-agentic-top10", "ASI09"),
             ControlRef("nist-ai-rmf", "MANAGE-4.1"),
         ),
     )
