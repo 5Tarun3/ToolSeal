@@ -54,11 +54,11 @@ checkable = false            # a runtime input-manipulation attack, not a config
 
 [[control]]
 id = "ASI02"
-title = "Tool Misuse and Exploitation"
+title = "Tool Misuse & Exploitation"
 
 [[control]]
 id = "ASI03"
-title = "Identity and Privilege Abuse"
+title = "Identity & Privilege Abuse"
 
 [[control]]
 id = "ASI04"
@@ -66,11 +66,11 @@ title = "Agentic Supply Chain Vulnerabilities"
 
 [[control]]
 id = "ASI05"
-title = "Unexpected Code Execution"
+title = "Unexpected Code Execution (RCE)"
 
 [[control]]
 id = "ASI06"
-title = "Memory and Context Poisoning"
+title = "Memory & Context Poisoning"
 checkable = false            # a runtime memory/retrieval attack, not a config property
 
 [[control]]

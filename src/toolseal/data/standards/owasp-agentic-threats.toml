@@ -59,21 +59,21 @@ checkable = false            # a model-output/runtime property, not a config one
 
 [[control]]
 id = "T6"
-title = "Intent Breaking and Goal Manipulation"
+title = "Intent Breaking & Goal Manipulation"
 checkable = false            # a runtime planning behaviour, not a config property
 
 [[control]]
 id = "T7"
-title = "Misaligned and Deceptive Behaviors"
+title = "Misaligned & Deceptive Behaviors"
 checkable = false            # a runtime behaviour, not a config property
 
 [[control]]
 id = "T8"
-title = "Repudiation and Untraceability"
+title = "Repudiation & Untraceability"
 
 [[control]]
 id = "T9"
-title = "Identity Spoofing and Impersonation"
+title = "Identity Spoofing & Impersonation"
 
 [[control]]
 id = "T10"
