@@ -94,6 +94,25 @@ class IndexEntry:
         ).casefold()
         return needle in haystack
 
+    def name_relevance(self, needle: str) -> int:
+        """How closely *needle* (already casefolded) matches this entry's name.
+
+        Lower is more relevant. This only breaks ties among entries that
+        already satisfy :meth:`matches`; it exists so a query that names a
+        tool exactly is not outranked, at equal score, by an entry that only
+        mentions the query in its description or permissions.
+        """
+        if not needle:
+            return 0
+        name = self.descriptor.name.casefold()
+        if name == needle:
+            return 0
+        if name.startswith(needle):
+            return 1
+        if needle in name:
+            return 2
+        return 3
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "descriptor": self.descriptor.to_dict(),
@@ -131,14 +150,26 @@ class RegistryIndex:
         return next((entry for entry in self.entries if entry.id == entry_id), None)
 
     def search(self, query: str, *, limit: int = 20) -> tuple[IndexEntry, ...]:
-        """Matching entries, best-assessed first.
+        """Matching entries, best-assessed first, most relevant among ties.
 
         Ordering by audit score rather than by popularity is a deliberate
         editorial choice: a registry that surfaces the most-downloaded tool
-        first teaches people to install the most-downloaded tool.
+        first teaches people to install the most-downloaded tool. That
+        discipline is the outer sort key and does not change. Name relevance
+        only breaks ties *within* a given (blocking, score) bracket, so an
+        exact or prefix name match outranks a description-only match without
+        ever letting relevance override the security-first ordering.
         """
+        needle = query.casefold().strip()
         matched = [entry for entry in self.entries if entry.matches(query)]
-        matched.sort(key=lambda entry: (entry.audit.blocking, -entry.audit.score, entry.id))
+        matched.sort(
+            key=lambda entry: (
+                entry.audit.blocking,
+                -entry.audit.score,
+                entry.name_relevance(needle),
+                entry.id,
+            )
+        )
         return tuple(matched[:limit])
 
     def names(self) -> frozenset[str]:

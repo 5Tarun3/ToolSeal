@@ -205,6 +205,27 @@ def test_search_matches_description_as_well_as_name() -> None:
     assert not index.search("nothing-like-this")
 
 
+def test_search_ranks_an_exact_name_match_above_a_description_only_match() -> None:
+    # Both entries score equally and neither is blocking, so the tie is broken
+    # by relevance: "unrelated-name" only matches because SERVER's fixed
+    # description mentions PostgreSQL, while "postgresql" matches its name
+    # exactly and must come first.
+    index = RegistryIndex(entries=(entry("unrelated-name", 90), entry("postgresql", 90)))
+
+    results = index.search("postgresql")
+
+    assert [r.descriptor.name for r in results] == ["postgresql", "unrelated-name"]
+
+
+def test_search_relevance_never_outranks_the_security_ordering() -> None:
+    # Relevance is a tiebreaker within a (blocking, score) bracket, not a
+    # replacement for it: a worse-assessed exact name match still sorts after
+    # a better-assessed entry that only matched on description.
+    index = RegistryIndex(entries=(entry("postgresql", 20), entry("unrelated-name", 90)))
+
+    assert index.search("postgresql")[0].descriptor.name == "unrelated-name"
+
+
 def test_names_provides_the_lookalike_reference_set() -> None:
     index = RegistryIndex(entries=(entry("a", 90),))
 
