@@ -8,32 +8,34 @@
 # T-prefixed ids belong to the taxonomy, ASI-prefixed ids belong to this Top
 # 10.
 #
-# Titles corroborated against four independent secondary sources - a
-# WebSearch synthesis, promptfoo.dev, goteleport.com, and f5.com - the
-# primary PDF would not render as text through available tooling, so exact
-# wording is corroborated rather than quoted from the primary source, as
-# with owasp-agentic-threats.toml. The four agree on nine of the ten
-# titles. ASI06 is the exception: f5.com's sole mention of it - the heading
-# of its own numbered list, the only place the term appears on that page -
-# reads "Context Management and Retrieval Manipulation", not "Memory and
-# Context Poisoning". The shipped title rests on the other three fetched
-# sources plus two further pages surfaced by a targeted follow-up search
-# and titled specifically around ASI06 (vectorize.io's "OWASP ASI06: Memory
-# and Context Poisoning Explained" and zealynx.io's "OWASP ASI06 Explained:
-# AI Memory & Context Poisoning" - seen as search-result titles, not
-# independently fetched) - five sources naming it "Memory and Context
-# Poisoning" against f5.com's one dissenting mention.
-# ASI05's title circulates with and without a trailing "(RCE)" - the
-# WebSearch synthesis and goteleport.com include it, promptfoo.dev and
-# f5.com omit it, a 2-2 split among the four fetched sources. Dropped the
-# parenthetical since it is not universal and is not load-bearing for
-# identifying the control by id.
+# Titles were first drawn up by corroborating four independent secondary
+# sources - a WebSearch synthesis, promptfoo.dev, goteleport.com, and
+# f5.com - because the primary PDF would not render as text through any
+# tooling available at the time. The four agreed on nine of the ten titles
+# but left two genuinely open: whether ASI06 was "Memory and Context
+# Poisoning" (five sources, including two search-result titles) or, per
+# f5.com's one dissenting mention, "Context Management and Retrieval
+# Manipulation"; and whether ASI05 carried a trailing "(RCE)" (a 2-2 split
+# among the four fetched sources - dropped as not universal).
+#
+# The project owner has since supplied a primary-source digest
+# (docs/superpowers/specs/OWASP_Agentic_Security_Taxonomies.md, a table
+# transcribing the published ASI01-ASI10 titles) and every title below was
+# reconciled against it character by character. The primary source settles
+# both open questions from the secondary-sourced round: ASI06 is "Memory &
+# Context Poisoning" (confirming the five-source majority over f5.com's
+# dissent), and ASI05 does carry the "(RCE)" suffix, restored here. The
+# primary source also uses "&" rather than "and" in ASI02, ASI03 and ASI06;
+# those three are corrected to match it exactly. The remaining titles were
+# already exact matches. Titles now rest on that primary-source digest, not
+# on secondary corroboration.
 #
 # The document's own resource page identifies it as "for 2026" without
 # stating a separate version number on the page as fetched; used "2026" as
 # the version, the identifier the document uses for itself, rather than a
 # "2.01" update figure that appeared in a single unverified search summary
-# and could not be independently confirmed.
+# and could not be independently confirmed. The primary-source digest does
+# not address versioning, so this line is unchanged.
 
 id = "owasp-agentic-top10"
 kind = "standard"

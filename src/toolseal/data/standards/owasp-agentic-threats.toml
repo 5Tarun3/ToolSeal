@@ -9,19 +9,25 @@
 # distinction was drawn; the id was corrected to owasp-agentic-threats so it
 # no longer collides with the actual Top 10 document's name.
 #
-# Titles corroborated against three independent secondary sources (a
-# HumanSecurity blog post, a Pipelab.org article, and a third-party GitHub
-# mapping doc that itself notes it does not guarantee OWASP's exact
-# wording) - the OWASP resource page would not render as text through
-# available tooling, so this is corroboration, not a primary-source quote.
-# The three agree on 13 of 15 titles. T10 differs only in hyphenation
-# ("Human in the Loop" vs "Human-in-the-Loop"; kept unhyphenated, matching
-# one of the three). T11 has a real wording split: two sources abbreviate
-# "Unexpected RCE and Code Attacks", one spells out "Unexpected Remote Code
-# Execution and Code Attacks"; kept the abbreviated form, matching two of
-# the three and this catalogue's short-label style. T6 and T7 use "&" in
-# all three sources; kept "and" for this catalogue's own consistency, not a
-# source disagreement.
+# Titles were first drawn up by corroborating three independent secondary
+# sources (a HumanSecurity blog post, a Pipelab.org article, and a
+# third-party GitHub mapping doc that itself noted it did not guarantee
+# OWASP's exact wording), because the OWASP resource page would not render
+# as text through any tooling available at the time. That round got 13 of
+# 15 titles right; T10's hyphenation and T11's wording ("Unexpected RCE and
+# Code Attacks" vs a fuller spelled-out variant) were genuinely unsettled
+# by secondary sources alone, and T6-T9 were normalized from the sources'
+# "&" to "and" for house style rather than because of any source
+# disagreement.
+#
+# The project owner has since supplied a primary-source digest
+# (docs/superpowers/specs/OWASP_Agentic_Security_Taxonomies.md, a table
+# transcribing the published T1-T15 titles) and every title below was
+# reconciled against it character by character. The primary source uses
+# "&" rather than "and" in T6, T7, T8 and T9; those four are corrected here
+# to match it exactly rather than kept in the catalogue's own house style.
+# T10, T11 and the remaining ten titles were already exact matches. Titles
+# now rest on that primary-source digest, not on secondary corroboration.
 
 id = "owasp-agentic-threats"
 kind = "standard"
