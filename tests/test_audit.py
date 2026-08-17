@@ -403,6 +403,29 @@ def test_min_severity_filters_the_report(tmp_path: Path) -> None:
     assert all(f["severity"] == "critical" for f in payload["findings"])
 
 
+def test_family_table_is_headed_and_aligned(tmp_path: Path) -> None:
+    (tmp_path / "main.py").write_text("x = 1\n", encoding="utf-8")
+
+    result = runner.invoke(app, ["audit", str(tmp_path)])
+    lines = result.stdout.splitlines()
+
+    header_line = next(
+        line for line in lines if line.split() == ["family", "score", "pass", "fail", "n/a"]
+    )
+    header_index = lines.index(header_line)
+    trailer = lines[header_index + 1 :]
+    family_rows = trailer[: trailer.index("")] if "" in trailer else trailer
+    assert family_rows
+
+    # A column boundary is a literal two-space separator between fixed-width
+    # blocks; if a heading lost (or won unnecessarily) the width comparison
+    # against its data, the separator would drift between the header and the
+    # rows beneath it.
+    score_column = header_line.index("score")
+    for row in family_rows:
+        assert row[score_column - 2 : score_column] == "  "
+
+
 def test_every_registered_check_has_a_remediation() -> None:
     # A check with no automatic remediation is a feature request, not a check.
     assert all(item.remediation for item in all_checks())

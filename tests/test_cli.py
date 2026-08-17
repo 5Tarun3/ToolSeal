@@ -39,6 +39,21 @@ def test_doctor_human_output_includes_python_version() -> None:
     assert "python" in result.stdout
 
 
+def test_doctor_human_output_is_headed_and_aligned() -> None:
+    result = runner.invoke(app, ["doctor"])
+
+    lines = result.stdout.splitlines()
+    assert lines[0].split()[:2] == ["field", "value"]
+
+    # A column boundary is always a literal two-space separator between two
+    # fixed-width blocks, regardless of which side is padded - so the
+    # characters just before "value" must be that separator on every row, or
+    # the heading and the data have drifted out of alignment.
+    value_column = lines[0].index("value")
+    for line in lines[1:]:
+        assert line[value_column - 2 : value_column] == "  "
+
+
 def test_unknown_option_is_a_usage_error() -> None:
     result = runner.invoke(app, ["--definitely-not-an-option"])
 

@@ -53,6 +53,25 @@ def test_list_shows_coverage_of_each_standard() -> None:
     assert "%" in result.stdout
 
 
+def test_list_is_headed_and_aligned() -> None:
+    result = runner.invoke(app, ["policy", "list"])
+    lines = result.stdout.splitlines()
+
+    header = lines[0]
+    assert header.split()[:3] == ["standard", "coverage", "checkable"]
+
+    # A column boundary is a literal two-space separator between fixed-width
+    # blocks. If a heading lost the width comparison against its data (or won
+    # it unnecessarily), that separator would land in a different place on a
+    # data row than it does on the header.
+    checkable_column = header.index("checkable")
+    trailer = lines[1:]
+    data_lines = trailer[: trailer.index("")] if "" in trailer else trailer
+    assert data_lines
+    for line in data_lines:
+        assert line[checkable_column - 2 : checkable_column] == "  "
+
+
 def test_list_marks_the_curated_subsets() -> None:
     # iso-42001 (4 of ~36 controls) and nist-ai-rmf (7 of ~70) are shortlists
     # drawn up before any check mapping existed. Their rows must carry a

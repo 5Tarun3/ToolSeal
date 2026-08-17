@@ -16,6 +16,7 @@ from typing import Annotated, Any
 
 import typer
 
+from toolseal.cli._columns import col_width
 from toolseal.core.audit import audit as run_audit
 from toolseal.core.policy.model import AuditReport, Severity, Verdict
 from toolseal.core.report import to_sarif
@@ -116,11 +117,23 @@ def _print_report(report: AuditReport, findings: tuple[Any, ...]) -> None:
             typer.secho(f"           fix: {finding.remediation}", fg=typer.colors.BRIGHT_BLACK)
         typer.echo("")
 
-    typer.echo("  family   score   pass  fail   n/a")
-    for family in report.family_scores():
+    families = report.family_scores()
+    family_w = col_width("family", (f.family for f in families))
+    score_w = col_width("score", (str(f.score) for f in families))
+    pass_w = col_width("pass", (str(f.passed) for f in families))
+    fail_w = col_width("fail", (str(f.failed) for f in families))
+    na_w = col_width("n/a", (str(f.not_applicable) for f in families))
+
+    typer.secho(
+        f"  {'family'.ljust(family_w)}  {'score'.rjust(score_w)}  {'pass'.rjust(pass_w)}  "
+        f"{'fail'.rjust(fail_w)}  {'n/a'.rjust(na_w)}",
+        bold=True,
+    )
+    for family in families:
         typer.echo(
-            f"  {family.family:<8} {family.score:>4}   {family.passed:>4}  "
-            f"{family.failed:>4}  {family.not_applicable:>4}"
+            f"  {family.family.ljust(family_w)}  {str(family.score).rjust(score_w)}  "
+            f"{str(family.passed).rjust(pass_w)}  {str(family.failed).rjust(fail_w)}  "
+            f"{str(family.not_applicable).rjust(na_w)}"
         )
 
     # `blocking` is printed separately from the score on purpose: an average can

@@ -12,6 +12,7 @@ from typing import Annotated
 
 import typer
 
+from toolseal.cli._columns import col_width
 from toolseal.cli.errors import command as error_boundary
 from toolseal.core.policy.controls import ControlRef, load_catalogues, resolve
 from toolseal.core.policy.coverage import coverage_for
@@ -91,19 +92,38 @@ def _explain_control(raw: str) -> None:
 def list_standards() -> None:
     """List the standards and regimes shipped with toolseal."""
     catalogues = load_catalogues()
-    width = max(len(key) for key in catalogues)
 
-    partial_seen = False
+    rows = []
     for key in sorted(catalogues):
         catalogue = catalogues[key]
         report = coverage_for(key)
-        covered = f"{report.covered}/{report.checkable_total}"
-        marker = "" if report.complete_enumeration else " *"
-        if marker:
+        marker = "" if report.complete_enumeration else "*"
+        rows.append(
+            (
+                key,
+                f"{report.percentage}%{marker}",
+                f"{report.covered}/{report.checkable_total}",
+                catalogue.name,
+            )
+        )
+
+    standard_w = col_width("standard", (row[0] for row in rows))
+    coverage_w = col_width("coverage", (row[1] for row in rows))
+    checkable_w = col_width("checkable", (row[2] for row in rows))
+
+    typer.secho(
+        f"{'standard'.ljust(standard_w)}  {'coverage'.rjust(coverage_w)}  "
+        f"{'checkable'.rjust(checkable_w)}  name",
+        bold=True,
+    )
+
+    partial_seen = False
+    for key, coverage, checkable, name in rows:
+        if "*" in coverage:
             partial_seen = True
         typer.echo(
-            f"{key.ljust(width)}  {report.percentage:3d}%{marker.ljust(2)} "
-            f"{covered.rjust(6)} checkable controls  {catalogue.name}"
+            f"{key.ljust(standard_w)}  {coverage.rjust(coverage_w)}  "
+            f"{checkable.rjust(checkable_w)}  {name}"
         )
 
     if partial_seen:
