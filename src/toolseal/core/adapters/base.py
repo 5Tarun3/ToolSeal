@@ -45,6 +45,16 @@ class RenderedFile:
     content: str
     mode: int = DEFAULT_FILE_MODE
     overwrite: bool = False
+    block_managed: bool = False
+    """True when toolseal owns only a delimited block inside this file, not the
+    whole thing.
+
+    Set this per file rather than special-casing a filename in the writer: a
+    file like `.claude/settings.json` is entirely toolseal's, and gets
+    overwritten outright; a file like `CLAUDE.md` belongs to the project and
+    toolseal must only touch the block it manages inside it. See
+    :mod:`toolseal.core.injection` for how the two modes differ.
+    """
 
     @property
     def is_sensitive(self) -> bool:

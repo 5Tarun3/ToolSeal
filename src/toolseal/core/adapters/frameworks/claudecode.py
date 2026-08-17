@@ -131,5 +131,9 @@ class ClaudeCodeFramework:
                     project_name=spec.project_name,
                     provider_name=provider.display_name,
                 ),
+                # CLAUDE.md belongs to the project, not to toolseal: an existing
+                # project already has instructions there. Only the marked block
+                # is toolseal's; everything else in the file is left alone.
+                block_managed=True,
             ),
         )
