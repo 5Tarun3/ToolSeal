@@ -277,6 +277,27 @@ def test_pinned_dependency_with_a_lockfile_is_clean(tmp_path: Path) -> None:
     assert not [f for f in audit(tmp_path).findings if f.check_id == "C1"]
 
 
+def test_lockfile_with_unpinned_specifiers_is_clean(tmp_path: Path) -> None:
+    # A lockfile already delivers the reproducibility C1 exists to protect, so
+    # an unpinned specifier in project metadata is no longer a finding once one
+    # is present - refined 2026-08-18.
+    (tmp_path / "requirements.txt").write_text("requests>=2.0\n", encoding="utf-8")
+    (tmp_path / "uv.lock").write_text("", encoding="utf-8")
+
+    assert not [f for f in audit(tmp_path).findings if f.check_id == "C1"]
+
+
+def test_no_lockfile_and_no_pinning_is_still_reported(tmp_path: Path) -> None:
+    # With neither a lockfile nor a fully pinned set, both findings still fire -
+    # the lockfile refinement narrows the check, it does not remove it.
+    (tmp_path / "requirements.txt").write_text("requests>=2.0\n", encoding="utf-8")
+
+    findings = [f for f in audit(tmp_path).findings if f.check_id == "C1"]
+
+    assert any("lockfile" in f.title.lower() for f in findings)
+    assert any("Unpinned" in f.title for f in findings)
+
+
 def test_osv_is_not_queried_for_unresolved_versions() -> None:
     # A range cannot be looked up, and guessing which version it would install
     # would produce findings about software the project may never run.

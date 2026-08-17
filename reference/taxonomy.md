@@ -166,8 +166,9 @@ where the decision is actually made.
 | `C5` | No SBOM | `low` |
 
 **C1 — Unpinned dependencies**
-*Detects:* any dependency declared with an unconstrained specifier; or the
-absence of both a lockfile **and** a fully pinned dependency set.
+*Detects:* the absence of both a lockfile **and** a fully pinned dependency
+set; with no lockfile present, also any individual dependency declared with an
+unconstrained specifier.
 *Remediates:* the scaffold pins every direct dependency to the exact version the
 cell was verified against.
 *Grounding:* dependency-challenge catalogue [P6]; reproducible builds [P7].
@@ -179,6 +180,23 @@ cell was verified against.
 > remains weaker than hash pinning, since transitive versions still float, so
 > the recommendation stands — but on its own it is no longer a finding. Recorded
 > per rule 3.
+
+> **Refined 2026-08-18.** The "unpinned dependency" half still fired per
+> specifier regardless of whether a lockfile existed, which meant a project
+> carrying a committed lockfile could still fail `C1` for declaring, in its own
+> metadata, something like `keyring>=25.0`. That is also bad advice on its own
+> terms: pinning exact versions in a distributed library's published metadata
+> breaks downstream resolution, and a lockfile already delivers the
+> reproducibility this check exists to protect. A lockfile now satisfies `C1`
+> on its own — when `model.dependencies.lockfile` is present, unpinned
+> specifiers are no longer a finding. Absent a lockfile, the existing behaviour
+> stands: either a lockfile or a fully pinned set is required, and without
+> either, both halves still report. Stricter pinning is not removed as an
+> option, only relocated: it is not this check's default, but the intended job
+> of the policy-profile layer specced in
+> `docs/superpowers/specs/2026-08-13-standards-compliance-policy-design.md`
+> (not yet implemented), which is designed to let a profile require exact
+> pinning where a regime demands it. Severity unchanged. Recorded per rule 3.
 
 **C2 — Dependency carrying a known advisory**
 *Detects:* resolved dependency set queried against OSV.

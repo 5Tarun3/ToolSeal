@@ -100,13 +100,14 @@ def _c1(model: ProjectModel) -> Sequence[Finding]:
     findings: list[Finding] = []
 
     declared = model.dependencies.declared
+    has_lockfile = model.dependencies.lockfile is not None
     fully_pinned = bool(declared) and all(d.pinned for d in declared)
 
     # A fully `==`-pinned dependency set reproduces the direct dependency graph
     # without a separate lockfile, which is what the lockfile requirement is for.
     # It is weaker than hash pinning, because transitive versions still float -
     # so the recommendation stays, but it is not a finding on its own.
-    if model.dependencies.lockfile is None and not fully_pinned:
+    if not has_lockfile and not fully_pinned:
         findings.append(
             Finding(
                 check_id="C1",
@@ -120,17 +121,24 @@ def _c1(model: ProjectModel) -> Sequence[Finding]:
             )
         )
 
-    unpinned = [d for d in model.dependencies.declared if not d.pinned]
-    findings.extend(
-        Finding(
-            check_id="C1",
-            severity=Severity.HIGH,
-            title="Unpinned dependency",
-            detail=f"{dependency.name} is declared as {dependency.specifier or 'any version'}",
-            remediation=f"Pin {dependency.name} to an exact version.",
+    # A lockfile already delivers the reproducibility this check exists to
+    # protect, so an unconstrained specifier in project metadata is only a
+    # finding when there is no lockfile to fall back on. Requiring exact pins
+    # regardless - the stricter posture some regimes want - is not this
+    # check's default; it belongs to a policy profile, not a floor every
+    # project fails without one. Refined 2026-08-18, recorded in the taxonomy.
+    if not has_lockfile:
+        unpinned = [d for d in declared if not d.pinned]
+        findings.extend(
+            Finding(
+                check_id="C1",
+                severity=Severity.HIGH,
+                title="Unpinned dependency",
+                detail=f"{dependency.name} is declared as {dependency.specifier or 'any version'}",
+                remediation=f"Pin {dependency.name} to an exact version.",
+            )
+            for dependency in unpinned
         )
-        for dependency in unpinned
-    )
     return findings
 
 
