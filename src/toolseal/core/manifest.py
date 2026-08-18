@@ -134,6 +134,16 @@ class Manifest:
     tool_policies: dict[str, ToolPolicy] = field(default_factory=dict)
     """Per-tool policy declared under ``[policy.tool.<name>]`` (P46, spec §7)."""
 
+    profiles: tuple[str, ...] = ()
+    """Regime/standard ids adopted for this project, declared as
+    ``[policy] profiles = [...]`` (P47, spec §10).
+
+    Written by ``toolseal policy apply`` and read automatically by ``toolseal
+    audit`` and ``toolseal policy check`` - no flag required. Plain strings
+    rather than a richer structure because the only thing a consumer needs is
+    something to hand to ``core.policy.profile.load_profile``.
+    """
+
     base_url: str = ""
     """Endpoint override, or ``""`` to mean "use the provider's default".
 
@@ -179,6 +189,9 @@ class Manifest:
             "[policy]",
             "# F2: destructive tools require confirmation before they run.",
             f"approval_required_for_destructive = {approval}",
+            "# Regimes/standards adopted via `toolseal policy apply`. `audit` and",
+            "# `policy check` read this automatically - no flag required.",
+            f"profiles = [{', '.join(_quote(p) for p in self.profiles)}]",
             "",
             "[justifications]",
             "# B2: a shell or code-execution tool needs a reason recorded here,",
@@ -249,6 +262,11 @@ class Manifest:
             tuple(str(item) for item in enabled_tools) if isinstance(enabled_tools, list) else ()
         )
 
+        raw_profiles = policy.get("profiles")
+        profiles = (
+            tuple(str(item) for item in raw_profiles) if isinstance(raw_profiles, list) else ()
+        )
+
         return cls(
             project_name=str(project["name"]),
             provider_id=str(stack["provider"]),
@@ -262,6 +280,7 @@ class Manifest:
             tool_policies=_parse_tool_policies(policy.get("tool")),
             base_url=str(stack.get("base_url", "")),
             tools=tools,
+            profiles=profiles,
         )
 
     @classmethod

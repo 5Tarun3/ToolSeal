@@ -39,7 +39,7 @@ from dataclasses import dataclass, field, replace
 from importlib import resources
 from typing import Any, Final
 
-from toolseal.core.policy.model import Check, Severity, all_checks
+from toolseal.core.policy.model import AuditReport, Check, CheckResult, Severity, all_checks
 from toolseal.errors import ConfigError
 
 DATA_PACKAGE: Final = "toolseal.data.regimes"
@@ -291,3 +291,28 @@ def resolve(profiles: Sequence[Profile], baseline: Iterable[Check] | None = None
         decisions=decisions,
         not_assessed=tuple(seen_not_assessed),
     )
+
+
+def apply_resolution(report: AuditReport, resolution: Resolution) -> AuditReport:
+    """Overlay *resolution* onto an already-produced `AuditReport` (P47).
+
+    `Check.evaluate` never reads `severity` - verdict and findings come only
+    from `run`/`applies` - so replacing each result's check with its resolved
+    (severity-adjusted) counterpart *after* the engine has already run
+    produces exactly the report a profile-aware engine would have produced,
+    without `core/audit/engine.py` ever being told a profile exists. This is
+    the same "resolve, then overlay onto a finished report" shape
+    `relax.apply_relaxations` already uses for relaxation; here it is applied
+    to severity instead of verdict.
+
+    A result whose check id is absent from *resolution* (should not happen -
+    `resolve()` always returns every baseline check) is left untouched rather
+    than dropped, so a stale or partial resolution degrades safely instead of
+    silently losing results.
+    """
+    by_id = {check.id: check for check in resolution.checks}
+    new_results = tuple(
+        CheckResult(by_id.get(result.check.id, result.check), result.verdict, result.findings)
+        for result in report.results
+    )
+    return AuditReport(root=report.root, results=new_results)

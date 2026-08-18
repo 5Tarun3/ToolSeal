@@ -16,10 +16,11 @@ from __future__ import annotations
 
 import pytest
 
-from toolseal.core.policy.model import Check, Severity
+from toolseal.core.policy.model import AuditReport, Check, CheckResult, Severity, Verdict
 from toolseal.core.policy.profile import (
     DATA_PACKAGE,
     Profile,
+    apply_resolution,
     parse_profile,
     resolve,
 )
@@ -251,3 +252,79 @@ def test_profile_is_frozen() -> None:
 
     with pytest.raises(AttributeError):
         profile.id = "changed"  # type: ignore[misc]
+
+
+# --- apply_resolution: overlaying a resolution onto an already-run report (P47) --
+
+
+def test_apply_resolution_raises_the_severity_on_a_matching_result() -> None:
+    # F1 fails at baseline MEDIUM; a profile resolution raises it to HIGH.
+    # `apply_resolution` must be equivalent to having resolved *before* the
+    # engine ran - the verdict and findings are untouched, only severity moves.
+    report = AuditReport(
+        root=".",
+        results=(CheckResult(_check("F1", Severity.MEDIUM), Verdict.FAIL, ()),),
+    )
+    resolution = resolve(
+        [Profile(id="hipaa", kind="regime", name="HIPAA", severity={"F1": Severity.HIGH})],
+        baseline=BASELINE_CHECKS,
+    )
+
+    resolved_report = apply_resolution(report, resolution)
+
+    (result,) = resolved_report.results
+    assert result.check.severity is Severity.HIGH
+    assert result.verdict is Verdict.FAIL  # unchanged - only severity moved
+
+
+def test_apply_resolution_leaves_verdict_and_findings_untouched() -> None:
+    report = AuditReport(
+        root=".",
+        results=(CheckResult(_check("D1", Severity.CRITICAL), Verdict.PASS, ()),),
+    )
+    resolution = resolve([], baseline=BASELINE_CHECKS)
+
+    resolved_report = apply_resolution(report, resolution)
+
+    (result,) = resolved_report.results
+    assert result.verdict is Verdict.PASS
+    assert result.findings == ()
+
+
+def test_apply_resolution_changes_the_score_the_same_way_resolving_first_would() -> None:
+    # F1 baseline MEDIUM (weight 3); raised to HIGH (weight 6) by a profile.
+    # A failing MEDIUM costs less of the total than a failing HIGH - scoring
+    # after the fact must reflect the *raised* weight, not the baseline one.
+    report = AuditReport(
+        root=".",
+        results=(
+            CheckResult(_check("F1", Severity.MEDIUM), Verdict.FAIL, ()),
+            CheckResult(_check("D1", Severity.CRITICAL), Verdict.PASS, ()),
+        ),
+    )
+    baseline_score = report.score
+
+    resolution = resolve(
+        [Profile(id="hipaa", kind="regime", name="HIPAA", severity={"F1": Severity.HIGH})],
+        baseline=BASELINE_CHECKS,
+    )
+    resolved_report = apply_resolution(report, resolution)
+
+    assert resolved_report.score < baseline_score
+
+
+def test_apply_resolution_on_an_unresolved_check_id_leaves_it_untouched() -> None:
+    # A result whose check id is not in the resolution (should not happen in
+    # practice - `resolve()` always returns the full baseline) degrades
+    # safely rather than dropping the result.
+    report = AuditReport(
+        root=".",
+        results=(CheckResult(_check("ZZ9", Severity.LOW), Verdict.PASS, ()),),
+    )
+    resolution = resolve([], baseline=BASELINE_CHECKS)
+
+    resolved_report = apply_resolution(report, resolution)
+
+    (result,) = resolved_report.results
+    assert result.check.id == "ZZ9"
+    assert result.check.severity is Severity.LOW

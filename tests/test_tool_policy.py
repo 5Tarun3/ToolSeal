@@ -118,6 +118,37 @@ def test_round_trips_through_to_toml() -> None:
     assert reparsed.policy_for("query_postgres") == manifest.policy_for("query_postgres")
 
 
+# --- declared profiles (P47, spec §10): "no flag" audit/check integration -----
+
+
+def test_a_declared_profile_parses() -> None:
+    text = BASE + '\n[policy]\nprofiles = ["hipaa"]\n'
+
+    manifest = Manifest.from_toml(text)
+
+    assert manifest.profiles == ("hipaa",)
+
+
+def test_no_declared_profile_defaults_to_empty() -> None:
+    manifest = Manifest.from_toml(BASE)
+
+    assert manifest.profiles == ()
+
+
+def test_declared_profiles_round_trip_through_to_toml() -> None:
+    manifest = Manifest(
+        project_name="demo",
+        provider_id="ollama",
+        framework_id="langgraph",
+        model="",
+        profiles=("hipaa", "dora"),
+    )
+
+    reparsed = Manifest.from_toml(manifest.to_toml())
+
+    assert reparsed.profiles == ("hipaa", "dora")
+
+
 # --- the audit: declared intent, and the one finding --------------------------
 
 
