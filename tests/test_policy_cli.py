@@ -9,6 +9,7 @@ assert that output, because an explanation nobody can read is not one.
 from __future__ import annotations
 
 import json
+import stat
 from pathlib import Path
 
 import pytest
@@ -715,3 +716,195 @@ def test_init_without_profile_declares_no_profiles(tmp_path: Path) -> None:
     manifest = Manifest.load(root)
     assert manifest is not None
     assert manifest.profiles == ()
+
+
+# --- enforce / verify: the policy lock (spec §8) -------------------------------
+
+
+def test_enforce_seals_and_reports_the_hash(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(app, ["policy", "enforce", "--directory", str(root)])
+
+    assert result.exit_code == ExitCode.OK, result.output
+    assert (root / ".toolseal" / "policy.lock").is_file()
+    assert "hash:" in result.stdout
+
+
+def test_enforce_output_includes_a_copy_pasteable_ci_step(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(app, ["policy", "enforce", "--directory", str(root)])
+
+    assert "toolseal policy verify" in result.stdout
+    assert "run:" in result.stdout
+
+
+def test_enforce_output_never_claims_tamper_proof(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(app, ["policy", "enforce", "--directory", str(root)])
+
+    lowered = result.stdout.lower()
+    assert "tamper-proof" not in lowered
+    assert "tamperproof" not in lowered
+    assert "immutable" not in lowered
+    assert "detectable and attributable" in lowered
+
+
+def test_enforce_twice_without_release_is_refused(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    runner.invoke(app, ["policy", "enforce", "--directory", str(root)])
+
+    result = runner.invoke(app, ["policy", "enforce", "--directory", str(root)])
+
+    assert result.exit_code == ExitCode.USAGE
+    assert "--release" in result.output
+
+
+def test_enforce_without_a_manifest_is_a_usage_error(tmp_path: Path) -> None:
+    result = runner.invoke(app, ["policy", "enforce", "--directory", str(tmp_path)])
+
+    assert result.exit_code == ExitCode.USAGE
+    assert "toolseal init" in result.output
+
+
+def test_enforce_release_unseals(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    runner.invoke(app, ["policy", "enforce", "--directory", str(root)])
+
+    result = runner.invoke(app, ["policy", "enforce", "--release", "--directory", str(root)])
+
+    assert result.exit_code == ExitCode.OK, result.output
+    assert not (root / ".toolseal" / "policy.lock").exists()
+
+
+def test_enforce_release_without_a_lock_is_a_usage_error(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(app, ["policy", "enforce", "--release", "--directory", str(root)])
+
+    assert result.exit_code == ExitCode.USAGE
+    assert "nothing to release" in result.output
+
+
+def test_verify_with_no_lock_exits_clean(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(app, ["policy", "verify", "--directory", str(root)])
+
+    assert result.exit_code == ExitCode.OK
+    assert "nothing sealed" in result.stdout.lower()
+
+
+def test_verify_after_enforce_on_an_unchanged_project_reports_no_drift(tmp_path: Path) -> None:
+    root = _init(tmp_path, profile="hipaa")
+    runner.invoke(app, ["policy", "enforce", "--directory", str(root)])
+
+    first = runner.invoke(app, ["policy", "verify", "--directory", str(root)])
+    second = runner.invoke(app, ["policy", "verify", "--directory", str(root)])
+
+    assert first.exit_code == ExitCode.OK, first.output
+    assert second.exit_code == ExitCode.OK, second.output
+    assert "no drift" in first.stdout.lower()
+    assert "no drift" in second.stdout.lower()
+
+
+def test_verify_detects_a_hand_edited_lock_file_and_names_the_check(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    runner.invoke(app, ["policy", "enforce", "--directory", str(root)])
+
+    lock_path = root / ".toolseal" / "policy.lock"
+    lock_path.chmod(stat.S_IWRITE)
+    data = json.loads(lock_path.read_text(encoding="utf-8"))
+    data["severities"]["B2"] = "low"
+    lock_path.write_text(json.dumps(data), encoding="utf-8")
+    lock_path.chmod(stat.S_IREAD)
+
+    result = runner.invoke(app, ["policy", "verify", "--directory", str(root)])
+
+    assert result.exit_code != ExitCode.OK
+    assert "B2" in result.stdout
+    assert "Drift detected" in result.stdout
+
+
+def test_verify_detects_a_hand_edited_manifest_and_names_the_profile(tmp_path: Path) -> None:
+    root = _init(tmp_path, profile="hipaa")
+    runner.invoke(app, ["policy", "enforce", "--directory", str(root)])
+
+    text = (root / MANIFEST_NAME).read_text(encoding="utf-8")
+    edited = text.replace('profiles = ["hipaa"]', "profiles = []")
+    (root / MANIFEST_NAME).write_text(edited, encoding="utf-8")
+
+    result = runner.invoke(app, ["policy", "verify", "--directory", str(root)])
+
+    assert result.exit_code != ExitCode.OK
+    assert "profiles" in result.stdout.lower()
+
+
+def test_relax_on_a_sealed_check_is_refused_and_names_the_lock(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    runner.invoke(app, ["policy", "enforce", "--directory", str(root)])
+
+    result = runner.invoke(
+        app,
+        [
+            "policy",
+            "relax",
+            "B2",
+            "--reason",
+            "needs shell",
+            "--expires",
+            "2026-12-31",
+            "--directory",
+            str(root),
+        ],
+    )
+
+    assert result.exit_code == ExitCode.USAGE
+    assert "policy.lock" in result.output
+    assert "enforce --release" in result.output
+
+
+def test_relax_on_an_unsealed_check_still_works(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(
+        app,
+        [
+            "policy",
+            "relax",
+            "B2",
+            "--reason",
+            "needs shell",
+            "--expires",
+            "2026-12-31",
+            "--directory",
+            str(root),
+        ],
+    )
+
+    assert result.exit_code == ExitCode.OK, result.output
+
+
+def test_relax_works_again_after_enforce_release(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    runner.invoke(app, ["policy", "enforce", "--directory", str(root)])
+    runner.invoke(app, ["policy", "enforce", "--release", "--directory", str(root)])
+
+    result = runner.invoke(
+        app,
+        [
+            "policy",
+            "relax",
+            "B2",
+            "--reason",
+            "needs shell after release",
+            "--expires",
+            "2026-12-31",
+            "--directory",
+            str(root),
+        ],
+    )
+
+    assert result.exit_code == ExitCode.OK, result.output

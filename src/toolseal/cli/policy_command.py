@@ -20,6 +20,7 @@ from toolseal.cli._columns import col_width
 from toolseal.cli.errors import command as error_boundary
 from toolseal.core.audit import audit as run_audit
 from toolseal.core.manifest import MANIFEST_NAME, Manifest
+from toolseal.core.policy import lock as policy_lock
 from toolseal.core.policy.controls import ControlRef, load_catalogues, resolve
 from toolseal.core.policy.coverage import coverage_for
 from toolseal.core.policy.model import Check, Verdict, all_checks
@@ -584,6 +585,18 @@ def relax(
         message = f"no check named {check_id!r}; try `toolseal policy list`"
         raise UsageError(message)
 
+    # §8: `enforce` seals the resolved policy and marks every check
+    # non-relaxable while sealed - this is the hook P47 left open. A sealed
+    # check is refused rather than silently accepted, naming the lock so the
+    # fix (`enforce --release`) is obvious rather than merely "no".
+    sealing_lock = policy_lock.sealed_check(root, matched.id)
+    if sealing_lock is not None:
+        message = (
+            f"{matched.id} is sealed by {policy_lock.LOCK_DIR}/{policy_lock.LOCK_NAME}; "
+            "run `toolseal policy enforce --release` before relaxing it"
+        )
+        raise UsageError(message)
+
     if not reason.strip():
         message = "relax requires a non-empty --reason"
         raise UsageError(message)
@@ -622,9 +635,134 @@ def relax(
     typer.echo(f"  scope: {', '.join(tools) if tools else 'project-wide'}")
 
 
+# --- enforce / verify: the policy lock (spec §8) ------------------------------
+
+
+def enforce(
+    release: Annotated[
+        bool,
+        typer.Option("--release", help="Unseal instead of sealing - requires this explicit flag."),
+    ] = False,
+    directory: Annotated[
+        Path | None, typer.Option("--directory", "-d", help="Project to seal or unseal.")
+    ] = None,
+) -> None:
+    """Seal the resolved policy, or unseal it with `--release`.
+
+    Sealing writes `.toolseal/policy.lock` (the resolved severities, active
+    profiles, declared relaxations, and every check id `relax` will refuse to
+    act on) and sets that file read-only. Read-only is a speed bump, not a
+    boundary: anyone who can run the agent can clear it. `toolseal policy
+    verify` - run in CI, where that is not true - is the check that actually
+    holds.
+    """
+    root = (directory or Path.cwd()).resolve()
+
+    if release:
+        _release(root)
+        return
+
+    _seal(root)
+
+
+def _seal(root: Path) -> None:
+    if Manifest.load(root) is None:
+        message = f"no {MANIFEST_NAME} found in {root}; run `toolseal init` first"
+        raise UsageError(message)
+
+    if policy_lock.is_sealed(root):
+        message = (
+            f"{policy_lock.LOCK_DIR}/{policy_lock.LOCK_NAME} already exists; run "
+            "`toolseal policy enforce --release` first, or `toolseal policy verify` to check it"
+        )
+        raise UsageError(message)
+
+    sealed = policy_lock.seal(root)
+
+    typer.secho(f"Sealed {len(sealed.non_relaxable)} checks.", fg=typer.colors.GREEN)
+    if sealed.profiles:
+        typer.echo(f"  profiles: {', '.join(sealed.profiles)}")
+    typer.echo(f"  wrote {policy_lock.LOCK_DIR}/{policy_lock.LOCK_NAME} (read-only)")
+    typer.echo(f"  hash: {sealed.policy_hash}")
+    typer.echo("")
+    typer.echo(policy_lock.TAMPER_EVIDENT_NOTICE)
+    typer.echo("")
+    typer.echo("`toolseal policy verify` is already a pre-commit hook if this project's")
+    typer.echo(".pre-commit-config.yaml came from `toolseal init`. Add it to CI too - that")
+    typer.echo("is where this lock actually holds, not the read-only bit on a developer's")
+    typer.echo("machine. Example step:")
+    typer.echo(policy_lock.CI_VERIFY_STEP_EXAMPLE)
+
+
+def _release(root: Path) -> None:
+    if not policy_lock.is_sealed(root):
+        message = (
+            f"no {policy_lock.LOCK_DIR}/{policy_lock.LOCK_NAME} found in {root}; nothing to release"
+        )
+        raise UsageError(message)
+
+    policy_lock.release(root)
+
+    typer.secho("Unsealed.", fg=typer.colors.GREEN)
+    typer.echo(f"  removed {policy_lock.LOCK_DIR}/{policy_lock.LOCK_NAME}")
+    typer.echo("  `toolseal policy relax` can act on any check again.")
+
+
+def verify(
+    directory: Annotated[
+        Path | None, typer.Option("--directory", "-d", help="Project to check.")
+    ] = None,
+) -> None:
+    """Re-derive the policy and compare it against what was sealed.
+
+    Exit 0 when nothing is sealed, or when nothing has drifted. Non-zero the
+    moment either the lock file itself or the underlying `toolseal.toml` no
+    longer matches what `enforce` recorded - and the output names the field
+    that changed, not merely that something did. This is the check meant to
+    run unconditionally in CI and as a pre-commit hook: it is safe to add to
+    both before a project has ever run `enforce`.
+    """
+    root = (directory or Path.cwd()).resolve()
+    report = policy_lock.verify(root)
+
+    if not report.sealed:
+        typer.echo(f"no {policy_lock.LOCK_DIR}/{policy_lock.LOCK_NAME} found; nothing sealed.")
+        typer.echo("Run `toolseal policy enforce` to seal the current policy.")
+        raise typer.Exit(ExitCode.OK)
+
+    if not report.drifted:
+        typer.secho("No drift: the sealed policy still matches the project.", fg=typer.colors.GREEN)
+        raise typer.Exit(ExitCode.OK)
+
+    typer.secho("Drift detected.", fg=typer.colors.RED, bold=True)
+    if report.lock_tampered:
+        typer.echo(
+            f"  {policy_lock.LOCK_DIR}/{policy_lock.LOCK_NAME} was edited directly: its "
+            "recorded hash no longer matches its own recorded content."
+        )
+    for line in report.profile_changes:
+        typer.echo(f"  {line}")
+    for line in report.severity_changes:
+        typer.echo(f"  {line}")
+    for line in report.relaxation_changes:
+        typer.echo(f"  {line}")
+    for line in report.non_relaxable_changes:
+        typer.echo(f"  {line}")
+    typer.echo("")
+    typer.echo(
+        "If this drift is intentional: `toolseal policy enforce --release` then "
+        "`toolseal policy enforce` to reseal. If it is not, treat it as a security "
+        "finding - this is exactly what `verify` in CI exists to catch."
+    )
+
+    raise typer.Exit(ExitCode.FINDINGS)
+
+
 policy_app.command("list")(error_boundary(list_standards))
 policy_app.command("explain")(error_boundary(explain))
 policy_app.command("show")(error_boundary(show))
 policy_app.command("apply")(error_boundary(apply_regime))
 policy_app.command("check")(error_boundary(check))
 policy_app.command("relax")(error_boundary(relax))
+policy_app.command("enforce")(error_boundary(enforce))
+policy_app.command("verify")(error_boundary(verify))
