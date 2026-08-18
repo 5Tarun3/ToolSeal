@@ -8,14 +8,32 @@ assert that output, because an explanation nobody can read is not one.
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
 from typer.testing import CliRunner
 
 from toolseal.cli import app, policy_command
+from toolseal.core.manifest import MANIFEST_NAME, Manifest
 from toolseal.core.policy import coverage as coverage_module
 from toolseal.core.policy.controls import load_catalogues
+from toolseal.core.policy.relax import parse_relaxations
+from toolseal.errors import ExitCode
 
 runner = CliRunner()
+
+
+def _init(tmp_path: Path, *, profile: str | None = None) -> Path:
+    """Scaffold a project through the real `init` command, for CLI-level tests
+    that need a project `policy show`/`apply`/`check`/`relax` can act on."""
+    root = tmp_path / "demo"
+    args = ["init", "demo", "--directory", str(root)]
+    if profile is not None:
+        args += ["--profile", profile]
+    result = runner.invoke(app, args)
+    assert result.exit_code == ExitCode.OK, result.output
+    return root
 
 
 def _catalogue_lines(stdout: str) -> dict[str, str]:
@@ -195,3 +213,505 @@ def test_explain_a_broken_shipped_catalogue_is_still_internal(
     result = runner.invoke(app, ["policy", "explain", "owasp-llm-top10:LLM01"])
 
     assert result.exit_code == ExitCode.INTERNAL
+
+
+# --- show: attributes each rule to its source (P47, spec §10) -----------------
+
+
+def test_show_lists_every_check_at_its_baseline_source(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(app, ["policy", "show", "--directory", str(root)])
+
+    assert result.exit_code == 0
+    assert "none declared" in result.stdout
+    assert "B2" in result.stdout
+    assert "baseline" in result.stdout
+
+
+def test_show_names_the_profile_that_raised_a_severity(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    runner.invoke(app, ["policy", "apply", "hipaa", "--directory", str(root), "--yes"])
+
+    result = runner.invoke(app, ["policy", "show", "--directory", str(root)])
+
+    assert result.exit_code == 0
+    assert "hipaa" in result.stdout
+    # D2 is raised to critical by hipaa (tests/test_regimes.py pins this).
+    lines = {line.split()[0]: line for line in result.stdout.splitlines() if line.strip()}
+    assert "profile:hipaa" in lines["D2"]
+
+
+def test_show_marks_a_relaxed_check(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    runner.invoke(
+        app,
+        [
+            "policy",
+            "relax",
+            "B2",
+            "--reason",
+            "needs shell",
+            "--expires",
+            "2026-12-31",
+            "--directory",
+            str(root),
+        ],
+    )
+
+    result = runner.invoke(app, ["policy", "show", "--directory", str(root)])
+
+    assert result.exit_code == 0
+    assert "relaxed" in result.stdout.lower()
+    assert "B2  expires 2026-12-31" in result.stdout
+
+
+def test_show_tool_reports_the_declared_per_tool_policy(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    text = (root / MANIFEST_NAME).read_text(encoding="utf-8")
+    text += '\n[policy.tool.query_postgres]\napproval = "always"\ntimeout_seconds = 30\n'
+    (root / MANIFEST_NAME).write_text(text, encoding="utf-8")
+
+    result = runner.invoke(app, ["policy", "show", "query_postgres", "--directory", str(root)])
+
+    assert result.exit_code == 0
+    assert "query_postgres" in result.stdout
+    assert "always" in result.stdout
+    assert "30" in result.stdout
+
+
+def test_show_tool_with_no_policy_says_so(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(app, ["policy", "show", "nonexistent_tool", "--directory", str(root)])
+
+    assert result.exit_code == 0
+    assert "no [policy.tool.nonexistent_tool]" in result.stdout
+
+
+def test_show_tool_reports_a_relaxation_scoped_to_it(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    runner.invoke(
+        app,
+        [
+            "policy",
+            "relax",
+            "B2",
+            "--reason",
+            "ci needs shell",
+            "--expires",
+            "2026-12-31",
+            "--tools",
+            "ci_shell",
+            "--directory",
+            str(root),
+        ],
+    )
+
+    covered = runner.invoke(app, ["policy", "show", "ci_shell", "--directory", str(root)])
+    uncovered = runner.invoke(app, ["policy", "show", "other_tool", "--directory", str(root)])
+
+    assert "covering ci_shell" in covered.stdout
+    assert "no relaxation covers other_tool" in uncovered.stdout
+
+
+# --- apply: prints a diff, does not write until confirmed ---------------------
+
+
+def test_apply_prints_the_severity_and_scope_diff(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(app, ["policy", "apply", "hipaa", "--directory", str(root)], input="n\n")
+
+    assert result.exit_code == 0
+    assert "severity changes" in result.stdout
+    assert "D2" in result.stdout
+    assert "high -> critical" in result.stdout
+    assert "scope this regime does not reach" in result.stdout
+    assert "administrative safeguards" in result.stdout
+
+
+def test_apply_does_not_write_until_confirmed(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    before = (root / MANIFEST_NAME).read_text(encoding="utf-8")
+
+    result = runner.invoke(app, ["policy", "apply", "hipaa", "--directory", str(root)], input="n\n")
+
+    assert result.exit_code == 0
+    assert "Not applied" in result.stdout
+    assert (root / MANIFEST_NAME).read_text(encoding="utf-8") == before
+    assert Manifest.load(root) is not None
+    assert Manifest.load(root).profiles == ()  # type: ignore[union-attr]
+
+
+def test_apply_writes_on_confirmation(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(app, ["policy", "apply", "hipaa", "--directory", str(root)], input="y\n")
+
+    assert result.exit_code == 0
+    assert "Applied hipaa" in result.stdout
+    manifest = Manifest.load(root)
+    assert manifest is not None
+    assert manifest.profiles == ("hipaa",)
+
+
+def test_apply_yes_flag_skips_the_prompt(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(app, ["policy", "apply", "hipaa", "--directory", str(root), "--yes"])
+
+    assert result.exit_code == 0
+    manifest = Manifest.load(root)
+    assert manifest is not None
+    assert manifest.profiles == ("hipaa",)
+
+
+def test_apply_an_unknown_regime_is_a_usage_error(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(app, ["policy", "apply", "bogus-regime", "--directory", str(root)])
+
+    assert result.exit_code == ExitCode.USAGE
+    assert "bogus-regime" in result.output
+
+
+def test_apply_without_a_manifest_is_a_usage_error(tmp_path: Path) -> None:
+    result = runner.invoke(app, ["policy", "apply", "hipaa", "--directory", str(tmp_path)])
+
+    assert result.exit_code == ExitCode.USAGE
+    assert "toolseal init" in result.output
+
+
+def test_apply_already_applied_is_a_noop(tmp_path: Path) -> None:
+    root = _init(tmp_path, profile="hipaa")
+
+    result = runner.invoke(app, ["policy", "apply", "hipaa", "--directory", str(root)])
+
+    assert result.exit_code == 0
+    assert "already applied" in result.stdout
+
+
+# --- check: coverage of the checkable, never a verdict (spec §5) --------------
+
+
+def test_check_contains_not_assessed_and_the_mandated_sentence(tmp_path: Path) -> None:
+    root = _init(tmp_path, profile="hipaa")
+
+    result = runner.invoke(app, ["policy", "check", "--profile", "hipaa", "--directory", str(root)])
+
+    assert result.exit_code == 0
+    assert "not_assessed" in result.stdout
+    assert "administrative safeguards" in result.stdout
+    assert "This is evidence toward an assessment. It is not one." in result.stdout
+
+
+def test_check_never_prints_an_overall_pass_fail_verdict(tmp_path: Path) -> None:
+    root = _init(tmp_path, profile="hipaa")
+
+    result = runner.invoke(app, ["policy", "check", "--profile", "hipaa", "--directory", str(root)])
+
+    assert result.exit_code == 0
+    # No line claims an overall regime verdict ("hipaa: PASS", "HIPAA: PASS",
+    # "overall: pass", etc). Per-check "pass"/"fail" counts in the coverage
+    # table are fine - that is evidence, not a verdict for the regime.
+    forbidden = ("PASS", "FAIL", "hipaa: pass", "hipaa: fail")
+    for word in forbidden:
+        assert word not in result.stdout
+
+
+def test_check_with_no_declared_profile_still_ends_with_the_disclaimer(
+    tmp_path: Path,
+) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(app, ["policy", "check", "--directory", str(root)])
+
+    assert result.exit_code == 0
+    assert "This is evidence toward an assessment. It is not one." in result.stdout
+    assert "none declared" in result.stdout
+
+
+def test_check_falls_back_to_the_manifest_declared_profile(tmp_path: Path) -> None:
+    root = _init(tmp_path, profile="hipaa")
+
+    result = runner.invoke(app, ["policy", "check", "--directory", str(root)])
+
+    assert result.exit_code == 0
+    assert "profile: hipaa" in result.stdout
+
+
+def test_check_reports_an_expired_relaxation_by_name(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    text = (root / MANIFEST_NAME).read_text(encoding="utf-8")
+    text += '\n[policy.relax.B2]\nreason = "old"\nexpires = "2000-01-01"\n'
+    (root / MANIFEST_NAME).write_text(text, encoding="utf-8")
+
+    result = runner.invoke(app, ["policy", "check", "--directory", str(root)])
+
+    assert result.exit_code == 0
+    assert "expired" in result.stdout.lower()
+
+
+# --- relax: writes correct TOML, never hand-editing (spec §6) -----------------
+
+
+def test_relax_refuses_a_missing_reason(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(
+        app,
+        ["policy", "relax", "B2", "--expires", "2026-12-31", "--directory", str(root)],
+    )
+
+    assert result.exit_code != 0
+    assert "reason" in result.output.lower()
+
+
+def test_relax_refuses_a_missing_expiry(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(
+        app,
+        ["policy", "relax", "B2", "--reason", "needs shell", "--directory", str(root)],
+    )
+
+    assert result.exit_code != 0
+    assert "expires" in result.output.lower()
+
+
+def test_relax_refuses_an_unknown_check_id(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(
+        app,
+        [
+            "policy",
+            "relax",
+            "Z99",
+            "--reason",
+            "whatever",
+            "--expires",
+            "2026-12-31",
+            "--directory",
+            str(root),
+        ],
+    )
+
+    assert result.exit_code == ExitCode.USAGE
+    assert "Z99" in result.output
+
+
+def test_relax_refuses_a_malformed_expiry(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(
+        app,
+        [
+            "policy",
+            "relax",
+            "B2",
+            "--reason",
+            "needs shell",
+            "--expires",
+            "not-a-date",
+            "--directory",
+            str(root),
+        ],
+    )
+
+    assert result.exit_code == ExitCode.USAGE
+    assert "expires" in result.output.lower()
+
+
+def test_relax_writes_a_block_that_relax_py_parses_back(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(
+        app,
+        [
+            "policy",
+            "relax",
+            "B2",
+            "--reason",
+            "CI runner needs shell; container-isolated",
+            "--expires",
+            "2026-12-31",
+            "--tools",
+            "ci_shell",
+            "--directory",
+            str(root),
+        ],
+    )
+
+    assert result.exit_code == 0
+
+    text = (root / MANIFEST_NAME).read_text(encoding="utf-8")
+    (relaxation,) = parse_relaxations(text)
+    assert relaxation.check_id == "B2"
+    assert relaxation.reason == "CI runner needs shell; container-isolated"
+    assert relaxation.expires.isoformat() == "2026-12-31"
+    assert relaxation.tools == ("ci_shell",)
+
+
+def test_relax_omitting_tools_is_project_wide(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    runner.invoke(
+        app,
+        [
+            "policy",
+            "relax",
+            "B2",
+            "--reason",
+            "project-wide reason",
+            "--expires",
+            "2026-12-31",
+            "--directory",
+            str(root),
+        ],
+    )
+
+    text = (root / MANIFEST_NAME).read_text(encoding="utf-8")
+    (relaxation,) = parse_relaxations(text)
+    assert relaxation.tools == ()
+
+
+def test_relax_refuses_a_duplicate_declaration_for_the_same_check(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    args = [
+        "policy",
+        "relax",
+        "B2",
+        "--reason",
+        "first",
+        "--expires",
+        "2026-12-31",
+        "--directory",
+        str(root),
+    ]
+    runner.invoke(app, args)
+
+    second = runner.invoke(
+        app,
+        [
+            "policy",
+            "relax",
+            "B2",
+            "--reason",
+            "second",
+            "--expires",
+            "2027-01-01",
+            "--directory",
+            str(root),
+        ],
+    )
+
+    assert second.exit_code == ExitCode.USAGE
+    assert "already has a relaxation" in second.output
+
+
+def test_relax_without_a_manifest_is_a_usage_error(tmp_path: Path) -> None:
+    result = runner.invoke(
+        app,
+        [
+            "policy",
+            "relax",
+            "B2",
+            "--reason",
+            "x",
+            "--expires",
+            "2026-12-31",
+            "--directory",
+            str(tmp_path),
+        ],
+    )
+
+    assert result.exit_code == ExitCode.USAGE
+    assert "toolseal init" in result.output
+
+
+def test_relax_is_case_insensitive_on_the_check_id(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(
+        app,
+        [
+            "policy",
+            "relax",
+            "b2",
+            "--reason",
+            "lowercase id",
+            "--expires",
+            "2026-12-31",
+            "--directory",
+            str(root),
+        ],
+    )
+
+    assert result.exit_code == 0
+    text = (root / MANIFEST_NAME).read_text(encoding="utf-8")
+    (relaxation,) = parse_relaxations(text)
+    assert relaxation.check_id == "B2"
+
+
+# --- audit: picks up a manifest-declared profile with no flag (spec §10) ------
+
+
+def test_audit_honours_a_manifest_declared_profile_with_no_flag(tmp_path: Path) -> None:
+    root = _init(tmp_path, profile="hipaa")
+
+    result = runner.invoke(app, ["audit", str(root)])
+
+    assert result.exit_code == 0
+    assert "profile: hipaa" in result.stdout
+
+
+def test_audit_json_reports_the_active_profile(tmp_path: Path) -> None:
+    root = _init(tmp_path, profile="hipaa")
+
+    result = runner.invoke(app, ["audit", str(root), "--json"])
+    payload = json.loads(result.stdout)
+
+    assert payload["profiles"] == ["hipaa"]
+
+
+def test_audit_without_a_declared_profile_says_nothing_about_one(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    result = runner.invoke(app, ["audit", str(root)])
+
+    assert result.exit_code == 0
+    assert "profile:" not in result.stdout
+
+
+# --- init --profile: scaffolds under a regime from the start (spec §10) -------
+
+
+def test_init_profile_declares_it_in_the_manifest(tmp_path: Path) -> None:
+    root = tmp_path / "demo"
+    result = runner.invoke(app, ["init", "demo", "--directory", str(root), "--profile", "hipaa"])
+
+    assert result.exit_code == 0
+    manifest = Manifest.load(root)
+    assert manifest is not None
+    assert manifest.profiles == ("hipaa",)
+
+
+def test_init_with_an_unknown_profile_is_a_usage_error_before_writing(tmp_path: Path) -> None:
+    root = tmp_path / "demo"
+    result = runner.invoke(
+        app, ["init", "demo", "--directory", str(root), "--profile", "bogus-regime"]
+    )
+
+    assert result.exit_code == ExitCode.USAGE
+    assert "bogus-regime" in result.output
+    assert not root.exists()
+
+
+def test_init_without_profile_declares_no_profiles(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+
+    manifest = Manifest.load(root)
+    assert manifest is not None
+    assert manifest.profiles == ()
