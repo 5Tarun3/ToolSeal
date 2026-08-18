@@ -9,8 +9,9 @@ from typing import Annotated, Any
 import typer
 
 from toolseal.core.adapters import ScaffoldSpec, framework_registry, provider_registry
+from toolseal.core.policy.profile import load_profile
 from toolseal.core.scaffold import apply_plan, build_plan
-from toolseal.errors import ExitCode, UsageError
+from toolseal.errors import ConfigError, ExitCode, UsageError
 
 DEFAULT_PROVIDER = "ollama"
 DEFAULT_FRAMEWORK = "langgraph"
@@ -26,6 +27,23 @@ def _validate_project_name(name: str) -> str:
         message = f"project name must be a single directory name, not a path: {name!r}"
         raise UsageError(message)
     return cleaned
+
+
+def _resolve_profile_or_usage_error(profile_id: str) -> None:
+    """Validate a user-typed `--profile` id, translating the failure mode.
+
+    `load_profile` raises `ConfigError` for both an unknown id (the caller's
+    typo) and a malformed *shipped* profile file (a packaging fault). Only
+    the former is this function's job to relabel - it is only ever called
+    with a value the user typed at the CLI, so here every `ConfigError` is a
+    usage mistake, matching the same boundary-only translation
+    `policy_command._explain_control` already applies to a mistyped
+    standard name.
+    """
+    try:
+        load_profile(profile_id)
+    except ConfigError as exc:
+        raise UsageError(str(exc)) from None
 
 
 def init(
@@ -47,6 +65,13 @@ def init(
         Path | None,
         typer.Option("--directory", "-d", help="Where to create it. Defaults to ./<name>."),
     ] = None,
+    profile: Annotated[
+        str | None,
+        typer.Option(
+            "--profile",
+            help="Scaffold under a regime/standard from the start, e.g. hipaa.",
+        ),
+    ] = None,
     force: Annotated[bool, typer.Option("--force", help="Overwrite existing files.")] = False,
     dry_run: Annotated[
         bool, typer.Option("--dry-run", help="Show what would be written, and write nothing.")
@@ -63,6 +88,8 @@ def init(
     # ones rather than part-way through writing a tree.
     provider_registry.get(provider)
     framework_registry.get(framework)
+    if profile is not None:
+        _resolve_profile_or_usage_error(profile)
 
     spec = ScaffoldSpec(
         project_name=project_name,
@@ -71,6 +98,7 @@ def init(
         workspace_root=root,
         model=model,
         base_url=base_url,
+        profile_id=profile,
     )
 
     plan = build_plan(spec, force=force)

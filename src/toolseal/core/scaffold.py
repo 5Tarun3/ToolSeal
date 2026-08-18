@@ -34,6 +34,7 @@ from toolseal.core.adapters.base import (
 )
 from toolseal.core.credentials import PRECOMMIT_CONFIG, merge_gitignore
 from toolseal.core.manifest import MANIFEST_NAME, Manifest
+from toolseal.core.policy.profile import load_profile
 from toolseal.core.sbom import SBOM_FILENAME
 from toolseal.core.sbom import render as render_sbom
 from toolseal.errors import ConfigError
@@ -97,15 +98,32 @@ def _project_hygiene_files(
     if gitignore_path.is_file():
         existing_gitignore = gitignore_path.read_text(encoding="utf-8")
 
+    # `init --profile <regime>` (spec §10): resolved here, before any file is
+    # rendered, so an unknown regime id fails with the list of known ones
+    # rather than part-way through writing a tree - the same discipline
+    # `init()` already applies to an unknown provider or framework id.
+    # `ConfigError` propagates unchanged; it is still the caller's typo, but
+    # translating it is the CLI boundary's job, not this module's.
+    profiles: tuple[str, ...] = ()
+    approval_required = True
+    if spec.profile_id is not None:
+        profile = load_profile(spec.profile_id)
+        profiles = (spec.profile_id,)
+        approval_required = bool(
+            profile.require.get("policy.approval_required_for_destructive", True)
+        )
+
     manifest = Manifest(
         project_name=spec.project_name,
         provider_id=provider.id,
         framework_id=framework.id,
         model=spec.model or provider.default_model,
         base_url=spec.base_url or "",
+        approval_required_for_destructive=approval_required,
         # Claude Code configures a runtime rather than generating tool code, so
         # it has no `tools.py` for `agent_config.py` to filter and gets none.
         tools=() if getattr(framework, "configures_in_place", False) else DEFAULT_TOOL_NAMES,
+        profiles=profiles,
     )
 
     return [

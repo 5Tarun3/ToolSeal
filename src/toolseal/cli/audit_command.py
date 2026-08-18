@@ -18,7 +18,9 @@ import typer
 
 from toolseal.cli._columns import col_width
 from toolseal.core.audit import audit as run_audit
+from toolseal.core.manifest import Manifest
 from toolseal.core.policy.model import AuditReport, Severity, Verdict
+from toolseal.core.policy.profile import apply_resolution, load_profile, resolve
 from toolseal.core.report import to_sarif
 from toolseal.errors import ExitCode
 
@@ -49,15 +51,30 @@ def audit(
     ] = None,
 ) -> None:
     """Score a project against the misconfiguration taxonomy."""
-    report = run_audit(path or Path.cwd())
+    root = path or Path.cwd()
+    report = run_audit(root)
+
+    # No-flag integration (spec §10): a profile declared in toolseal.toml
+    # applies automatically. Resolution happens here, in the CLI/core-policy
+    # layer, entirely *after* `run_audit` has already produced its report -
+    # `core/audit/engine.py` is never touched and never learns a profile
+    # exists (see `apply_resolution`'s docstring for why that is equivalent
+    # to resolving first).
+    manifest = Manifest.load(root)
+    active_profiles = manifest.profiles if manifest else ()
+    if active_profiles:
+        resolution = resolve([load_profile(profile_id) for profile_id in active_profiles])
+        report = apply_resolution(report, resolution)
+
     findings = _filtered(report, min_severity)
 
     if as_sarif:
         typer.echo(json.dumps(to_sarif(report), indent=2, sort_keys=True))
     elif as_json:
-        typer.echo(json.dumps(_as_dict(report, findings), indent=2, sort_keys=True))
+        payload = _as_dict(report, findings, active_profiles)
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     else:
-        _print_report(report, findings)
+        _print_report(report, findings, active_profiles)
 
     raise typer.Exit(ExitCode.FINDINGS if findings else ExitCode.OK)
 
@@ -70,9 +87,12 @@ def _filtered(report: AuditReport, minimum: Severity | None) -> tuple[Any, ...]:
     return tuple(f for f in report.findings if order.index(f.severity) <= ceiling)
 
 
-def _as_dict(report: AuditReport, findings: tuple[Any, ...]) -> dict[str, Any]:
+def _as_dict(
+    report: AuditReport, findings: tuple[Any, ...], active_profiles: tuple[str, ...] = ()
+) -> dict[str, Any]:
     return {
         "root": report.root,
+        "profiles": list(active_profiles),
         "score": report.score,
         "blocking": report.blocking,
         "families": [
@@ -104,8 +124,13 @@ def _as_dict(report: AuditReport, findings: tuple[Any, ...]) -> dict[str, Any]:
     }
 
 
-def _print_report(report: AuditReport, findings: tuple[Any, ...]) -> None:
+def _print_report(
+    report: AuditReport, findings: tuple[Any, ...], active_profiles: tuple[str, ...] = ()
+) -> None:
     typer.echo(f"{report.root}\n")
+
+    if active_profiles:
+        typer.echo(f"  profile: {', '.join(active_profiles)} (see `toolseal policy show`)\n")
 
     for finding in findings:
         colour = _SEVERITY_COLOUR[finding.severity]

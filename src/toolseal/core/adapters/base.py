@@ -83,6 +83,15 @@ class ScaffoldSpec:
     mcp_servers: tuple[MCPServerBinding, ...] = ()
     extras: dict[str, str] = field(default_factory=dict)
 
+    profile_id: str | None = None
+    """A regime/standard to scaffold under from the start (P47, ``init --profile``).
+
+    Read by :func:`toolseal.core.scaffold.build_plan` when it constructs the
+    project's manifest, so the very first ``toolseal.toml`` this project ever
+    sees already declares the profile - rather than the project starting bare
+    and needing ``toolseal policy apply`` as a follow-up step.
+    """
+
 
 class Provider(Protocol):
     """An LLM provider: the facts needed to talk to it, and nothing else.
