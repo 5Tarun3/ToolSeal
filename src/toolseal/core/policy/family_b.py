@@ -91,7 +91,7 @@ def _b3(model: ProjectModel) -> Sequence[Finding]:
 
 
 def _b4(model: ProjectModel) -> Sequence[Finding]:
-    return [
+    server_findings = [
         Finding(
             check_id="B4",
             severity=Severity.MEDIUM,
@@ -107,6 +107,53 @@ def _b4(model: ProjectModel) -> Sequence[Finding]:
         for server in model.mcp_servers
         if server.scope_excess
     ]
+    return [*server_findings, *_b4_tool_egress(model)]
+
+
+def _b4_tool_egress(model: ProjectModel) -> Sequence[Finding]:
+    """P46 (spec §7): a per-tool ``egress_allow`` narrower than the tool's own
+    declared hosts is a finding, not a silent override.
+
+    A tool's descriptor can declare the hosts it reaches
+    (``UnifiedToolDescriptor.egress_hosts``, carried onto ``ToolBinding`` at
+    extraction). ``[policy.tool.<name>].egress_allow`` in `toolseal.toml` is a
+    separate, operator-declared allowlist. When the descriptor names a host the
+    policy does not, the `RESTRICT_EGRESS` guard `translate/lower.py` emits
+    would refuse that call at runtime with no record of why - the same
+    "declared scope narrower than what is actually needed" shape `B4` already
+    reports for MCP servers, applied to a tool's egress policy instead.
+    """
+    manifest = _manifest(model)
+    if manifest is None:
+        return []
+
+    findings: list[Finding] = []
+    for tool in model.tools:
+        policy = manifest.policy_for(tool.name)
+        if policy is None or policy.egress_allow is None:
+            continue
+        allowed = frozenset(policy.egress_allow)
+        outside = sorted(host for host in tool.egress_hosts if host not in allowed)
+        if not outside:
+            continue
+        findings.append(
+            Finding(
+                check_id="B4",
+                severity=Severity.MEDIUM,
+                title="Per-tool egress policy narrower than the tool's declared hosts",
+                detail=(
+                    f"{tool.name} declares egress to {', '.join(outside)}, which "
+                    f"[policy.tool.{tool.name}].egress_allow does not permit"
+                ),
+                subject=tool.name,
+                location=tool.name,
+                remediation=(
+                    f"Add the missing hosts to [policy.tool.{tool.name}] egress_allow, "
+                    "or confirm the tool does not actually need them."
+                ),
+            )
+        )
+    return findings
 
 
 def _b5(model: ProjectModel) -> Sequence[Finding]:
@@ -187,7 +234,9 @@ B4 = register(
         severity=Severity.MEDIUM,
         remediation="Narrow the launch configuration to the declared scope.",
         run=_b4,
-        applies=lambda model: bool(model.mcp_servers),
+        # P46: also applies when there are tools to check a per-tool egress
+        # policy against, even on a project with no MCP servers at all.
+        applies=lambda model: bool(model.mcp_servers) or bool(model.tools),
         controls=(
             ControlRef("owasp-llm-top10", "LLM06"),
             ControlRef("owasp-agentic-threats", "T3"),

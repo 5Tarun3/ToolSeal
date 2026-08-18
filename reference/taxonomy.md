@@ -142,6 +142,17 @@ declares it for.
 configuration to match.
 *Grounding:* [P14]; [S4].
 
+> **Refined 2026-08-18.** Also detects the mirror case for a single tool's
+> network egress: `[policy.tool.<name>].egress_allow` in `toolseal.toml`
+> (`docs/superpowers/specs/2026-08-13-standards-compliance-policy-design.md`
+> §7) is an operator-declared allowlist, separate from what the tool's own
+> descriptor says it needs. When the descriptor names a host the allowlist
+> does not, that is the same "declared scope narrower than what is actually
+> used" shape this check already reports for an MCP server's advertised
+> capabilities, so it is reported here rather than inventing a sibling check
+> for one field. Severity, id and control mapping unchanged. Recorded per
+> rule 3.
+
 **B5 — Tool set resolved dynamically with no allowlist**
 *Detects:* tools discovered at runtime from a server or registry with no
 pinned allowlist, so the available set can change without a code change.
