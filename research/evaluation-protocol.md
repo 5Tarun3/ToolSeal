@@ -263,7 +263,8 @@ and any affected result is labelled exploratory.
 
 | Date | Change | Reason |
 | --- | --- | --- |
-| — | none yet | — |
+| 2026-08-19 | Study 1's `official-docs`, `mcp-servers` and `templates` strata run without the 10%-double-materialised agreement check this document's Procedure section requires. | No second person is available to this collection run. Recorded here rather than silently omitted; results from these strata are single-materialiser and reported as such. |
+| 2026-08-19 | `mcp-servers` and `templates` use a fixed *N* = 6 (`research/studies/s1/selection-criteria.md`), smaller than an unqualified reading of "top *N*" might suggest. | *N* is chosen small enough for one person to materialise every entry carefully, per the mitigation above; a larger *N* would dilute rather than remove the single-materialiser limitation. |
 
 ---
 
