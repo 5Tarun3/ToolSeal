@@ -7,6 +7,7 @@ it. Regenerate with:
 ```bash
 uv run python -m bench s2 --out research/studies/s2
 uv run python -m bench s3 --out research/studies/s3
+uv run python -m bench s5 --out research/studies/s5
 ```
 
 Selection rules, metric definitions and falsification conditions are fixed in
@@ -19,6 +20,7 @@ table.
 | [`s1`](s1/) | What do LLM-generated agent setups look like? (RQ1) | Run, **no usable samples** - see below |
 | [`s2`](s2/) | Does securing setup cost developer time? (RQ2) | Run, idealised manual arm |
 | [`s3`](s3/) | What does a secure default cost at runtime? (RQ3) | Run |
+| [`s5`](s5/) | How much of each standard does the control mapping reach? (C6) | Run, part (a) only - see below |
 
 ## A caveat that belongs on every figure
 
@@ -58,3 +60,16 @@ method.
 It is also the clearest illustration of why the protocol requires exclusions to
 be counted rather than dropped. Discarding them would have left a mean score
 computed over zero samples and presented as a finding.
+
+## Study 5 delivers part (a) only
+
+C6's evidence (spec §11) has two parts: a coverage analysis of the control
+mapping, and a re-cut of Study 1's corpus by control instead of by family.
+The first ran cleanly. The second could not: Study 1's own zero-materialised
+result above means there is no per-check failure data to re-derive a
+per-control table from, and the `official-docs`, `mcp-servers` and
+`templates` strata the evaluation protocol also defines for Study 1 were
+never collected. `research/studies/s5/RESULTS.md` states this explicitly
+rather than fabricating a table, and [`bench/coverage.py`](../../bench/coverage.py)
+is written so a future Study 1 run that does materialise completions would
+produce the re-cut automatically, with no code change required.

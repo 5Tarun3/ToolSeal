@@ -9,13 +9,13 @@ import argparse
 import tempfile
 from pathlib import Path
 
-from bench import generated, overhead
+from bench import coverage, generated, overhead
 from bench.harness import run, to_dict, to_markdown, write
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(prog="bench", description="Run an evaluation study.")
-    parser.add_argument("study", choices=("s1", "s2", "s3"), help="Which study to run.")
+    parser.add_argument("study", choices=("s1", "s2", "s3", "s5"), help="Which study to run.")
     parser.add_argument(
         "--out", type=Path, default=None, help="Where to write results.json and RESULTS.md."
     )
@@ -38,6 +38,10 @@ def main() -> int:
             results = run(Path(workspace))
         write(results, out)
         print(to_markdown(to_dict(results)))
+    elif args.study == "s5":
+        payload = coverage.run()
+        coverage.write(payload, out)
+        print(coverage.to_markdown(payload))
     else:
         payload = overhead.run(args.repeats)
         overhead.write(payload, out)

@@ -1,0 +1,85 @@
+{
+  "coverage": {
+    "catalogues": [
+      {
+        "checkable_total": 3,
+        "complete_enumeration": false,
+        "controls_published": 4,
+        "covered": 1,
+        "id": "iso-42001",
+        "name": "ISO/IEC 42001:2023 (Annex A, by reference)",
+        "percentage": 33,
+        "uncovered": [
+          {
+            "id": "A.6.2.2",
+            "title": "AI system requirements and specification"
+          },
+          {
+            "id": "A.6.2.4",
+            "title": "AI system verification and validation"
+          }
+        ]
+      },
+      {
+        "checkable_total": 5,
+        "complete_enumeration": false,
+        "controls_published": 7,
+        "covered": 4,
+        "id": "nist-ai-rmf",
+        "name": "NIST AI Risk Management Framework",
+        "percentage": 80,
+        "uncovered": [
+          {
+            "id": "MANAGE-2.2",
+            "title": "Mechanisms are in place to sustain the value of deployed AI systems"
+          }
+        ]
+      },
+      {
+        "checkable_total": 6,
+        "complete_enumeration": true,
+        "controls_published": 15,
+        "covered": 6,
+        "id": "owasp-agentic-threats",
+        "name": "OWASP Agentic AI Threats",
+        "percentage": 100,
+        "uncovered": []
+      },
+      {
+        "checkable_total": 5,
+        "complete_enumeration": true,
+        "controls_published": 10,
+        "covered": 5,
+        "id": "owasp-agentic-top10",
+        "name": "OWASP Top 10 for Agentic Applications",
+        "percentage": 100,
+        "uncovered": []
+      },
+      {
+        "checkable_total": 5,
+        "complete_enumeration": true,
+        "controls_published": 10,
+        "covered": 5,
+        "id": "owasp-llm-top10",
+        "name": "OWASP Top 10 for LLM Applications",
+        "percentage": 100,
+        "uncovered": []
+      }
+    ],
+    "checks_total": 28,
+    "unmapped_checks": []
+  },
+  "note": "Coverage counts citations, not adequacy: a checkable control is reported as covered the moment one check cites it, which is not evidence the check discharges the obligation. C6 is explicitly secondary (spec \u00a711) - the control-mapping feature is justified by operator ease, not by this analysis.",
+  "study": "S5 control coverage (C6)",
+  "study1_recut": {
+    "completions_total": 12,
+    "materialised": 0,
+    "missing_strata": [
+      "official-docs",
+      "mcp-servers",
+      "templates"
+    ],
+    "possible": false,
+    "reason": "0 of 12 completions in the llm-generated stratum materialised into an auditable project, so aggregate.check_failure_counts is empty - there is nothing to re-derive a per-control table from. The official-docs, mcp-servers, templates strata the evaluation protocol also defines for Study 1 were never collected (no results file exists for any of them). Part (b) is not delivered; coverage_analysis() above stands alone as the evidence for C6."
+  }
+}
