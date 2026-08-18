@@ -167,10 +167,21 @@ def test_verify_with_nothing_sealed_reports_no_drift(tmp_path: Path) -> None:
 
 
 def _rewrite_lock(root: Path, mutate: object) -> None:
-    """Simulate hand-editing `.toolseal/policy.lock`: clear read-only, apply
-    *mutate* to the parsed JSON, write it back, re-seal read-only."""
+    """Simulate the documented threat actor (spec §8): "anyone who can run the
+    agent can clear the read-only bit". Clear it, hand-edit the JSON, then
+    reinstate it, so the test enacts the actual attack rather than an accident
+    of platform permissions.
+
+    ``stat.S_IWRITE`` alone (0o200) is enough to unlock the file on Windows,
+    where ``chmod`` only toggles the read-only *attribute* and owner reads are
+    governed by the ACL rather than the POSIX mode. On Linux, 0o200 grants
+    write but not read, so the very next ``read_text`` call would itself raise
+    ``PermissionError`` - not the tamper being simulated. Or'ing in
+    ``S_IREAD`` keeps the file readable everywhere while still exercising the
+    same "clear read-only, edit, reseal" sequence on both platforms.
+    """
     path = lock.lock_path(root)
-    path.chmod(stat.S_IWRITE)
+    path.chmod(stat.S_IREAD | stat.S_IWRITE)
     data = json.loads(path.read_text(encoding="utf-8"))
     mutate(data)  # type: ignore[operator]
     path.write_text(json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")

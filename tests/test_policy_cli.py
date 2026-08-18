@@ -814,8 +814,16 @@ def test_verify_detects_a_hand_edited_lock_file_and_names_the_check(tmp_path: Pa
     root = _init(tmp_path)
     runner.invoke(app, ["policy", "enforce", "--directory", str(root)])
 
+    # Enact the documented threat actor (spec §8): the read-only bit is not a
+    # security boundary - "anyone who can run the agent can clear the
+    # read-only bit" - so clear it, hand-edit the JSON, then reinstate it.
+    # `S_IWRITE` alone (0o200) unlocks the file on Windows (chmod there only
+    # toggles the read-only attribute; owner reads go through the ACL), but on
+    # Linux it grants write without read, so the following `read_text` would
+    # raise `PermissionError` before the tamper is even applied. Or'ing in
+    # `S_IREAD` keeps it readable on both platforms.
     lock_path = root / ".toolseal" / "policy.lock"
-    lock_path.chmod(stat.S_IWRITE)
+    lock_path.chmod(stat.S_IREAD | stat.S_IWRITE)
     data = json.loads(lock_path.read_text(encoding="utf-8"))
     data["severities"]["B2"] = "low"
     lock_path.write_text(json.dumps(data), encoding="utf-8")
