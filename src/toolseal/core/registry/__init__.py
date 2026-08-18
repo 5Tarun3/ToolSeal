@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from toolseal.core.registry.utd import (
     SCHEMA_VERSION,
+    Compliance,
+    ComplianceEvidence,
+    ControlBearing,
+    DataClassClaim,
     Provenance,
+    Residency,
     SecurityAnnotations,
     ToolSource,
     UnifiedToolDescriptor,
@@ -12,7 +17,12 @@ from toolseal.core.registry.utd import (
 
 __all__ = [
     "SCHEMA_VERSION",
+    "Compliance",
+    "ComplianceEvidence",
+    "ControlBearing",
+    "DataClassClaim",
     "Provenance",
+    "Residency",
     "SecurityAnnotations",
     "ToolSource",
     "UnifiedToolDescriptor",

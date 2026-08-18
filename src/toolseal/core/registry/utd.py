@@ -15,6 +15,7 @@ the parse boundary is a trust boundary: malformed input must fail loudly with a
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import StrEnum
 from typing import Any, ClassVar
 
 from toolseal.core.properties import SecurityProperty
@@ -141,6 +142,234 @@ class Provenance:
         )
 
 
+class ComplianceEvidence(StrEnum):
+    """How a compliance claim is known.
+
+    Mirrors the ``Evidence`` idiom already established in
+    :mod:`toolseal.core.translate.lattice` - a claim's strength travels with
+    the claim - with a vocabulary suited to this block rather than reusing
+    that enum's members, which describe how well grounded a translation-loss
+    table entry is, a different question.
+
+    ``DECLARED`` - the tool's author or a curator stated it.
+    ``DERIVED`` - computed from a field the descriptor already measures
+    (``permissions``, ``egress_hosts``, ``filesystem_scope``), with the
+    derivation recorded in the owning claim's ``derivation``.
+    ``UNKNOWN`` - nothing was said. This is the explicit value a claim gets
+    when it is absent, following the same rule :class:`SecurityAnnotations`
+    already applies to ``None``: a tool that never said whether it touches
+    personal data is not a tool that said it does not.
+    """
+
+    DECLARED = "DECLARED"
+    DERIVED = "DERIVED"
+    UNKNOWN = "UNKNOWN"
+
+
+def _parse_evidence(data: dict[str, Any], context: str) -> tuple[ComplianceEvidence, str | None]:
+    """Parse an ``evidence``/``from`` pair, enforcing that DERIVED cites its source.
+
+    A `DERIVED` claim with no recorded derivation is worse than an honest
+    `UNKNOWN`: it carries the authority of a computation that never happened.
+    """
+    raw = _require(data, "evidence", str)
+    try:
+        evidence = ComplianceEvidence(raw)
+    except ValueError:
+        valid = ", ".join(e.value for e in ComplianceEvidence)
+        message = f"{context} field 'evidence' must be one of {valid}, found {raw!r}"
+        raise RegistryError(message) from None
+
+    derivation = data.get("from")
+    if derivation is not None and not isinstance(derivation, str):
+        found = type(derivation).__name__
+        message = f"{context} field 'from' must be str, found {found}"
+        raise RegistryError(message)
+
+    if evidence is ComplianceEvidence.DERIVED and not derivation:
+        message = (
+            f"{context} claims DERIVED evidence but records no 'from' derivation - "
+            "an unjustified DERIVED tag is worse than an honest UNKNOWN"
+        )
+        raise RegistryError(message)
+
+    return evidence, derivation
+
+
+@dataclass(frozen=True)
+class DataClassClaim:
+    """One data-classification claim about a tool, with its evidence.
+
+    ``data_class`` is an open vocabulary (``personal_data``, ``health_data``,
+    ...); this block does not enumerate one, because the taxonomy of data
+    classes belongs to whichever regime cites it, not to the descriptor.
+    """
+
+    data_class: str
+    evidence: ComplianceEvidence
+    derivation: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        payload: dict[str, Any] = {"class": self.data_class, "evidence": self.evidence.value}
+        if self.derivation is not None:
+            payload["from"] = self.derivation
+        return payload
+
+    @classmethod
+    def from_dict(cls, data: Any, *, index: int) -> DataClassClaim:
+        if not isinstance(data, dict):
+            found = type(data).__name__
+            message = f"compliance.data_classes[{index}] must be an object, found {found}"
+            raise RegistryError(message)
+        context = f"compliance.data_classes[{index}]"
+        data_class = _require(data, "class", str)
+        evidence, derivation = _parse_evidence(data, context)
+        return cls(data_class=data_class, evidence=evidence, derivation=derivation)
+
+
+@dataclass(frozen=True)
+class Residency:
+    """A jurisdiction claim, bounded to what a host-suffix table can support.
+
+    Deriving a jurisdiction from an arbitrary hostname is not something a
+    configuration auditor can do, so the default is ``UNKNOWN`` with no
+    regions - never a guess. See ``core/policy/profile.py`` for the bounded
+    derivation this block is the output of: each regime file carries a
+    ``[residency]`` table mapping host suffixes to regions, and a host
+    matching no entry leaves this at its default.
+    """
+
+    regions: tuple[str, ...] = ()
+    evidence: ComplianceEvidence = ComplianceEvidence.UNKNOWN
+    derivation: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "regions": list(self.regions),
+            "evidence": self.evidence.value,
+        }
+        if self.derivation is not None:
+            payload["from"] = self.derivation
+        return payload
+
+    @classmethod
+    def from_dict(cls, data: Any) -> Residency:
+        if data is None or data == {}:
+            return cls()
+        if not isinstance(data, dict):
+            found = type(data).__name__
+            message = f"compliance field 'residency' must be an object, found {found}"
+            raise RegistryError(message)
+
+        regions_raw = data.get("regions", [])
+        if not isinstance(regions_raw, list) or not all(
+            isinstance(region, str) for region in regions_raw
+        ):
+            message = "compliance.residency field 'regions' must be a list of strings"
+            raise RegistryError(message)
+
+        evidence, derivation = _parse_evidence(data, "compliance.residency")
+        return cls(regions=tuple(regions_raw), evidence=evidence, derivation=derivation)
+
+
+@dataclass(frozen=True)
+class ControlBearing:
+    """One external obligation this tool's configuration bears on.
+
+    Deliberately shallow: this records that a curator or author asserts the
+    tool bears on control ``id``, the same way ``Provenance.license`` records
+    a claim without validating it against an external list. Resolving ``id``
+    against a loaded catalogue is `core/policy/controls.py`'s job, not a
+    network-facing parser's.
+    """
+
+    id: str
+    relation: str = "bears_on"
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"id": self.id, "relation": self.relation}
+
+    @classmethod
+    def from_dict(cls, data: Any, *, index: int) -> ControlBearing:
+        if not isinstance(data, dict):
+            found = type(data).__name__
+            message = f"compliance.controls[{index}] must be an object, found {found}"
+            raise RegistryError(message)
+        return cls(
+            id=_require(data, "id", str),
+            relation=str(data.get("relation", "bears_on")),
+        )
+
+
+@dataclass(frozen=True)
+class Compliance:
+    """Data-classification, residency, and control-bearing claims for a tool.
+
+    Absent means UNKNOWN, never "clean" - the same rule
+    :class:`SecurityAnnotations` applies to an unset boolean, restated here
+    for evidence tags. A descriptor that never mentions compliance at all
+    parses to ``Compliance()``, whose fields are empty or UNKNOWN rather than
+    a negative assertion about the tool.
+
+    Heuristic inference from a tool's name or description is deliberately not
+    something this module does anywhere: every claim here is either supplied
+    (`DECLARED`) or computed from a field the descriptor already measures
+    (`DERIVED`, `core/policy/profile.py`'s bounded residency derivation being
+    the one example this project ships).
+    """
+
+    data_classes: tuple[DataClassClaim, ...] = ()
+    residency: Residency = field(default_factory=Residency)
+    controls: tuple[ControlBearing, ...] = ()
+
+    def evidence_for(self, data_class: str) -> ComplianceEvidence:
+        """The evidence tag for *data_class*, or UNKNOWN if it was never claimed."""
+        for claim in self.data_classes:
+            if claim.data_class == data_class:
+                return claim.evidence
+        return ComplianceEvidence.UNKNOWN
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "data_classes": [claim.to_dict() for claim in self.data_classes],
+            "residency": self.residency.to_dict(),
+            "controls": [bearing.to_dict() for bearing in self.controls],
+        }
+
+    @classmethod
+    def from_dict(cls, data: Any) -> Compliance:
+        if data is None:
+            return cls()
+        if not isinstance(data, dict):
+            found = type(data).__name__
+            message = f"descriptor field 'compliance' must be an object, found {found}"
+            raise RegistryError(message)
+
+        raw_classes = data.get("data_classes", [])
+        if not isinstance(raw_classes, list):
+            found = type(raw_classes).__name__
+            message = f"compliance field 'data_classes' must be a list, found {found}"
+            raise RegistryError(message)
+        data_classes = tuple(
+            DataClassClaim.from_dict(item, index=index) for index, item in enumerate(raw_classes)
+        )
+
+        raw_controls = data.get("controls", [])
+        if not isinstance(raw_controls, list):
+            found = type(raw_controls).__name__
+            message = f"compliance field 'controls' must be a list, found {found}"
+            raise RegistryError(message)
+        controls = tuple(
+            ControlBearing.from_dict(item, index=index) for index, item in enumerate(raw_controls)
+        )
+
+        return cls(
+            data_classes=data_classes,
+            residency=Residency.from_dict(data.get("residency")),
+            controls=controls,
+        )
+
+
 # JSON Schema keywords that narrow what a caller may pass. Their presence is what
 # makes INPUT_CONSTRAINTS a declared property rather than an assumed one.
 CONSTRAINT_KEYWORDS = frozenset(
@@ -180,6 +409,13 @@ class UnifiedToolDescriptor:
     egress_hosts: tuple[str, ...] = ()
     filesystem_scope: str | None = None
     provenance: Provenance = field(default_factory=Provenance)
+    compliance: Compliance = field(default_factory=Compliance)
+    """Data-classification, residency and control-bearing claims (P49, spec §9).
+
+    Optional and additive: a descriptor that predates this field, or a curator
+    who never populated it, parses to ``Compliance()`` rather than failing or
+    silently asserting a negative.
+    """
 
     status: str = "unknown"
     """Lifecycle state as the source registry reports it (active, deleted, ...)."""
@@ -231,6 +467,7 @@ class UnifiedToolDescriptor:
                 "filesystem_scope": self.filesystem_scope,
             },
             "provenance": self.provenance.to_dict(),
+            "compliance": self.compliance.to_dict(),
             "status": self.status,
             "is_latest": self.is_latest,
         }
@@ -281,6 +518,7 @@ class UnifiedToolDescriptor:
             egress_hosts=tuple(str(host) for host in egress),
             filesystem_scope=security.get("filesystem_scope"),
             provenance=Provenance.from_dict(data.get("provenance") or {}),
+            compliance=Compliance.from_dict(data.get("compliance")),
             status=str(data.get("status", "unknown")),
             is_latest=bool(data.get("is_latest", True)),
         )
