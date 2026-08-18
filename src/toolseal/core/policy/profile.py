@@ -27,8 +27,8 @@ Two rules are load-bearing:
 Regime files ship under `toolseal.data.regimes` as data, read the same way
 `policy/controls.py` reads `toolseal.data.standards`: through
 `importlib.resources`, so this works from an installed wheel as well as from a
-checkout. No regime files ship with this module; the package exists so the
-files that come with GDPR/HIPAA/DORA regimes have somewhere to land.
+checkout. P45 adds the three regime files this package carries: GDPR, HIPAA
+and DORA (`toolseal/data/regimes/{gdpr,hipaa,dora}.toml`).
 """
 
 from __future__ import annotations
@@ -220,8 +220,7 @@ def load_profiles() -> dict[str, Profile]:
     """Every regime profile shipped with the package, keyed by id.
 
     Read through `importlib.resources`, mirroring
-    `policy.controls.load_catalogues()`. No files ship yet - P45 adds them -
-    so this returns an empty mapping until then.
+    `policy.controls.load_catalogues()`. P45 ships GDPR, HIPAA and DORA.
     """
     profiles: dict[str, Profile] = {}
     for entry in resources.files(DATA_PACKAGE).iterdir():

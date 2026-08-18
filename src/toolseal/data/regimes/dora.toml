@@ -1,0 +1,63 @@
+# Digital Operational Resilience Act - Regulation (EU) 2022/2554.
+#
+# EUR-Lex, the official EU law portal. EU-owned editorial content, summaries
+# and consolidated texts are licensed CC BY 4.0 (Commission Decision
+# 2011/833/EU; the EUR-Lex legal notice). Article identifiers and short
+# paraphrases only - DORA text itself is not reproduced here.
+#
+# source_url verified 2026-08-18 by fetching
+# https://eur-lex.europa.eu/eli/reg/2022/2554/oj directly: confirmed as
+# Regulation (EU) 2022/2554 of 14 December 2022, in force since 2022-12-27
+# and applicable from 2025-01-17 - the current consolidated version, not a
+# superseded document. That fetch confirmed Art. 5 (governance), Arts. 9-16
+# (ICT risk management, incl. protection/prevention and detection), Arts.
+# 17-23 (incident reporting), Arts. 26-27 (threat-led penetration testing),
+# Arts. 28-30 (third-party risk and contractual arrangements) and Arts.
+# 31-44 (oversight of critical ICT third-party providers) as present in the
+# regulation's structure. Paragraph-level numbering inside Arts. 5, 9 and 10
+# (cited in [severity] and [require] below) was cross-checked against a
+# dedicated per-article mirror
+# (digital-operational-resilience-act.com/Article_9.html and _10.html)
+# because EUR-Lex's own page did not render past its recitals through
+# available tooling; the mirror was used only to locate the correct
+# paragraph number, never as the cited source_url.
+
+id = "dora"
+kind = "regime"
+name = "Digital Operational Resilience Act (EU) 2022/2554"
+source = "Regulation (EU) 2022/2554, Arts. 5, 9-10, 17-23, 26-30"
+source_url = "https://eur-lex.europa.eu/eli/reg/2022/2554/oj"
+license = "CC-BY-4.0"
+
+[scope]
+not_assessed = [
+  "ICT governance arrangements and management-body responsibility (Art. 5)",
+  "register of information on ICT third-party arrangements (Art. 28)",
+  "contractual arrangements with ICT third-party providers (Arts. 28-30)",
+  "incident classification and reporting (Arts. 17-23)",
+  "threat-led penetration testing (Arts. 26-27)",
+  "oversight of critical ICT third-party providers (Arts. 31-44)",
+]
+
+[severity]
+# Art. 10(1) and 10(3) "Detection": financial entities "shall have in place
+# mechanisms to promptly detect anomalous activities" including ICT-related
+# incidents, and "shall devote sufficient resources and capabilities to
+# monitor user activity". Unconditional "shall" language, not risk-qualified
+# the way GDPR Art. 32 is.
+F1 = "high"
+# Art. 9(4)(d): "financial entities shall implement policies and protocols
+# for strong authentication mechanisms, based on relevant standards" - for
+# ICT systems supporting critical or important functions. Unconditional in
+# its own terms, scoped to critical/important functions rather than to a
+# case-by-case risk assessment.
+D2 = "critical"
+# Already critical at baseline. Restated for traceability to Art. 9(3),
+# which requires ICT solutions that protect the confidentiality, integrity
+# and authenticity of data in transit.
+D1 = "critical"
+
+[require]
+# Art. 9(4)(c): access to information assets and ICT assets limited "to what
+# is required for legitimate and approved functions and activities only."
+"policy.approval_required_for_destructive" = true

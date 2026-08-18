@@ -1,0 +1,61 @@
+# HIPAA Security Rule - 45 CFR Part 164, Subpart C (Security Standards for
+# the Protection of Electronic Protected Health Information).
+#
+# eCFR, the official online codification of the CFR maintained by the
+# National Archives and the GPO. A US Government work: public domain under
+# 17 U.S.C. 105. Section identifiers and short paraphrases only - HIPAA
+# regulatory text is not reproduced here.
+#
+# source_url verified 2026-08-18: eCFR serves an automated-fetch challenge
+# (redirects to unblock.federalregister.gov) that this project's tooling
+# could not render directly, so the URL was verified indirectly instead -
+# confirmed via search-engine indexing that
+# https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-C/part-164 is
+# eCFR's own canonical, currently-indexed URL for "45 CFR Part 164 --
+# Security and Privacy", and that its Subpart C section list (164.308,
+# .310, .312, .314, .316) and Subpart D breach-notification section range
+# (164.400-414) match the numbers cited below. This is the same URL pattern
+# the project's own design spec (docs/superpowers/specs/
+# 2026-08-13-standards-compliance-policy-design.md §5) already used for
+# HIPAA.
+
+id = "hipaa"
+kind = "regime"
+name = "HIPAA Security Rule"
+source = "45 CFR 164.302-318 (Security Rule, Subpart C)"
+source_url = "https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-C/part-164"
+license = "public-domain"
+
+[scope]
+not_assessed = [
+  "administrative safeguards (164.308)",
+  "physical safeguards (164.310)",
+  "business associate agreements (164.314(a), 164.308(b))",
+  "workforce training and sanction policy (164.308(a)(5), 164.308(a)(1)(ii)(C))",
+  "breach notification procedures (164.400-414, Subpart D)",
+]
+
+[severity]
+# 164.312(b) "Audit controls" is a Required standard with no addressable
+# alternative: "Implement hardware, software, and/or procedural mechanisms
+# that record and examine activity in information systems that contain or
+# use electronic protected health information." Unlike most of Subpart C,
+# there is no "assess and document why not" escape hatch for this one.
+F1 = "high"
+# 164.312(d) "Person or entity authentication" is likewise a Required
+# standard: "Implement procedures to verify that a person or entity seeking
+# access to electronic protected health information is the one claimed." An
+# unauthenticated remote MCP server is exactly the configuration this
+# standard exists to prevent.
+D2 = "critical"
+# Already critical at baseline. Restated for traceability to 164.312(e)
+# "Transmission security" - the standard itself is Required, though its two
+# implementation specifications (integrity controls, encryption) are
+# addressable, so this is traceability rather than an independent raise.
+D1 = "critical"
+
+[require]
+# Matches this project's own design spec (§5), which cites 164.312(a)(1)
+# "Access control" and the Security Rule's minimum-necessary emphasis on
+# limiting access to what a role requires.
+"policy.approval_required_for_destructive" = true

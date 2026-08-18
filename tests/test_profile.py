@@ -231,15 +231,19 @@ def test_not_assessed_is_carried_through_resolution() -> None:
 def test_data_package_is_a_real_package() -> None:
     from importlib import resources
 
-    # No regime files ship yet (P45 adds them); this only proves the package
-    # exists and is readable, the way `load_catalogues()` needs `standards/` to.
+    # This only proves the package exists and is readable, the way
+    # `load_catalogues()` needs `standards/` to. `tests/test_regimes.py`
+    # covers the GDPR/HIPAA/DORA regime files P45 ships here in detail.
     assert resources.files(DATA_PACKAGE).is_dir()
 
 
-def test_load_profiles_from_an_empty_package_is_empty() -> None:
+def test_load_profiles_returns_every_shipped_regime() -> None:
     from toolseal.core.policy.profile import load_profiles
 
-    assert load_profiles() == {}
+    profiles = load_profiles()
+
+    assert set(profiles) == {"gdpr", "hipaa", "dora"}
+    assert all(profile.kind == "regime" for profile in profiles.values())
 
 
 def test_profile_is_frozen() -> None:
