@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from string import Template
 from typing import Any, Final
 
+from toolseal.core.manifest import ToolPolicy
 from toolseal.core.model import TranslationRecord
 from toolseal.core.registry.utd import UnifiedToolDescriptor
 from toolseal.core.translate.lattice import (
@@ -94,7 +95,48 @@ _GUARD_CODE: Final[dict[GuardKind, GuardCode]] = {
             "is preserved verbatim as SOURCE_DESCRIPTION."
         ),
     ),
+    # The two below are never produced by `plan_translation` - nothing in a
+    # descriptor declares a timeout or an egress allowlist, so the lattice has
+    # no property to compensate. They are forced instead by `lower()` reading
+    # `Manifest.policy_for`, but still need an entry here: `_GUARD_CODE` is
+    # what `ungeneratable_guard_kinds()` checks every `GuardKind` against, and
+    # it does not care where a kind's demand came from.
+    GuardKind.BOUND_RUNTIME: GuardCode(
+        kind=GuardKind.BOUND_RUNTIME,
+        decorator="@bound_runtime(TIMEOUT_SECONDS)",
+        imports=("from guards import bound_runtime",),
+        comment=(
+            "P46: policy.tool.<name>.timeout_seconds pins a runtime bound. The call "
+            "is refused if it has not returned in time, but not killed - see "
+            "bound_runtime's docstring for exactly what that does and does not stop."
+        ),
+    ),
+    GuardKind.RESTRICT_EGRESS: GuardCode(
+        kind=GuardKind.RESTRICT_EGRESS,
+        decorator="@restrict_egress(EGRESS_ALLOW)",
+        imports=("from guards import restrict_egress",),
+        comment=(
+            "P46: policy.tool.<name>.egress_allow restricts which hosts this call's "
+            "own arguments may name; it does not intercept the network call itself - "
+            "see restrict_egress's docstring for the exact limits."
+        ),
+    ),
 }
+
+# `REQUIRE_APPROVAL` forced by `[policy.tool.<name>] approval = "always"` (spec
+# §7) rather than by translation loss. Kept separate from `_GUARD_CODE`'s entry
+# for the same kind because the reason differs and `_GUARD_CODE`'s comment
+# ("the source declared destructiveHint") would be false here - nothing need
+# have annotated the tool destructive at all.
+_POLICY_APPROVAL_GUARD: Final[GuardCode] = GuardCode(
+    kind=GuardKind.REQUIRE_APPROVAL,
+    decorator="@require_approval(\"required by policy.tool: approval = 'always'\")",
+    imports=("from guards import require_approval",),
+    comment=(
+        'P46: [policy.tool.<name>] pins approval = "always", so this call is '
+        "gated even though nothing marked it destructive."
+    ),
+)
 
 _BINDING = Template(
     '"""Generated binding for $tool_name.\n'
@@ -116,6 +158,11 @@ _BINDING = Template(
     "SOURCE_DESCRIPTION = $description\n"
     "\n"
     "SCHEMA = $schema\n"
+    "\n"
+    "# [policy.tool.$tool_name] in toolseal.toml, when it set them.\n"
+    "# None/() means that field of the policy was not declared for this tool.\n"
+    "TIMEOUT_SECONDS = $timeout_seconds\n"
+    "EGRESS_ALLOW = $egress_allow\n"
     "\n"
     "\n"
     "def _not_wired(name: str, arguments: dict[str, object]) -> object:\n"
@@ -145,6 +192,29 @@ def guards_for(plan: TranslationPlan) -> tuple[GuardCode, ...]:
         if code is not None:
             seen.setdefault(guard.kind, code)
     return tuple(seen[kind] for kind in sorted(seen, key=str))
+
+
+def _policy_guards(
+    tool_policy: ToolPolicy | None, *, already: frozenset[GuardKind]
+) -> tuple[GuardCode, ...]:
+    """Guards forced by `[policy.tool.<name>]` rather than by translation loss.
+
+    *already* is the set of kinds `guards_for` already emitted from the
+    translation plan; a policy that pins `approval = "always"` on a tool the
+    lattice already gated for being destructive should not decorate the
+    binding with `@require_approval` twice.
+    """
+    if tool_policy is None:
+        return ()
+
+    forced: list[GuardCode] = []
+    if tool_policy.approval == "always" and GuardKind.REQUIRE_APPROVAL not in already:
+        forced.append(_POLICY_APPROVAL_GUARD)
+    if tool_policy.timeout_seconds is not None:
+        forced.append(_GUARD_CODE[GuardKind.BOUND_RUNTIME])
+    if tool_policy.egress_allow is not None:
+        forced.append(_GUARD_CODE[GuardKind.RESTRICT_EGRESS])
+    return tuple(forced)
 
 
 def record_for(descriptor: UnifiedToolDescriptor, plan: TranslationPlan) -> TranslationRecord:
@@ -203,18 +273,35 @@ class Lowering:
         }
 
 
-def lower(descriptor: UnifiedToolDescriptor, target: str) -> Lowering:
-    """Lower *descriptor* into *target*, generating guards for anything lost."""
+def lower(
+    descriptor: UnifiedToolDescriptor, target: str, *, tool_policy: ToolPolicy | None = None
+) -> Lowering:
+    """Lower *descriptor* into *target*, generating guards for anything lost.
+
+    *tool_policy* is `Manifest.policy_for(descriptor.name)` (spec §7), when the
+    project declared one: `approval = "always"` forces `REQUIRE_APPROVAL`
+    regardless of what the lattice already decided, `timeout_seconds` forces
+    `BOUND_RUNTIME`, and `egress_allow` forces `RESTRICT_EGRESS`. None of the
+    three are translation-loss compensation, so they are added on top of
+    `guards_for(plan)` rather than folded into `plan.guards` - `Lowering.plan`
+    and `.record` keep describing translation loss only.
+    """
     plan = plan_translation(
         descriptor.declared_properties(), source=descriptor.source.kind, target=target
     )
-    guards = guards_for(plan)
+    translation_guards = guards_for(plan)
+    policy_guards = _policy_guards(
+        tool_policy, already=frozenset(guard.kind for guard in translation_guards)
+    )
+    guards = tuple(sorted((*translation_guards, *policy_guards), key=lambda guard: str(guard.kind)))
 
     imports = sorted({line for guard in guards for line in guard.imports})
     decorators = "".join(f"{guard.decorator}\n" for guard in guards if guard.decorator)
     comments = "\n".join(f"# {guard.comment}" for guard in guards)
 
     first_line = descriptor.description.splitlines()[0] if descriptor.description else ""
+    timeout_seconds = tool_policy.timeout_seconds if tool_policy else None
+    egress_allow = tool_policy.egress_allow if (tool_policy and tool_policy.egress_allow) else ()
     source = _BINDING.substitute(
         tool_name=descriptor.name,
         tool_name_literal=repr(descriptor.name),
@@ -226,6 +313,8 @@ def lower(descriptor: UnifiedToolDescriptor, target: str) -> Lowering:
         description=repr(descriptor.description),
         short_description=first_line.replace('"', "'") or "Generated tool binding.",
         schema=repr(descriptor.input_schema),
+        timeout_seconds=repr(timeout_seconds),
+        egress_allow=repr(egress_allow),
         guard_comments=comments,
         decorators=decorators,
     )

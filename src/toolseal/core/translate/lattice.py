@@ -37,13 +37,27 @@ class Evidence(StrEnum):
 
 
 class GuardKind(StrEnum):
-    """A behaviour emitted to stand in for a property the target cannot express."""
+    """A behaviour emitted to stand in for a property the target cannot express.
+
+    The first five compensate for translation loss and are synthesised by
+    :func:`plan_translation` from a descriptor's declared security properties.
+    `BOUND_RUNTIME` and `RESTRICT_EGRESS` (P46, spec §7) are different in
+    origin: nothing in the lattice forces them, because ``timeout_seconds`` and
+    ``egress_allow`` are not properties a source abstraction declares - they
+    are per-tool policy an operator wrote in ``toolseal.toml``. They are forced
+    by `translate/lower.py` reading `Manifest.policy_for`, not by this module.
+    Both still need an entry in `_GUARD_CODE`, the same as every other kind:
+    `ungeneratable_guard_kinds()` does not distinguish where a kind's demand
+    came from, only whether the generator can satisfy it.
+    """
 
     ANNOTATE_SIDECAR = "annotate_sidecar"
     REQUIRE_APPROVAL = "require_approval"
     VALIDATE_INPUT = "validate_input"
     MAP_ERROR_CHANNEL = "map_error_channel"
     PRESERVE_DESCRIPTION = "preserve_description"
+    BOUND_RUNTIME = "bound_runtime"
+    RESTRICT_EGRESS = "restrict_egress"
 
 
 # Which guard restores which property. A property absent from this mapping

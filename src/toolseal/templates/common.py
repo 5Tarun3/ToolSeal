@@ -36,9 +36,11 @@ import logging
 import os
 import re
 import sys
-from collections.abc import Callable
+import threading
+from collections.abc import Callable, Sequence
 from functools import wraps
 from typing import Any
+from urllib.parse import urlsplit
 
 REDACTED = "[REDACTED]"
 
@@ -253,6 +255,136 @@ def require_approval(reason: str) -> Callable[[Callable[..., Any]], Callable[...
             if answer != "y":
                 message = f"{function.__name__} was not approved"
                 raise PermissionError(message)
+            return function(*args, **kwargs)
+
+        return wrapper
+
+    return decorate
+
+
+class GuardTimeoutError(TimeoutError):
+    """`BOUND_RUNTIME`: a guarded call did not return within its bound.
+
+    Raising this is not proof the underlying call stopped - see
+    `bound_runtime`'s docstring for exactly what is, and is not, promised.
+    """
+
+
+class EgressPolicyError(PermissionError):
+    """`RESTRICT_EGRESS`: a guarded call named a host outside its allowlist.
+
+    Raising this is not proof no other host was reached - see
+    `restrict_egress`'s docstring for exactly what is, and is not, checked.
+    """
+
+
+def bound_runtime(seconds: float) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    """P46/BOUND_RUNTIME: stop waiting for a call once *seconds* have passed.
+
+    `policy.tool.<name>.timeout_seconds` in `toolseal.toml` forces this guard
+    (see `translate/lower.py`). The wrapped call runs on a daemon worker
+    thread; if it has not finished within *seconds*, `GuardTimeoutError` is
+    raised on the caller's thread instead of waiting any longer.
+
+    What this does not promise: Python has no supported way to forcibly kill
+    a running thread, so a call that times out is not stopped - it keeps
+    running in the background, and whatever it eventually returns, or any
+    side effect it performs, is simply discarded. This bounds how long the
+    *caller* waits, not how long the *callee* runs. `signal.alarm` would stop
+    the callee outright, but only from the main thread of the main
+    interpreter, and not at all on Windows - both of which this project must
+    run on - so a guard built on it would work on one platform and silently
+    do nothing on another. Bounding the wait honestly, everywhere, beats
+    claiming to bound execution and only sometimes managing it.
+    """
+    if isinstance(seconds, bool) or not isinstance(seconds, (int, float)) or seconds <= 0:
+        message = f"bound_runtime requires a positive number of seconds, got {seconds!r}"
+        raise ValueError(message)
+
+    def decorate(function: Callable[..., Any]) -> Callable[..., Any]:
+        @wraps(function)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            outcome: list[Any] = []
+            failure: list[Exception] = []
+
+            def run() -> None:
+                try:
+                    outcome.append(function(*args, **kwargs))
+                except Exception as exc:  # the caller's thread re-raises this, not this one
+                    failure.append(exc)
+
+            worker = threading.Thread(target=run, daemon=True)
+            worker.start()
+            worker.join(timeout=seconds)
+            if worker.is_alive():
+                message = (
+                    f"{function.__name__} exceeded its {seconds}s bound "
+                    "(policy.tool.<name>.timeout_seconds); it may still be running "
+                    "in the background"
+                )
+                raise GuardTimeoutError(message)
+            if failure:
+                raise failure[0]
+            return outcome[0]
+
+        return wrapper
+
+    return decorate
+
+
+# Parameter names a call is inspected under even when its value carries no
+# "://" scheme - a bare hostname passed as `host="evil.example.com"` is just
+# as much a declared destination as a full URL.
+_HOST_LIKE_KEYS = frozenset({"url", "uri", "host", "hostname", "endpoint", "base_url", "address"})
+
+
+def _named_host(value: str) -> str | None:
+    """The host *value* names, if it looks like a URL or a bare hostname."""
+    if "://" in value:
+        return urlsplit(value).hostname
+    if not value or " " in value or "/" in value:
+        return None
+    return value
+
+
+def restrict_egress(
+    allowed_hosts: Sequence[str],
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    """P46/RESTRICT_EGRESS: refuse a call whose own arguments name a disallowed host.
+
+    `policy.tool.<name>.egress_allow` in `toolseal.toml` forces this guard
+    (see `translate/lower.py`). Every keyword argument passed to the wrapped
+    call is inspected: a string value that is a URL (contains `://`), or is
+    passed under a host-shaped parameter name (`url`, `host`, `endpoint`, ...)
+    and looks like a bare hostname, is checked against *allowed_hosts*. A call
+    naming a host outside that list is refused before it reaches the wrapped
+    function.
+
+    What this does not promise: this project deliberately ships no runtime
+    interception gateway. A decorator sees only the arguments a caller passed
+    to *this* function - it cannot see a socket the wrapped function opens
+    internally, a redirect the far end issues, a host embedded in a request
+    body rather than a top-level argument, or DNS resolution. Treat this as
+    catching an egregious, argument-visible mistake or a misconfigured tool,
+    never as a network firewall.
+    """
+    allowed = frozenset(host.lower() for host in allowed_hosts)
+
+    def decorate(function: Callable[..., Any]) -> Callable[..., Any]:
+        @wraps(function)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            for name, value in kwargs.items():
+                if not isinstance(value, str):
+                    continue
+                if "://" not in value and name.lower() not in _HOST_LIKE_KEYS:
+                    continue
+                host = _named_host(value)
+                if host is not None and host.lower() not in allowed:
+                    message = (
+                        f"{function.__name__} would reach {host!r}, which is outside "
+                        f"the allowed hosts {sorted(allowed)} (policy.tool.<name>.egress_allow)"
+                    )
+                    raise EgressPolicyError(message)
             return function(*args, **kwargs)
 
         return wrapper

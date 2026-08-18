@@ -184,6 +184,10 @@ class ToolBinding:
     justification: str | None = None
     destructive: bool | None = None
     requires_approval: bool = False
+    egress_hosts: tuple[str, ...] = ()
+    """Hosts the tool's own descriptor declares it reaches (``UnifiedToolDescriptor
+    .egress_hosts``), when known. Lets an audit compare declared need against a
+    per-tool ``egress_allow`` policy (``B4``) without re-deriving it from source."""
 
     @property
     def is_executor(self) -> bool:
