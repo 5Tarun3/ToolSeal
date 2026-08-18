@@ -88,6 +88,19 @@ def get_json(url: str, *, timeout: float = DEFAULT_TIMEOUT) -> Any:
     return _parse(_open(url, data=None, timeout=timeout), url)
 
 
+def get_text(url: str, *, timeout: float = DEFAULT_TIMEOUT) -> str:
+    """GET *url* and decode the body as text.
+
+    For documentation pages and READMEs, which are HTML or Markdown rather
+    than JSON. Shares every guarantee `get_json` has - https only, bounded,
+    identified - because it goes through the same `_open`; only the parsing
+    at the end differs. Bytes that are not valid UTF-8 are decoded with
+    replacement rather than raised on, since a malformed byte or two in a
+    third-party page is not a reason to lose the rest of it.
+    """
+    return _open(url, data=None, timeout=timeout).decode("utf-8", errors="replace")
+
+
 def post_json(url: str, payload: Any, *, timeout: float = DEFAULT_TIMEOUT) -> Any:
     """POST *payload* as JSON to *url* and parse the response."""
     body = json.dumps(payload).encode("utf-8")

@@ -27,9 +27,11 @@ from toolseal.core.policy.model import all_checks
 S1_RESULTS: Path = Path("research/studies/s1/results.json")
 OTHER_S1_STRATA: tuple[str, ...] = ("official-docs", "mcp-servers", "templates")
 """The three strata `research/evaluation-protocol.md` defines for Study 1
-besides `llm-generated`. No results file for any of them exists in this
-repository; `recut_study1_by_control` checks for that explicitly rather than
-silently only ever looking at the one stratum that did run."""
+besides `llm-generated`. Each, once collected, writes a flat
+`results.<stratum>.json` alongside `S1_RESULTS`
+(`bench.corpus.write_flat_index`); `recut_study1_by_control` checks for that
+file explicitly, per stratum, rather than silently only ever looking at the
+one stratum this module itself reads."""
 
 
 # --- part (a): coverage analysis -------------------------------------------
@@ -89,10 +91,12 @@ def recut_study1_by_control() -> dict[str, Any]:
     corpus has anything to re-cut. It does not.
 
     `research/studies/s1/results.json`'s `llm-generated` stratum recorded 0
-    of 12 completions materialised into an auditable project, so
-    `check_failure_counts` is empty; the other three strata the protocol
-    defines were never collected at all. There is no per-check data to
-    re-derive a per-control table from, so this reports the gap instead of
+    of 12 completions materialised into an auditable project, so its own
+    `check_failure_counts` is empty. That alone is enough to make the re-cut
+    infeasible regardless of what the other three strata produced - this
+    function reports which of them are missing a results file too, but their
+    presence does not substitute for `llm-generated` having nothing to
+    re-derive a per-control table from. This reports the gap instead of
     fabricating one.
     """
     payload = _load_s1()

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from toolseal.core.net import USER_AGENT, HttpError, get_json, post_json
+from toolseal.core.net import USER_AGENT, HttpError, get_json, get_text, post_json
 
 
 @pytest.mark.parametrize(
@@ -51,3 +51,17 @@ def test_user_agent_identifies_the_tool() -> None:
     # Registry operators should be able to see who is crawling and rate-limit
     # rather than block outright.
     assert "toolseal/" in USER_AGENT
+
+
+def test_get_text_also_enforces_the_scheme() -> None:
+    # get_text shares _open with get_json/post_json; this pins that it did not
+    # grow its own, laxer, path to the network.
+    with pytest.raises(HttpError, match="non-https"):
+        get_text("http://example.test/README.md")
+
+
+def test_get_text_allows_plaintext_loopback_like_get_json() -> None:
+    with pytest.raises(HttpError) as caught:
+        get_text("http://127.0.0.1:11434/README.md")
+
+    assert "non-https" not in str(caught.value)
