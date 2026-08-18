@@ -28,6 +28,7 @@ import sys
 from langchain.agents import create_agent
 from $chat_module import $chat_class
 
+from agent_config import BASE_URL, MODEL
 from guards import configure_logging
 from tools import TOOLS
 
@@ -43,10 +44,15 @@ RECURSION_LIMIT = 25
 
 
 def build_agent():
-    """Construct the agent with an explicit, minimal tool set."""
+    """Construct the agent with an explicit, minimal tool set.
+
+    The model and its endpoint come from `agent_config`, which reads
+    `toolseal.toml` - the one place this project records them - rather than
+    from a value frozen into this file when it was scaffolded.
+    """
     model = $chat_class(
-        model="$model",
-        base_url="$base_url",
+        model=MODEL,
+        base_url=BASE_URL,
         temperature=0,
         $timeout_kwarg,
     )
@@ -103,6 +109,8 @@ from pathlib import Path
 
 from langchain_core.tools import tool
 
+from agent_config import TOOL_NAMES
+
 # B3: filesystem access is rooted at the project workspace, not at "/" or "~".
 WORKSPACE = (Path(__file__).resolve().parent / "workspace").resolve()
 
@@ -124,18 +132,32 @@ def read_workspace_file(relative_path: str) -> str:
     return target.read_text(encoding="utf-8")
 
 
-# B1: the explicit set bound to the agent. Adding a tool here is a deliberate
-# act, which is the point.
-TOOLS = (read_workspace_file,)
+_ALL_TOOLS = (read_workspace_file,)
+
+# B1: the explicit set bound to the agent, narrowed to the names
+# `toolseal.toml` enables so this file agrees with every other framework
+# entrypoint in the project rather than keeping its own copy of the decision.
+TOOLS = tuple(candidate for candidate in _ALL_TOOLS if candidate.name in TOOL_NAMES)
 ''')
 
 
-# Shared with every other framework: guards, the env example, and the readme
-# are not LangGraph-specific, and a second copy would drift.
+# Shared with every other framework: guards, the shared config module, the env
+# example, and the readme are not LangGraph-specific, and a second copy would
+# drift.
 from toolseal.templates.common import (  # noqa: E402
+    AGENT_CONFIG_PY,
     ENV_EXAMPLE,
     GUARDS_PY,
     README_MD,
+    render_agent_config,
 )
 
-__all__ = ["AGENT_PY", "ENV_EXAMPLE", "GUARDS_PY", "README_MD", "TOOLS_PY"]
+__all__ = [
+    "AGENT_CONFIG_PY",
+    "AGENT_PY",
+    "ENV_EXAMPLE",
+    "GUARDS_PY",
+    "README_MD",
+    "TOOLS_PY",
+    "render_agent_config",
+]

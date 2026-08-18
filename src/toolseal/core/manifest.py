@@ -44,6 +44,23 @@ class Manifest:
     justifications: dict[str, str] = field(default_factory=dict)
     declared_scopes: dict[str, tuple[str, ...]] = field(default_factory=dict)
 
+    base_url: str = ""
+    """Endpoint override, or ``""`` to mean "use the provider's default".
+
+    Recorded so a generated `agent_config.py` can read the same override
+    every other toolseal command sees, rather than a value baked into one
+    framework's source at scaffold time and frozen there.
+    """
+
+    tools: tuple[str, ...] = ()
+    """Names of the tools this project's entrypoints bind, in one place.
+
+    A project with more than one framework entrypoint (LangGraph and CrewAI in
+    the same directory, say) would otherwise need this list kept in sync by
+    hand in each `tools.py`. Read once here, both frameworks' generated tool
+    modules filter their own tool objects down to these names instead.
+    """
+
     def justification_for(self, tool_name: str) -> str | None:
         """Why *tool_name* is allowed its capability, if anyone said."""
         reason = self.justifications.get(tool_name, "").strip()
@@ -61,6 +78,9 @@ class Manifest:
             f"provider = {_quote(self.provider_id)}",
             f"framework = {_quote(self.framework_id)}",
             f"model = {_quote(self.model)}",
+            # D3: an overridden endpoint is where traffic and credentials get
+            # redirected, so it is recorded rather than left implicit.
+            f"base_url = {_quote(self.base_url)}",
             "",
             "[policy]",
             "# F2: destructive tools require confirmation before they run.",
@@ -78,6 +98,15 @@ class Manifest:
         lines += [
             f"{name} = [{', '.join(_quote(item) for item in scope)}]"
             for name, scope in sorted(self.declared_scopes.items())
+        ]
+
+        lines += [
+            "",
+            "[tools]",
+            "# B1: the explicit tool list every framework entrypoint in this",
+            "# project binds from. `agent_config.py` reads it so LangGraph and",
+            "# CrewAI entrypoints in the same project never disagree about it.",
+            f"enabled = [{', '.join(_quote(item) for item in self.tools)}]",
         ]
         return "\n".join(lines) + "\n"
 
@@ -110,6 +139,12 @@ class Manifest:
             if isinstance(value, list)
         }
 
+        raw_tools = data.get("tools") or {}
+        enabled_tools = raw_tools.get("enabled") if isinstance(raw_tools, dict) else None
+        tools = (
+            tuple(str(item) for item in enabled_tools) if isinstance(enabled_tools, list) else ()
+        )
+
         return cls(
             project_name=str(project["name"]),
             provider_id=str(stack["provider"]),
@@ -120,6 +155,8 @@ class Manifest:
             ),
             justifications={str(k): str(v) for k, v in (data.get("justifications") or {}).items()},
             declared_scopes=scopes,
+            base_url=str(stack.get("base_url", "")),
+            tools=tools,
         )
 
     @classmethod

@@ -169,6 +169,10 @@ def test_no_cell_writes_a_credential_value(
 
 
 def test_base_url_override_reaches_the_generated_code(tmp_path: Path) -> None:
+    # The override is no longer baked into agent.py's source: it is recorded
+    # once in toolseal.toml, and agent_config.py reads it from there at run
+    # time, so this is verified by importing the generated module rather than
+    # by grepping agent.py for a literal.
     root = tmp_path / "proxied"
     apply_plan(
         build_plan(
@@ -182,7 +186,19 @@ def test_base_url_override_reaches_the_generated_code(tmp_path: Path) -> None:
         )
     )
 
-    assert "http://127.0.0.1:11434/v1" in (root / "agent.py").read_text(encoding="utf-8")
+    assert 'base_url = "http://127.0.0.1:11434/v1"' in (root / "toolseal.toml").read_text(
+        encoding="utf-8"
+    )
+
+    sys.path.insert(0, str(root))
+    sys.modules.pop("agent_config", None)
+    try:
+        import agent_config  # type: ignore[import-not-found]
+
+        assert agent_config.BASE_URL == "http://127.0.0.1:11434/v1"
+    finally:
+        sys.path.remove(str(root))
+        sys.modules.pop("agent_config", None)
 
 
 @pytest.mark.skipif(not ollama_reachable(), reason="no local Ollama on 127.0.0.1:11434")

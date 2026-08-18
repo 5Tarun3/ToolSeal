@@ -37,6 +37,7 @@ from toolseal.core.manifest import MANIFEST_NAME, Manifest
 from toolseal.core.sbom import SBOM_FILENAME
 from toolseal.core.sbom import render as render_sbom
 from toolseal.errors import ConfigError
+from toolseal.templates.common import DEFAULT_TOOL_NAMES
 
 
 @dataclass(frozen=True)
@@ -101,6 +102,10 @@ def _project_hygiene_files(
         provider_id=provider.id,
         framework_id=framework.id,
         model=spec.model or provider.default_model,
+        base_url=spec.base_url or "",
+        # Claude Code configures a runtime rather than generating tool code, so
+        # it has no `tools.py` for `agent_config.py` to filter and gets none.
+        tools=() if getattr(framework, "configures_in_place", False) else DEFAULT_TOOL_NAMES,
     )
 
     return [

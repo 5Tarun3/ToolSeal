@@ -99,8 +99,7 @@ class CrewAIFramework:
         substitutions = {
             "project_name": spec.project_name,
             "package_name": _package_name(spec.project_name),
-            "crewai_model": f"{integration.litellm_prefix}/{model}",
-            "base_url": spec.base_url or provider.default_base_url,
+            "litellm_prefix": integration.litellm_prefix,
         }
 
         requirements = "\n".join(self.packages(provider)) + "\n"
@@ -111,6 +110,22 @@ class CrewAIFramework:
             RenderedFile(
                 PurePosixPath("guards.py"),
                 common.GUARDS_PY.substitute(substitutions),
+            ),
+            # The provider binding is baked in as literals - it is known now,
+            # at scaffold time. The model, endpoint override and tool list are
+            # not: they are read from `toolseal.toml` at run time, so CrewAI
+            # and any other framework entrypoint in the same project agree
+            # with it.
+            RenderedFile(
+                PurePosixPath("agent_config.py"),
+                common.render_agent_config(
+                    project_name=spec.project_name,
+                    provider_id=provider.id,
+                    provider_name=provider.display_name,
+                    default_model=provider.default_model,
+                    default_base_url=provider.default_base_url,
+                    credential_env_var=provider.credential_env_var,
+                ),
             ),
             RenderedFile(PurePosixPath("requirements.txt"), requirements),
             RenderedFile(

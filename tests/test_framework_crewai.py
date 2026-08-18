@@ -121,6 +121,7 @@ def test_render_touches_no_filesystem(tmp_path: Path) -> None:
 def test_emits_the_expected_file_set(tmp_path: Path) -> None:
     assert set(rendered(tmp_path)) == {
         "agent.py",
+        "agent_config.py",
         "tools.py",
         "guards.py",
         "requirements.txt",
@@ -130,7 +131,7 @@ def test_emits_the_expected_file_set(tmp_path: Path) -> None:
     }
 
 
-@pytest.mark.parametrize("name", ["agent.py", "tools.py", "guards.py"])
+@pytest.mark.parametrize("name", ["agent.py", "tools.py", "guards.py", "agent_config.py"])
 def test_generated_python_compiles(tmp_path: Path, name: str) -> None:
     compile(rendered(tmp_path)[name].content, name, "exec")
 
@@ -142,8 +143,13 @@ def test_no_placeholder_survives_substitution(tmp_path: Path) -> None:
 
 def test_model_carries_the_litellm_provider_prefix(tmp_path: Path) -> None:
     # CrewAI routes through LiteLLM, which identifies a model as provider/model.
-    # Without the prefix it silently resolves to the wrong backend.
-    assert 'model="ollama/qwen2.5:3b"' in rendered(tmp_path)["agent.py"].content
+    # Without the prefix it silently resolves to the wrong backend. The prefix
+    # is fixed at scaffold time; the model id itself now comes from
+    # `agent_config` at run time, which is exercised end-to-end in
+    # tests/test_agent_config.py rather than read as a literal here.
+    agent = rendered(tmp_path)["agent.py"].content
+    assert 'LITELLM_PREFIX = "ollama"' in agent
+    assert 'model=f"{LITELLM_PREFIX}/{MODEL}"' in agent
 
 
 def test_guards_are_the_shared_ones(tmp_path: Path) -> None:

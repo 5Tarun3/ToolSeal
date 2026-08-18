@@ -113,6 +113,7 @@ def test_render_is_deterministic(tmp_path: Path) -> None:
 def test_emits_the_expected_file_set(tmp_path: Path) -> None:
     assert set(rendered(tmp_path)) == {
         "agent.py",
+        "agent_config.py",
         "tools.py",
         "guards.py",
         "requirements.txt",
@@ -122,7 +123,7 @@ def test_emits_the_expected_file_set(tmp_path: Path) -> None:
     }
 
 
-@pytest.mark.parametrize("name", ["agent.py", "tools.py", "guards.py"])
+@pytest.mark.parametrize("name", ["agent.py", "tools.py", "guards.py", "agent_config.py"])
 def test_generated_python_compiles(tmp_path: Path, name: str) -> None:
     source = rendered(tmp_path)[name].content
     compile(source, name, "exec")

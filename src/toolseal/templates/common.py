@@ -10,6 +10,12 @@ a tool lowered into any framework gets the same behaviour restored.
 from __future__ import annotations
 
 from string import Template
+from typing import Final
+
+# The tool set every generated project starts with. Recorded in `toolseal.toml`
+# under `[tools] enabled` and read back at runtime by `agent_config.py`, so it
+# is written down exactly once even though two frameworks might read it.
+DEFAULT_TOOL_NAMES: Final[tuple[str, ...]] = ("read_workspace_file",)
 
 GUARDS_PY = Template('''"""Security guards for $project_name.
 
@@ -253,6 +259,115 @@ def require_approval(reason: str) -> Callable[[Callable[..., Any]], Callable[...
 
     return decorate
 ''')
+
+
+AGENT_CONFIG_PY = Template('''"""Shared configuration for $project_name.
+
+Every framework entrypoint in this project imports from here rather than
+hard-coding the model, the provider or the tool list a second time.
+
+Two kinds of value live here, and editing `toolseal.toml` affects only one of
+them:
+
+* **Baked in at scaffold time, fixed for this project:** PROVIDER_ID,
+  PROVIDER_NAME, DEFAULT_MODEL, DEFAULT_BASE_URL, CREDENTIAL_ENV_VAR. These
+  describe the provider this project was generated for and are resolved once,
+  when the project is created. Editing `toolseal.toml` does not change them -
+  re-scaffold, or edit this file directly, to target a different provider.
+* **Read live from `toolseal.toml` on every import:** MODEL, BASE_URL,
+  TOOL_NAMES. These are what a user is expected to change after scaffolding,
+  so every entrypoint reads them from the one file instead of a value frozen
+  into source - editing `toolseal.toml` changes what every entrypoint does,
+  together.
+
+Only the standard library is imported here - never a framework package, and
+never `toolseal` itself. toolseal is a setup-time tool: this project must run
+on a machine where toolseal was never installed. This module reads the
+handful of fields it needs from `toolseal.toml` with `tomllib` directly rather
+than through toolseal's own `Manifest` class, which stays the one parser
+inside toolseal but is not available here.
+"""
+
+from __future__ import annotations
+
+import tomllib
+from pathlib import Path
+from typing import Final
+
+_ROOT = Path(__file__).resolve().parent
+_MANIFEST_PATH = _ROOT / "toolseal.toml"
+
+try:
+    _TOML_TEXT = _MANIFEST_PATH.read_text(encoding="utf-8")
+except OSError:
+    _MESSAGE = (
+        f"no toolseal.toml found next to {__file__}; "
+        "this project was not scaffolded by toolseal, or the file was moved"
+    )
+    raise RuntimeError(_MESSAGE) from None
+
+try:
+    _DATA = tomllib.loads(_TOML_TEXT)
+except tomllib.TOMLDecodeError as exc:
+    _MESSAGE = f"toolseal.toml is not valid TOML: {exc}"
+    raise RuntimeError(_MESSAGE) from None
+
+# Baked at scaffold time: facts about the provider this project targets,
+# resolved once from the provider registry when `toolseal init` ran.
+PROVIDER_ID: Final = "$provider_id"
+PROVIDER_NAME: Final = "$provider_name"
+DEFAULT_MODEL: Final = "$default_model"
+DEFAULT_BASE_URL: Final = "$default_base_url"
+CREDENTIAL_ENV_VAR: Final[str | None] = $credential_env_var
+
+_stack = _DATA.get("stack")
+_stack = _stack if isinstance(_stack, dict) else {}
+
+# Read live: editing toolseal.toml changes these for every entrypoint.
+MODEL: str = str(_stack.get("model") or "") or DEFAULT_MODEL
+BASE_URL: str = str(_stack.get("base_url") or "") or DEFAULT_BASE_URL
+
+_tools = _DATA.get("tools")
+_tools = _tools if isinstance(_tools, dict) else {}
+_enabled = _tools.get("enabled")
+
+# B1: the explicit tool list every framework entrypoint in this project binds
+# from. Each entrypoint's own tools.py still defines the actual tool objects,
+# in the shape its framework wants them - this is only the list of names that
+# should be active, so it cannot say something different in each one.
+TOOL_NAMES: tuple[str, ...] = (
+    tuple(str(item) for item in _enabled) if isinstance(_enabled, list) else ()
+)
+''')
+
+
+def render_agent_config(
+    *,
+    project_name: str,
+    provider_id: str,
+    provider_name: str,
+    default_model: str,
+    default_base_url: str,
+    credential_env_var: str | None,
+) -> str:
+    """Render `agent_config.py`, with *provider*'s facts baked in as literals.
+
+    The provider binding - its id, display name, default model, default
+    endpoint and credential variable name - is known the moment a framework
+    adapter resolves the provider at scaffold time. Baking it in here, rather
+    than re-resolving it at import time through `provider_registry`, is what
+    lets the generated module stand alone: it never needs toolseal installed
+    to know what it was scaffolded for.
+    """
+    literal_credential = "None" if credential_env_var is None else repr(credential_env_var)
+    return AGENT_CONFIG_PY.substitute(
+        project_name=project_name,
+        provider_id=provider_id,
+        provider_name=provider_name,
+        default_model=default_model,
+        default_base_url=default_base_url,
+        credential_env_var=literal_credential,
+    )
 
 
 ENV_EXAMPLE = Template("""# Copy to .env and fill in. Never commit .env.

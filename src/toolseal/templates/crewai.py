@@ -28,6 +28,7 @@ import sys
 
 from crewai import LLM, Agent, Crew, Task
 
+from agent_config import BASE_URL, MODEL
 from guards import configure_logging
 from tools import TOOLS
 
@@ -41,11 +42,23 @@ REQUEST_TIMEOUT_SECONDS = 60.0
 # resource-exhaustion bug (OWASP LLM10 Unbounded Consumption).
 MAX_ITERATIONS = 15
 
+# CrewAI routes through LiteLLM, which identifies a model as `provider/model`.
+# The prefix is CrewAI's own convention, fixed for this provider at scaffold
+# time; the model id itself comes from `agent_config`, which reads it from
+# `toolseal.toml` rather than from a value frozen into this file.
+LITELLM_PREFIX = "$litellm_prefix"
+
 
 def build_llm() -> LLM:
+    """Construct the LLM binding.
+
+    The model and its endpoint come from `agent_config`, which reads
+    `toolseal.toml` - the one place this project records them - rather than
+    from a value frozen into this file when it was scaffolded.
+    """
     return LLM(
-        model="$crewai_model",
-        base_url="$base_url",
+        model=f"{LITELLM_PREFIX}/{MODEL}",
+        base_url=BASE_URL,
         temperature=0,
         timeout=REQUEST_TIMEOUT_SECONDS,
     )
@@ -120,6 +133,8 @@ from pathlib import Path
 
 from crewai.tools import tool
 
+from agent_config import TOOL_NAMES
+
 # B3: filesystem access is rooted at the project workspace, not at "/" or "~".
 WORKSPACE = (Path(__file__).resolve().parent / "workspace").resolve()
 
@@ -141,7 +156,10 @@ def read_workspace_file(relative_path: str) -> str:
     return target.read_text(encoding="utf-8")
 
 
-# B1: the explicit set bound to the agent. Adding a tool here is a deliberate
-# act, which is the point.
-TOOLS = (read_workspace_file,)
+_ALL_TOOLS = (read_workspace_file,)
+
+# B1: the explicit set bound to the agent, narrowed to the names
+# `toolseal.toml` enables so this file agrees with every other framework
+# entrypoint in the project rather than keeping its own copy of the decision.
+TOOLS = tuple(candidate for candidate in _ALL_TOOLS if candidate.name in TOOL_NAMES)
 ''')

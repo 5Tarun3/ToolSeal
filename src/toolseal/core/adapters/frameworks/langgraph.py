@@ -123,8 +123,6 @@ class LangGraphFramework:
         substitutions = {
             "project_name": spec.project_name,
             "package_name": package_name,
-            "model": model,
-            "base_url": spec.base_url or provider.default_base_url,
             "chat_module": integration.chat_module,
             "chat_class": integration.chat_class,
             "timeout_kwarg": integration.timeout_kwarg,
@@ -136,6 +134,22 @@ class LangGraphFramework:
             RenderedFile(PurePosixPath("agent.py"), tpl.AGENT_PY.substitute(substitutions)),
             RenderedFile(PurePosixPath("tools.py"), tpl.TOOLS_PY.substitute(substitutions)),
             RenderedFile(PurePosixPath("guards.py"), tpl.GUARDS_PY.substitute(substitutions)),
+            # The provider binding is baked in as literals - it is known now,
+            # at scaffold time. The model, endpoint override and tool list are
+            # not: they are read from `toolseal.toml` at run time, so
+            # LangGraph and any other framework entrypoint in the same project
+            # agree with it.
+            RenderedFile(
+                PurePosixPath("agent_config.py"),
+                tpl.render_agent_config(
+                    project_name=spec.project_name,
+                    provider_id=provider.id,
+                    provider_name=provider.display_name,
+                    default_model=provider.default_model,
+                    default_base_url=provider.default_base_url,
+                    credential_env_var=provider.credential_env_var,
+                ),
+            ),
             RenderedFile(PurePosixPath("requirements.txt"), requirements),
             RenderedFile(
                 PurePosixPath(".env.example"),
