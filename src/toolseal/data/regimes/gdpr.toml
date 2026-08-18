@@ -59,3 +59,12 @@ D1 = "critical"
 # guard against. An approval gate on destructive tool operations is a direct
 # configuration control against exactly that risk.
 "policy.approval_required_for_destructive" = true
+
+[residency]
+# P49 (spec §9): bounded residency derivation reads a tool's egress_hosts
+# against this table and yields UNKNOWN for anything not listed here - never
+# a guess. ".eu" is IANA's own generic top-level domain for entities
+# established in the European Union (Regulation (EC) No 733/2002), so a host
+# under it is a defensible, citable signal for GDPR's territory, unlike an
+# arbitrary hostname heuristic would be.
+".eu" = ["EU"]

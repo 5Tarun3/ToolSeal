@@ -40,6 +40,7 @@ from importlib import resources
 from typing import Any, Final
 
 from toolseal.core.policy.model import AuditReport, Check, CheckResult, Severity, all_checks
+from toolseal.core.registry.utd import ComplianceEvidence, Residency
 from toolseal.errors import ConfigError
 
 DATA_PACKAGE: Final = "toolseal.data.regimes"
@@ -79,6 +80,16 @@ class Profile:
     require: dict[str, Any] = field(default_factory=dict)
     """Settings this profile pins, e.g. `"policy.approval_required_for_destructive"
     -> True`. Carried as data; P44 does not interpret or enforce it."""
+
+    residency: dict[str, tuple[str, ...]] = field(default_factory=dict)
+    """Host suffix -> the region(s) it signals (P49, spec §9).
+
+    The bounded table `core/registry/utd.py`'s `Residency.from_dict` docstring
+    refers to: a host matching no entry here derives to UNKNOWN rather than a
+    guess, because deriving a jurisdiction from an arbitrary hostname is not
+    something a configuration auditor can do. Keys are suffixes such as
+    `".eu"`; `derive_residency` normalises a bare suffix to carry the leading
+    dot so matching never crosses a label boundary."""
 
 
 @dataclass(frozen=True)
@@ -180,6 +191,28 @@ def _parse_require(data: dict[str, Any]) -> dict[str, Any]:
     return dict(raw)
 
 
+def _parse_residency(data: dict[str, Any], *, profile_id: str) -> dict[str, tuple[str, ...]]:
+    raw = data.get("residency") or {}
+    if not isinstance(raw, dict):
+        message = "profile field 'residency' must be a table"
+        raise ConfigError(message)
+
+    resolved: dict[str, tuple[str, ...]] = {}
+    for suffix, regions in raw.items():
+        if (
+            not isinstance(regions, list)
+            or not regions
+            or not all(isinstance(region, str) for region in regions)
+        ):
+            message = (
+                f"profile {profile_id!r} residency entry {suffix!r} must map to a "
+                "non-empty list of region strings"
+            )
+            raise ConfigError(message)
+        resolved[suffix] = tuple(regions)
+    return resolved
+
+
 def parse_profile(text: str, *, baseline: Mapping[str, Severity] | None = None) -> Profile:
     """Parse one profile, rejecting anything that could weaken the baseline.
 
@@ -213,6 +246,7 @@ def parse_profile(text: str, *, baseline: Mapping[str, Severity] | None = None) 
         not_assessed=_parse_not_assessed(data),
         severity=_parse_severity(data, profile_id=profile_id, baseline=resolved_baseline),
         require=_parse_require(data),
+        residency=_parse_residency(data, profile_id=profile_id),
     )
 
 
@@ -316,3 +350,63 @@ def apply_resolution(report: AuditReport, resolution: Resolution) -> AuditReport
         for result in report.results
     )
     return AuditReport(root=report.root, results=new_results)
+
+
+def residency_table(profiles: Iterable[Profile] | None = None) -> dict[str, tuple[str, ...]]:
+    """Merge every profile's `[residency]` table into one suffix -> regions map.
+
+    Defaults to every shipped regime (`load_profiles()`). A suffix declared by
+    more than one profile takes the union of the regions named for it - unlike
+    `[severity]`, there is no "strictest wins" question here, because each
+    regime is an independent, non-conflicting source of jurisdiction evidence
+    rather than a competing opinion about the same fact.
+    """
+    source = profiles if profiles is not None else load_profiles().values()
+    merged: dict[str, set[str]] = {}
+    for prof in source:
+        for suffix, regions in prof.residency.items():
+            merged.setdefault(suffix, set()).update(regions)
+    return {suffix: tuple(sorted(regions)) for suffix, regions in merged.items()}
+
+
+def _host_matches(host: str, suffix: str) -> bool:
+    """Whether *host* falls under *suffix*, on a domain-label boundary.
+
+    A bare `"us"` would wrongly match a host like `"bogus"`, since raw
+    `str.endswith` knows nothing about domain structure - so every suffix is
+    normalised to carry a leading `.` before comparison, and a host equal to
+    the suffix's own apex (`"eu"` against suffix `".eu"`) still matches.
+    """
+    dotted = suffix if suffix.startswith(".") else f".{suffix}"
+    return host == dotted[1:] or host.endswith(dotted)
+
+
+def derive_residency(
+    egress_hosts: Sequence[str], table: Mapping[str, Sequence[str]] | None = None
+) -> Residency:
+    """Derive a UTD `Residency` claim from *egress_hosts* (spec §9).
+
+    *table* defaults to `residency_table()` - every shipped regime's merged
+    `[residency]` table. Matching is bounded to that table on purpose: a host
+    matching no entry contributes nothing, and a descriptor whose egress
+    touches no known suffix at all derives to `Residency()` - UNKNOWN, empty
+    regions - rather than a guess. Deriving a jurisdiction from an arbitrary
+    hostname is not something a configuration auditor can do, so this
+    function never falls back to one.
+    """
+    lookup = table if table is not None else residency_table()
+
+    matched: set[str] = set()
+    for host in egress_hosts:
+        for suffix, regions in lookup.items():
+            if _host_matches(host, suffix):
+                matched.update(regions)
+
+    if not matched:
+        return Residency()
+
+    return Residency(
+        regions=tuple(sorted(matched)),
+        evidence=ComplianceEvidence.DERIVED,
+        derivation="egress_hosts",
+    )

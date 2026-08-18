@@ -61,3 +61,12 @@ D1 = "critical"
 # Art. 9(4)(c): access to information assets and ICT assets limited "to what
 # is required for legitimate and approved functions and activities only."
 "policy.approval_required_for_destructive" = true
+
+[residency]
+# P49 (spec §9): bounded residency derivation reads a tool's egress_hosts
+# against this table and yields UNKNOWN for anything not listed here - never
+# a guess. ".eu" is IANA's own generic top-level domain for entities
+# established in the European Union (Regulation (EC) No 733/2002); DORA
+# applies to EU financial entities and their ICT arrangements, so the same
+# signal used for gdpr.toml applies here for the same reason.
+".eu" = ["EU"]

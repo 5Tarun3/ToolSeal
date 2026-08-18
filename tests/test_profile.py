@@ -21,9 +21,12 @@ from toolseal.core.policy.profile import (
     DATA_PACKAGE,
     Profile,
     apply_resolution,
+    derive_residency,
     parse_profile,
+    residency_table,
     resolve,
 )
+from toolseal.core.registry.utd import ComplianceEvidence, Residency
 from toolseal.errors import ConfigError
 
 BASELINE = {
@@ -328,3 +331,106 @@ def test_apply_resolution_on_an_unresolved_check_id_leaves_it_untouched() -> Non
     (result,) = resolved_report.results
     assert result.check.id == "ZZ9"
     assert result.check.severity is Severity.LOW
+
+
+# --- residency: the [residency] table, its parsing, and derivation (P49) -----
+
+
+def test_profile_parses_a_residency_table() -> None:
+    text = 'id = "x"\nkind = "regime"\nname = "X"\n\n[residency]\n".us" = ["US"]\n'
+
+    profile = parse_profile(text, baseline=BASELINE)
+
+    assert profile.residency == {".us": ("US",)}
+
+
+def test_a_residency_entry_must_map_to_a_list_of_strings() -> None:
+    text = 'id = "x"\nkind = "regime"\nname = "X"\n\n[residency]\n".us" = "US"\n'
+
+    with pytest.raises(ConfigError, match="residency"):
+        parse_profile(text, baseline=BASELINE)
+
+
+def test_a_residency_entry_may_not_be_an_empty_list() -> None:
+    text = 'id = "x"\nkind = "regime"\nname = "X"\n\n[residency]\n".us" = []\n'
+
+    with pytest.raises(ConfigError, match="residency"):
+        parse_profile(text, baseline=BASELINE)
+
+
+def test_a_profile_with_no_residency_table_parses_with_an_empty_one() -> None:
+    profile = parse_profile(HIPAA_LIKE, baseline=BASELINE)
+
+    assert profile.residency == {}
+
+
+def test_residency_table_merges_across_profiles() -> None:
+    gdpr = Profile(id="gdpr", kind="regime", name="GDPR", residency={".eu": ("EU",)})
+    hipaa = Profile(id="hipaa", kind="regime", name="HIPAA", residency={".us": ("US",)})
+
+    table = residency_table([gdpr, hipaa])
+
+    assert table == {".eu": ("EU",), ".us": ("US",)}
+
+
+def test_residency_table_unions_regions_for_a_shared_suffix() -> None:
+    a = Profile(id="a", kind="regime", name="A", residency={".eu": ("EU",)})
+    b = Profile(id="b", kind="regime", name="B", residency={".eu": ("EEA",)})
+
+    table = residency_table([a, b])
+
+    assert table[".eu"] == ("EEA", "EU")
+
+
+TEST_RESIDENCY_TABLE = {".us": ("US",), ".eu": ("EU",)}
+
+
+def test_derive_residency_matches_a_suffix_in_the_table() -> None:
+    residency = derive_residency(("api.example.us",), TEST_RESIDENCY_TABLE)
+
+    assert residency.regions == ("US",)
+    assert residency.evidence is ComplianceEvidence.DERIVED
+    assert residency.derivation == "egress_hosts"
+
+
+def test_derive_residency_unions_regions_across_matching_hosts() -> None:
+    residency = derive_residency(("api.example.us", "svc.example.eu"), TEST_RESIDENCY_TABLE)
+
+    assert residency.regions == ("EU", "US")
+
+
+def test_a_host_matching_no_entry_yields_unknown_not_a_guess() -> None:
+    residency = derive_residency(("api.example.jp",), TEST_RESIDENCY_TABLE)
+
+    assert residency == Residency()
+    assert residency.evidence is ComplianceEvidence.UNKNOWN
+    assert residency.regions == ()
+
+
+def test_derive_residency_with_no_egress_hosts_is_unknown() -> None:
+    assert derive_residency((), TEST_RESIDENCY_TABLE) == Residency()
+
+
+def test_a_bare_suffix_does_not_match_a_host_that_merely_ends_with_the_letters() -> None:
+    # "bogus".endswith("us") is true as a raw string operation - matching must
+    # respect a domain-label boundary, or an unrelated host would be
+    # misclassified into a region nothing about it actually signals.
+    residency = derive_residency(("bogus",), TEST_RESIDENCY_TABLE)
+
+    assert residency.evidence is ComplianceEvidence.UNKNOWN
+
+
+def test_derive_residency_matches_the_suffixs_own_apex_host() -> None:
+    residency = derive_residency(("us",), TEST_RESIDENCY_TABLE)
+
+    assert residency.regions == ("US",)
+
+
+def test_derive_residency_defaults_to_every_shipped_regime() -> None:
+    # No table passed - falls back to residency_table(), which merges gdpr,
+    # hipaa and dora's shipped [residency] tables (tests/test_regimes.py
+    # covers those specifically).
+    residency = derive_residency(("api.example.us",))
+
+    assert residency.evidence is ComplianceEvidence.DERIVED
+    assert "US" in residency.regions

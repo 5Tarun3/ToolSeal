@@ -59,3 +59,13 @@ D1 = "critical"
 # "Access control" and the Security Rule's minimum-necessary emphasis on
 # limiting access to what a role requires.
 "policy.approval_required_for_destructive" = true
+
+[residency]
+# P49 (spec §9): bounded residency derivation reads a tool's egress_hosts
+# against this table and yields UNKNOWN for anything not listed here - never
+# a guess. ".us" is the ccTLD administered for the United States (though open
+# to registrants generally); it is the same signal the design spec's own §9
+# worked example uses ("egress_hosts contains api.example.us" -> region US),
+# so this table matches that example exactly rather than inventing a
+# different rule.
+".us" = ["US"]

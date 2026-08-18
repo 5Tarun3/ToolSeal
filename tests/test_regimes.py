@@ -13,7 +13,14 @@ trusting the loader alone.
 from __future__ import annotations
 
 from toolseal.core.policy.model import Severity, all_checks
-from toolseal.core.policy.profile import Profile, load_profile, load_profiles
+from toolseal.core.policy.profile import (
+    Profile,
+    derive_residency,
+    load_profile,
+    load_profiles,
+    residency_table,
+)
+from toolseal.core.registry.utd import ComplianceEvidence
 
 EXPECTED_REGIME_IDS = frozenset({"gdpr", "hipaa", "dora"})
 
@@ -196,6 +203,50 @@ def test_regimes_resolve_together_strictest_wins() -> None:
     # not_assessed carries both regimes' scope forward.
     assert any("164.308" in item for item in resolution.not_assessed)
     assert any("Art. 28" in item or "Art. 5" in item for item in resolution.not_assessed)
+
+
+# --- residency host-suffix table (P49) ----------------------------------------
+
+
+def test_every_regime_declares_a_residency_table() -> None:
+    for regime_id in EXPECTED_REGIME_IDS:
+        profile = load_profile(regime_id)
+        assert profile.residency, f"{regime_id} declares no [residency] table"
+
+
+def test_gdpr_and_dora_map_the_eu_suffix() -> None:
+    for regime_id in ("gdpr", "dora"):
+        profile = load_profile(regime_id)
+        assert profile.residency.get(".eu") == ("EU",)
+
+
+def test_hipaa_maps_the_us_suffix() -> None:
+    profile = load_profile("hipaa")
+    assert profile.residency.get(".us") == ("US",)
+
+
+def test_shipped_residency_tables_merge_without_conflict() -> None:
+    table = residency_table()
+
+    assert table[".eu"] == ("EU",)
+    assert table[".us"] == ("US",)
+
+
+def test_the_spec_worked_example_host_derives_to_us() -> None:
+    # Spec §9's own worked example: "egress_hosts contains api.example.us" ->
+    # region US. This exercises the shipped tables end to end, not a fixture.
+    residency = derive_residency(("api.example.us",))
+
+    assert residency.regions == ("US",)
+    assert residency.evidence is ComplianceEvidence.DERIVED
+    assert residency.derivation == "egress_hosts"
+
+
+def test_a_host_matching_no_shipped_regime_suffix_is_unknown() -> None:
+    residency = derive_residency(("api.example.jp",))
+
+    assert residency.evidence is ComplianceEvidence.UNKNOWN
+    assert residency.regions == ()
 
 
 def test_profile_dataclass_still_frozen_for_shipped_regimes() -> None:
