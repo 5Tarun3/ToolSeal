@@ -117,6 +117,53 @@ def test_blocking_is_reported_apart_from_the_score() -> None:
     assert report.blocking
 
 
+def test_relaxed_leaves_the_denominator() -> None:
+    # Exactly like NOT_APPLICABLE: a waiver is not evidence the check passed.
+    report = AuditReport(
+        root=".",
+        results=(
+            result("A1", Severity.CRITICAL, Verdict.PASS),
+            result("B2", Severity.CRITICAL, Verdict.RELAXED),
+        ),
+    )
+    assert report.score == 100
+    assert not report.results[1].counts_towards_score
+
+
+def test_relaxed_critical_is_reported_apart_from_blocking_and_score() -> None:
+    # A relaxed critical must never lower the score (RELAXED leaves the
+    # denominator) and must never look like a live blocker (it is not a FAIL) -
+    # but it must still be visible on its own, the way `blocking` is.
+    results = tuple(result(f"X{i}", Severity.LOW, Verdict.PASS) for i in range(40))
+    report = AuditReport(
+        root=".", results=(*results, result("B2", Severity.CRITICAL, Verdict.RELAXED))
+    )
+
+    assert report.score == 100
+    assert not report.blocking
+    assert report.relaxed_critical
+
+
+def test_relaxed_critical_is_false_when_nothing_critical_was_relaxed() -> None:
+    report = AuditReport(
+        root=".",
+        results=(
+            result("C5", Severity.LOW, Verdict.RELAXED),
+            result("A1", Severity.CRITICAL, Verdict.FAIL),
+        ),
+    )
+    assert report.blocking
+    assert not report.relaxed_critical
+
+
+def test_finding_subject_defaults_to_none() -> None:
+    # Absence means "this finding names no single entity", not "unknown" -
+    # the same absent-means-unset rule the rest of the model follows.
+    finding = Finding(check_id="A1", severity=Severity.CRITICAL, title="t", detail="d")
+    assert finding.subject is None
+    assert finding.location is None
+
+
 def test_findings_are_ordered_most_severe_first() -> None:
     model = ProjectModel(root=Path())
     report = audit_model(model)

@@ -45,6 +45,7 @@ def _g1(model: ProjectModel) -> Sequence[Finding]:
                 f"{record.source_abstraction} but not carried by "
                 f"{record.target_abstraction}"
             ),
+            subject=record.tool_name,
             location=record.tool_name,
             remediation=(
                 "Emit a compensating guard so the consequence of the hint survives, "
@@ -69,6 +70,7 @@ def _g2(model: ProjectModel) -> Sequence[Finding]:
                 "validates them client-side, so an out-of-range call is sent and only "
                 "the server refuses it"
             ),
+            subject=record.tool_name,
             location=record.tool_name,
             remediation="Validate arguments against the declared schema before dispatch.",
         )
@@ -87,6 +89,7 @@ def _g3(model: ProjectModel) -> Sequence[Finding]:
                 f"{record.tool_name}: an error result arrives as ordinary tool content, so "
                 "failure cannot be detected without parsing prose"
             ),
+            subject=record.tool_name,
             location=record.tool_name,
             remediation="Map error results onto the framework's failure channel.",
         )
@@ -105,6 +108,7 @@ def _g4(model: ProjectModel) -> Sequence[Finding]:
                 f"{record.tool_name}: {', '.join(sorted(record.uncompensated))} was dropped "
                 f"by {record.target_abstraction} and nothing was emitted in its place"
             ),
+            subject=record.tool_name,
             location=record.tool_name,
             remediation=(
                 "Emit a guard, or record the property as unsupported so the gap is "
@@ -126,6 +130,7 @@ def _g5(model: ProjectModel) -> Sequence[Finding]:
                 f"{record.tool_name}: {record.target_abstraction} altered the author's "
                 "description, so the text reaching the model is not the text that was written"
             ),
+            subject=record.tool_name,
             location=record.tool_name,
             remediation=(
                 "Preserve the author's description verbatim alongside the binding so the "

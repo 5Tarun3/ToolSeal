@@ -135,6 +135,7 @@ def _c1(model: ProjectModel) -> Sequence[Finding]:
                 severity=Severity.HIGH,
                 title="Unpinned dependency",
                 detail=f"{dependency.name} is declared as {dependency.specifier or 'any version'}",
+                subject=dependency.name,
                 remediation=f"Pin {dependency.name} to an exact version.",
             )
             for dependency in unpinned
@@ -154,6 +155,7 @@ def _c2(model: ProjectModel) -> Sequence[Finding]:
             detail=(
                 f"{name} {by_name[name].resolved_version} is affected by {', '.join(advisories)}"
             ),
+            subject=name,
             remediation=f"Upgrade {name} to a version outside the affected range.",
         )
         for name, advisories in sorted(affected.items())
@@ -304,6 +306,7 @@ def _findings_for(
                     else "Package name resolves nowhere"
                 ),
                 detail=f"{name}: {result.detail}",
+                subject=name,
                 location=name,
                 remediation=(
                     f"Confirm {name!r} is the package intended"
@@ -385,6 +388,7 @@ def _c4(model: ProjectModel) -> Sequence[Finding]:
                 f"{dependency.name} comes from {dependency.source.kind} "
                 f"{dependency.source.reference!r}, which is neither pinned nor integrity-checked"
             ),
+            subject=dependency.name,
             remediation="Install from an indexed registry with a pinned version and a checksum.",
         )
         for dependency in model.dependencies.declared

@@ -253,6 +253,7 @@ def _a5(model: ProjectModel) -> Sequence[Finding]:
             severity=Severity.HIGH,
             title="Credential embedded in an MCP server's environment",
             detail=f"{server.name} declares {reference.name} with a literal value",
+            subject=server.name,
             location=str(reference.location) if reference.location else None,
             line=reference.line,
             remediation=(

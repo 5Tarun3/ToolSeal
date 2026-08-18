@@ -28,6 +28,7 @@ def _d1(model: ProjectModel) -> Sequence[Finding]:
             severity=Severity.CRITICAL,
             title="Remote MCP endpoint is not TLS-protected",
             detail=f"{server.name} is reached over {server.url}, in the clear",
+            subject=server.name,
             location=server.name,
             remediation="Use an https endpoint; anything on the path can read and rewrite calls.",
         )
@@ -43,6 +44,7 @@ def _d2(model: ProjectModel) -> Sequence[Finding]:
             severity=Severity.HIGH,
             title="Remote MCP server is reached without authentication",
             detail=f"{server.name} is remote and no authentication is configured",
+            subject=server.name,
             location=server.name,
             remediation="Configure authentication, or use a local server instead.",
         )
@@ -62,6 +64,7 @@ def _d3(model: ProjectModel) -> Sequence[Finding]:
                 "vendor default, which is the mechanism by which traffic and credentials "
                 "get silently proxied"
             ),
+            subject=provider.provider_id,
             location=provider.provider_id,
             remediation="Use the vendor default, or record why the override is intended.",
         )
@@ -77,6 +80,7 @@ def _e1(model: ProjectModel) -> Sequence[Finding]:
             severity=Severity.CRITICAL,
             title="Code execution with no configured isolation",
             detail=f"{tool.name} runs arbitrary code with no sandbox or container configured",
+            subject=tool.name,
             location=tool.name,
             remediation="Configure isolation for the tool, or remove it.",
         )
@@ -109,6 +113,7 @@ def _e3(model: ProjectModel) -> Sequence[Finding]:
             severity=Severity.MEDIUM,
             title="Tool call has no timeout",
             detail=f"{tool.name} can block indefinitely",
+            subject=tool.name,
             location=tool.name,
             remediation="Set a timeout on the tool call.",
         )
@@ -152,6 +157,7 @@ def _f2(model: ProjectModel) -> Sequence[Finding]:
             severity=Severity.HIGH,
             title="Destructive tool has no approval gate",
             detail=f"{tool.name} is declared destructive and can run without confirmation",
+            subject=tool.name,
             location=tool.name,
             remediation="Wrap the tool in an approval step.",
         )

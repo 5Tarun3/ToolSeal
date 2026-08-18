@@ -40,6 +40,7 @@ def _b1(model: ProjectModel) -> Sequence[Finding]:
                 f"{agent.name} receives the whole tool collection rather than a task-scoped "
                 "subset, which is the overprovisioning default"
             ),
+            subject=agent.name,
             location=agent.name,
             remediation="Bind an explicit list of the tools this agent actually needs.",
         )
@@ -59,6 +60,7 @@ def _b2(model: ProjectModel) -> Sequence[Finding]:
                 f"{tool.name} can execute arbitrary code and no reason is recorded in "
                 "toolseal.toml, so nobody has said why the agent needs it"
             ),
+            subject=tool.name,
             location=tool.name,
             remediation=(
                 f"Remove the tool, or record why it is needed under [justifications] as "
@@ -79,6 +81,7 @@ def _b3(model: ProjectModel) -> Sequence[Finding]:
             severity=Severity.HIGH,
             title="Filesystem access is not confined",
             detail=f"{tool.name} is rooted at {', '.join(tool.filesystem_roots)}",
+            subject=tool.name,
             location=tool.name,
             remediation="Root filesystem access at the project workspace and resolve before use.",
         )
@@ -97,6 +100,7 @@ def _b4(model: ProjectModel) -> Sequence[Finding]:
                 f"{server.name} advertises {', '.join(sorted(server.scope_excess))} beyond "
                 "what the project declared it for"
             ),
+            subject=server.name,
             location=server.name,
             remediation="Narrow the launch configuration, or widen the declared scope knowingly.",
         )
@@ -115,6 +119,7 @@ def _b5(model: ProjectModel) -> Sequence[Finding]:
                 f"{agent.name} discovers its tools dynamically, so the available set can "
                 "change without any change to this project"
             ),
+            subject=agent.name,
             location=agent.name,
             remediation="Pin the resolved tool list so a change to it shows up as a diff.",
         )

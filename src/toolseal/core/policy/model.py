@@ -55,6 +55,14 @@ class Verdict(StrEnum):
     Distinct from `pass` on purpose: "we did not look" must never be reported as
     "we looked and it was fine".
     """
+    RELAXED = "relaxed"
+    """A failure covered by a justified, unexpired relaxation (`policy/relax.py`).
+
+    Leaves the score denominator exactly as `NOT_APPLICABLE` does - relaxation is
+    a recorded deviation, not evidence the check passed, so it must not read as
+    a pass either. `AuditReport.relaxed_critical` keeps a relaxed critical
+    finding visible even though it stops costing the score.
+    """
 
 
 @dataclass(frozen=True)
@@ -65,6 +73,16 @@ class Finding:
     severity: Severity
     title: str
     detail: str
+    subject: str | None = None
+    """The tool, server or dependency this finding concerns, when it names one.
+
+    Distinct from `location`: `location` is *where* in the project the evidence
+    sits (a file path, most often), while `subject` is *what* the finding is
+    about (`ci_shell`, `postgres-mcp`) - the identifier a per-tool relaxation in
+    `[policy.relax.<ID>].tools` matches against. Left `None` when a finding does
+    not concern one named entity - a project-wide gap, or one anchored to a file
+    rather than a tool.
+    """
     location: str | None = None
     line: int | None = None
     remediation: str = ""
@@ -114,6 +132,10 @@ class CheckResult:
 
     @property
     def counts_towards_score(self) -> bool:
+        """Only a real pass or fail moves the score. `NOT_APPLICABLE`, `UNKNOWN`
+        and `RELAXED` all leave the denominator - none of them is evidence the
+        check was satisfied, so none may raise the number, and none is a
+        detected defect either, so none may lower it."""
         return self.verdict in (Verdict.PASS, Verdict.FAIL)
 
 
@@ -150,6 +172,22 @@ class AuditReport:
         """Whether any critical check failed. Reported apart from the score."""
         return any(
             result.verdict is Verdict.FAIL and result.check.severity is Severity.CRITICAL
+            for result in self.results
+        )
+
+    @property
+    def relaxed_critical(self) -> bool:
+        """Whether a critical check was relaxed rather than failed outright.
+
+        Mirrors `blocking` exactly, on `Verdict.RELAXED` instead of `FAIL`.
+        Relaxation already keeps a critical finding out of the score (via
+        `Verdict.RELAXED` leaving the denominator, just as `NOT_APPLICABLE`
+        does); this property is what stops that same waiver from also going
+        unseen. One number must never hide a critical finding, whether it was
+        never fixed or only waived.
+        """
+        return any(
+            result.verdict is Verdict.RELAXED and result.check.severity is Severity.CRITICAL
             for result in self.results
         )
 
