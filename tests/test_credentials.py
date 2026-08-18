@@ -244,5 +244,13 @@ def test_precommit_config_detects_private_keys() -> None:
     assert "detect-private-key" in PRECOMMIT_CONFIG
 
 
+def test_precommit_config_ships_the_policy_verify_hook() -> None:
+    # P48/spec §8: `verify` is meant to run unconditionally, so every
+    # scaffolded project gets it - not only projects that already sealed a
+    # policy - and it is a no-op (exits 0) until `enforce` has run once.
+    assert "toolseal policy verify" in PRECOMMIT_CONFIG
+    assert "always_run: true" in PRECOMMIT_CONFIG
+
+
 def test_environment_reference_carries_no_value() -> None:
     assert environment_reference("ANTHROPIC_API_KEY") == "ANTHROPIC_API_KEY="
