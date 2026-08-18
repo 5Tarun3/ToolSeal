@@ -73,10 +73,18 @@ def test_recut_against_the_real_s1_corpus_reports_infeasibility() -> None:
     assert "control_failure_counts" not in result
 
 
-def test_recut_names_the_never_collected_strata() -> None:
+def test_recut_reports_no_missing_strata_now_all_four_are_collected() -> None:
+    # S1: official-docs, mcp-servers and templates have now been collected
+    # (research/studies/s1/results.<stratum>.json all exist), so none of them
+    # is missing any more - but the re-cut is still infeasible regardless,
+    # because it is llm-generated's own check_failure_counts that is empty
+    # (test_recut_against_the_real_s1_corpus_reports_infeasibility, above).
+    # This was `list(study5.OTHER_S1_STRATA)` before those three were
+    # collected; the assertion changing is the honesty check working as
+    # intended, not a workaround for it.
     result = study5.recut_study1_by_control()
 
-    assert result["missing_strata"] == list(study5.OTHER_S1_STRATA)
+    assert result["missing_strata"] == []
 
 
 def test_recut_with_no_results_file_at_all_says_so(

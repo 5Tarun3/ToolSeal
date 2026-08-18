@@ -1,0 +1,8 @@
+{
+  "content_sha256": "a685e6226a825f768e7a05d72f2c1ab22b1079519fa08a2fe17a96d7875c2fde",
+  "excluded": "",
+  "materialised": true,
+  "popularity": 76,
+  "retrieved_at": "2026-08-18T20:41:18+00:00",
+  "source_url": "https://github.com/aws-samples/sample-amazon-bedrock-agentcore-fullstack-webapp"
+}

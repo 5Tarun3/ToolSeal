@@ -71,11 +71,17 @@ def combine(
 
 
 def _llm_generated_section(payload: dict[str, Any]) -> str:
+    """`bench.generated.to_markdown`'s own document, demoted a level so its
+    `#`/`##` headings nest under this document's `#` instead of competing
+    with it - every heading, not just the title, or its "which checks fail"
+    subheading would sit level with "Stratum: llm-generated" instead of under it.
+    """
     text = llm_generated_markdown(payload)
     lines = text.splitlines()
-    if lines and lines[0].startswith("# "):
-        lines[0] = "## Stratum: `llm-generated`"
-    return "\n".join(lines) + "\n"
+    demoted = ["#" + line if line.startswith("#") else line for line in lines]
+    if demoted and demoted[0].startswith("## "):
+        demoted[0] = "## Stratum: `llm-generated`"
+    return "\n".join(demoted) + "\n"
 
 
 def _aggregate_row(label: str, aggregate: dict[str, Any]) -> str:
@@ -105,6 +111,31 @@ def _aggregate_section(combined: dict[str, Any]) -> str:
     )
 
 
+LIMITATIONS: Final = """## Known limitation: filename recovery can mis-pair a block's name
+
+`extract_html_files`/`extract_fenced_files` (`bench/corpus.py`) recover a
+filename from the prose nearest a code block, the same "just above it" idea
+`bench/generated.py` uses for a model completion - and inherit its failure
+mode. When a page or README has more than one filename mentioned close to
+more than one block, the heuristic can pair a name with the wrong content.
+Two entries in this corpus show it plainly:
+`mcp-servers/D4Vinci__Scrapling`'s materialised project contains one file,
+named `quotes.json` from nearby prose, whose actual content is Python
+spider code, not JSON; `templates/aws-samples__sample-amazon-bedrock-agentcore-fullstack-webapp`'s
+`agent/strands_agent.py` contains two shell deploy commands, not Python.
+
+This is not the artefact's own documentation being ambiguous - it is this
+harness mis-attributing a name it recovered correctly to a block it did not.
+Both entries' audit scores are reported as produced, unedited, per the same
+discipline that keeps every other number in this document honest, but they
+should be read as evidence about the harness's extraction quality on those
+two pages, not as a security finding about either project's own quickstart.
+Fixing the heuristic after seeing which two entries it mis-paired would be
+exactly the after-the-fact tuning `research/evaluation-protocol.md` exists to
+prevent, so it stands as recorded, with this caveat attached.
+"""
+
+
 def render_markdown(combined: dict[str, Any]) -> str:
     sections = [
         INTRO,
@@ -113,6 +144,7 @@ def render_markdown(combined: dict[str, Any]) -> str:
         corpus.to_markdown(combined["templates"]),
         _llm_generated_section(combined["llm_generated"]),
         _aggregate_section(combined),
+        LIMITATIONS,
     ]
     return "\n".join(sections)
 

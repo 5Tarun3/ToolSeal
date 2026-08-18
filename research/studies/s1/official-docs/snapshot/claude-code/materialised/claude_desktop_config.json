@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "claude-code": {
+      "type": "stdio",
+      "command": "/full/path/to/claude",
+      "args": ["mcp", "serve"],
+      "env": {}
+    }
+  }
+}

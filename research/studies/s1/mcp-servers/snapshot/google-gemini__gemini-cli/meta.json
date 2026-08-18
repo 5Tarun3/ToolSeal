@@ -1,0 +1,8 @@
+{
+  "content_sha256": "bacf354f3f674d57679ebf7b42dd69311bb9ef14200e18ca703d82aba48bf833",
+  "excluded": "no named file blocks recovered",
+  "materialised": false,
+  "popularity": 106560,
+  "retrieved_at": "2026-08-18T20:40:19+00:00",
+  "source_url": "https://github.com/google-gemini/gemini-cli"
+}

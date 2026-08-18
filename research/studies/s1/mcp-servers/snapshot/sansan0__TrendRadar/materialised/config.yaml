@@ -1,0 +1,3 @@
+schedule:
+  enabled: true
+  preset: "morning_evening"     # 改这里就行

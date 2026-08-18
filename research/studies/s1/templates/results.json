@@ -1,0 +1,203 @@
+{
+  "aggregate": {
+    "candidates_considered": 25,
+    "check_failure_counts": {
+      "A4": 3,
+      "C1": 3,
+      "C5": 1,
+      "E2": 3,
+      "E3": 3,
+      "F1": 3
+    },
+    "excluded": 22,
+    "materialised": 3,
+    "mean_score": 43.7,
+    "with_critical_finding": 0
+  },
+  "entries": [
+    {
+      "audit_score": 51,
+      "blocking": false,
+      "content_sha256": "8cd11f419899488a74192b03564f51fad4cf92fe1a85bf458d9f88831eac0c69",
+      "excluded": "",
+      "files": [
+        "pyproject.toml"
+      ],
+      "findings": [
+        "A4",
+        "C1",
+        "C5",
+        "E2",
+        "E3",
+        "F1"
+      ],
+      "id": "GoogleCloudPlatform__agent-starter-pack",
+      "materialised": true,
+      "popularity": 6535,
+      "retrieved_at": "2026-08-18T20:41:05+00:00",
+      "source_url": "https://github.com/GoogleCloudPlatform/agent-starter-pack"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "content_sha256": "bcaa484f9bf8e487ddd5fb4df449eda8692c58ce7916a6b2a0b53dbd65568d26",
+      "excluded": "no named file blocks recovered",
+      "files": [],
+      "findings": [],
+      "id": "AlexPEClub__ai-coding-starter-kit",
+      "materialised": false,
+      "popularity": 358,
+      "retrieved_at": "2026-08-18T20:41:10+00:00",
+      "source_url": "https://github.com/AlexPEClub/ai-coding-starter-kit"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "content_sha256": "82d30b568383a35a53c6c0e63fd9fedd34cefa40ff42978ee38c161a2018d1b3",
+      "excluded": "no named file blocks recovered",
+      "files": [],
+      "findings": [],
+      "id": "CWS6206__ai-coding-starter-kit",
+      "materialised": false,
+      "popularity": 202,
+      "retrieved_at": "2026-08-18T20:41:12+00:00",
+      "source_url": "https://github.com/CWS6206/ai-coding-starter-kit"
+    },
+    {
+      "audit_score": 40,
+      "blocking": false,
+      "content_sha256": "351c55f6511f505e1123080d193046817006d5c6f229eb58e069b6814d8ff403",
+      "excluded": "",
+      "files": [
+        ".env.example"
+      ],
+      "findings": [
+        "A4",
+        "C1",
+        "E2",
+        "E3",
+        "F1"
+      ],
+      "id": "thorchh__agent-starter",
+      "materialised": true,
+      "popularity": 121,
+      "retrieved_at": "2026-08-18T20:41:14+00:00",
+      "source_url": "https://github.com/thorchh/agent-starter"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "content_sha256": "43f25e2330a94f893b925bc878ed4162ced9fa9c2342a5459ac09ec94d8bd24c",
+      "excluded": "no named file blocks recovered",
+      "files": [],
+      "findings": [],
+      "id": "i-am-bee__beeai-framework-ts-starter",
+      "materialised": false,
+      "popularity": 117,
+      "retrieved_at": "2026-08-18T20:41:16+00:00",
+      "source_url": "https://github.com/i-am-bee/beeai-framework-ts-starter"
+    },
+    {
+      "audit_score": 40,
+      "blocking": false,
+      "content_sha256": "a685e6226a825f768e7a05d72f2c1ab22b1079519fa08a2fe17a96d7875c2fde",
+      "excluded": "",
+      "files": [
+        "agent/strands_agent.py"
+      ],
+      "findings": [
+        "A4",
+        "C1",
+        "E2",
+        "E3",
+        "F1"
+      ],
+      "id": "aws-samples__sample-amazon-bedrock-agentcore-fullstack-webapp",
+      "materialised": true,
+      "popularity": 76,
+      "retrieved_at": "2026-08-18T20:41:18+00:00",
+      "source_url": "https://github.com/aws-samples/sample-amazon-bedrock-agentcore-fullstack-webapp"
+    }
+  ],
+  "mechanically_skipped": [
+    {
+      "id": "panaversity/langgraph-agents-template",
+      "reason": "not updated within 18 months of the snapshot"
+    },
+    {
+      "id": "sneg55/agent-starter",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "jeffweisbein/openclaw-starter-kit",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "vercel-labs/claude-managed-agents-starter",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "jonathan-vella/apex-accelerator",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "i-am-bee/agentstack-starter",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "anayatkhan1/agentkit-starter",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "trancethehuman/agent_with_memory",
+      "reason": "not updated within 18 months of the snapshot"
+    },
+    {
+      "id": "karolswdev/cline-starter",
+      "reason": "not updated within 18 months of the snapshot"
+    },
+    {
+      "id": "twinklejoshi/ai-agent-playwright-typescript-template",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "DINAKAR-S/voice-agent-starter-kit",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "arjunprabhulal/adk-advanced",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "shadcn-labs/startercn",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "spencerpauly/skills-repo",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "Rohit-554/Catylst",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "Kohnnn/deepseek-n8n-automate-workflow",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "odsc2015/agentic-hackathon-template",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "jigjoy-ai/cli-agent-starter",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "datarobot-community/datarobot-agent-application",
+      "reason": "ranked outside the fixed sample size N=6"
+    }
+  ],
+  "population": "Top 6 GitHub repositories matching 'agent starter template' in name or description, ranked by stars, that survive the fork/archived/18-month-staleness filter in research/studies/s1/selection-criteria.md.",
+  "stratum": "templates",
+  "study": "S1 templates stratum"
+}

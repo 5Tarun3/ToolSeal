@@ -1,0 +1,198 @@
+{
+  "aggregate": {
+    "candidates_considered": 25,
+    "check_failure_counts": {
+      "A4": 2,
+      "C1": 2,
+      "E2": 2,
+      "E3": 2,
+      "F1": 2
+    },
+    "excluded": 23,
+    "materialised": 2,
+    "mean_score": 40.0,
+    "with_critical_finding": 0
+  },
+  "entries": [
+    {
+      "audit_score": null,
+      "blocking": null,
+      "content_sha256": "9af8818267836df37f8d58cbb1db8c02c83cbd110118361811f4910d4de59eca",
+      "excluded": "no named file blocks recovered",
+      "files": [],
+      "findings": [],
+      "id": "n8n-io__n8n",
+      "materialised": false,
+      "popularity": 201107,
+      "retrieved_at": "2026-08-18T20:40:16+00:00",
+      "source_url": "https://github.com/n8n-io/n8n"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "content_sha256": "bacf354f3f674d57679ebf7b42dd69311bb9ef14200e18ca703d82aba48bf833",
+      "excluded": "no named file blocks recovered",
+      "files": [],
+      "findings": [],
+      "id": "google-gemini__gemini-cli",
+      "materialised": false,
+      "popularity": 106560,
+      "retrieved_at": "2026-08-18T20:40:19+00:00",
+      "source_url": "https://github.com/google-gemini/gemini-cli"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "content_sha256": "bb82dc344eccc2975f0b9074e453bb2b19b7cef5a0d743b6650f5f0de059fcfe",
+      "excluded": "no named file blocks recovered",
+      "files": [],
+      "findings": [],
+      "id": "koala73__worldmonitor",
+      "materialised": false,
+      "popularity": 82944,
+      "retrieved_at": "2026-08-18T20:40:22+00:00",
+      "source_url": "https://github.com/koala73/worldmonitor"
+    },
+    {
+      "audit_score": 40,
+      "blocking": false,
+      "content_sha256": "2c154f61f389ef889b5f1b8549fc2536a49969b23aa8e3e3911caae820556063",
+      "excluded": "",
+      "files": [
+        "quotes.json"
+      ],
+      "findings": [
+        "A4",
+        "C1",
+        "E2",
+        "E3",
+        "F1"
+      ],
+      "id": "D4Vinci__Scrapling",
+      "materialised": true,
+      "popularity": 74969,
+      "retrieved_at": "2026-08-18T20:40:24+00:00",
+      "source_url": "https://github.com/D4Vinci/Scrapling"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "content_sha256": "c7fd1828983ea5a378460432d40a7bb7317e87ae8481ef6f05cc8c90e0baa702",
+      "excluded": "no named file blocks recovered",
+      "files": [],
+      "findings": [],
+      "id": "ruvnet__ruflo",
+      "materialised": false,
+      "popularity": 68207,
+      "retrieved_at": "2026-08-18T20:40:25+00:00",
+      "source_url": "https://github.com/ruvnet/ruflo"
+    },
+    {
+      "audit_score": 40,
+      "blocking": false,
+      "content_sha256": "d8fb0c9a11752dce85b8cbf167566079e621718dbced2ebdd20cdf8b953f220a",
+      "excluded": "",
+      "files": [
+        ".cursor/mcp.json",
+        ".github/workflows/crawler.yml",
+        "ai_translation_prompt.txt",
+        "config.yaml",
+        "config/config.yaml",
+        "config/frequency_words.txt"
+      ],
+      "findings": [
+        "A4",
+        "C1",
+        "E2",
+        "E3",
+        "F1"
+      ],
+      "id": "sansan0__TrendRadar",
+      "materialised": true,
+      "popularity": 61565,
+      "retrieved_at": "2026-08-18T20:40:25+00:00",
+      "source_url": "https://github.com/sansan0/TrendRadar"
+    }
+  ],
+  "mechanically_skipped": [
+    {
+      "id": "upstash/context7",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "ChromeDevTools/chrome-devtools-mcp",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "amruthpillai/reactive-resume",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "DeusData/codebase-memory-mcp",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "bytedance/UI-TARS-desktop",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "github/github-mcp-server",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "assafelovic/gpt-researcher",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "oraios/serena",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "modelcontextprotocol/python-sdk",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "activepieces/activepieces",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "czlonkowski/n8n-mcp",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "1Panel-dev/MaxKB",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "mksglu/context-mode",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "modelscope/FunASR",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "nukeop/nuclear",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "microsoft/mcp-for-beginners",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "triggerdotdev/trigger.dev",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "xpzouying/xiaohongshu-mcp",
+      "reason": "ranked outside the fixed sample size N=6"
+    },
+    {
+      "id": "open-metadata/OpenMetadata",
+      "reason": "ranked outside the fixed sample size N=6"
+    }
+  ],
+  "population": "Top 6 GitHub repositories tagged mcp-server, ranked by stars, that survive the fork/archived/18-month-staleness filter in research/studies/s1/selection-criteria.md.",
+  "stratum": "mcp-servers",
+  "study": "S1 mcp-servers stratum"
+}

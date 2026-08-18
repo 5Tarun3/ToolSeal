@@ -62,6 +62,9 @@ packages = ["src/toolseal"]
 line-length = 100
 target-version = "py311"
 src = ["src", "tests", "bench"]
+# Materialised third-party artefacts from Study 1's corpus - not this
+# project's own code, and not written to comply with its own lint rules.
+extend-exclude = ["research/studies/*/*/snapshot"]
 
 [tool.ruff.lint]
 # S (flake8-bandit) is deliberately enabled: this is a security tool and its own

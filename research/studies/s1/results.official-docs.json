@@ -1,0 +1,76 @@
+{
+  "aggregate": {
+    "candidates_considered": 3,
+    "check_failure_counts": {
+      "A4": 1,
+      "C1": 1,
+      "D2": 1,
+      "E2": 1,
+      "E3": 1,
+      "F1": 1
+    },
+    "excluded": 2,
+    "materialised": 1,
+    "mean_score": 63.0,
+    "with_critical_finding": 0
+  },
+  "entries": [
+    {
+      "audit_score": 63,
+      "blocking": false,
+      "content_sha256": "0eda16fa278e36750b8b979c29e731c01cb76b5720eea13a7c3476e9fed1c4d8",
+      "excluded": "",
+      "files": [
+        ".claude/settings.json",
+        ".claude/settings.local.json",
+        ".mcp.json",
+        "claude_desktop_config.json",
+        "plugin.json",
+        "settings.json"
+      ],
+      "findings": [
+        "A4",
+        "C1",
+        "D2",
+        "E2",
+        "E3",
+        "F1"
+      ],
+      "id": "claude-code",
+      "materialised": true,
+      "popularity": null,
+      "retrieved_at": "2026-08-18T20:39:37+00:00",
+      "source_url": "https://docs.claude.com/en/docs/claude-code/mcp"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "content_sha256": "3b763f43529a98a59a8ce70147a65eb68e0fd42a15b1067d0f6ce445d745fde6",
+      "excluded": "no named file blocks recovered",
+      "files": [],
+      "findings": [],
+      "id": "langgraph",
+      "materialised": false,
+      "popularity": null,
+      "retrieved_at": "2026-08-18T20:39:38+00:00",
+      "source_url": "https://docs.langchain.com/oss/python/langchain/mcp"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "content_sha256": "91e6dd376fa8d0503fbbc33eedfd804e825f246142d96c8a7e8a72972afa8593",
+      "excluded": "no provider credential step visible on this page (inclusion rule 2 of selection-criteria.md) - materialising would require inventing one; the credential setup and the tool binding live on different pages",
+      "files": [],
+      "findings": [],
+      "id": "crewai",
+      "materialised": false,
+      "popularity": null,
+      "retrieved_at": "2026-08-18T20:39:39+00:00",
+      "source_url": "https://docs.crewai.com/en/mcp/overview"
+    }
+  ],
+  "mechanically_skipped": [],
+  "population": "Census of the frameworks toolseal scaffolds for (langgraph, crewai, claude-code), fixed by URL in research/studies/s1/selection-criteria.md.",
+  "stratum": "official-docs",
+  "study": "S1 official-docs stratum"
+}

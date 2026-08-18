@@ -1,0 +1,3 @@
+ai_translation:
+  enabled: true          # 开启翻译
+  language: "Chinese"    # 翻译成什么语言 (Chinese, English, Japanese...)

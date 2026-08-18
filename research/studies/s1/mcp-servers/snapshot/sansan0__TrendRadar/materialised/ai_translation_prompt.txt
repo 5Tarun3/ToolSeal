@@ -1,0 +1,4 @@
+# config.yaml 快速启用示例
+ai_translation:
+  enabled: true
+  language: "English"  # 翻译目标语言

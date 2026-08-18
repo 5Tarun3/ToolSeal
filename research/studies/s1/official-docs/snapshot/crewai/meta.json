@@ -1,0 +1,8 @@
+{
+  "content_sha256": "91e6dd376fa8d0503fbbc33eedfd804e825f246142d96c8a7e8a72972afa8593",
+  "excluded": "no provider credential step visible on this page (inclusion rule 2 of selection-criteria.md) - materialising would require inventing one; the credential setup and the tool binding live on different pages",
+  "materialised": false,
+  "popularity": null,
+  "retrieved_at": "2026-08-18T20:39:39+00:00",
+  "source_url": "https://docs.crewai.com/en/mcp/overview"
+}
