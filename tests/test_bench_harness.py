@@ -27,6 +27,7 @@ from bench.harness import (
 )
 
 from toolseal.core.audit import audit
+from toolseal.core.policy.family_a import CREDENTIAL_SHAPES
 
 
 def test_task_set_contains_adverse_cases() -> None:
@@ -153,6 +154,34 @@ def test_write_emits_both_artifacts(tmp_path: Path) -> None:
     payload = json.loads((out / "results.json").read_text(encoding="utf-8"))
     assert payload["tasks"]
     assert (out / "RESULTS.md").read_text(encoding="utf-8").startswith("# Study 2")
+
+
+def test_committed_results_json_carries_no_credential_shape(tmp_path: Path) -> None:
+    """P38 clause 4: a live credential must never reach a committed results file.
+
+    The manual baseline (`bench/baseline.py`) plants a plaintext, credential-
+    shaped key in `.env` for every provider that needs one, precisely so A1 has
+    something real to catch (`test_baseline_reproduces_the_insecure_quickstart_defaults`
+    above). `write()` is what `research/studies/s2/` actually commits.
+    `ArmResult.findings` is populated by `_audit_into` as bare check ids
+    (`{finding.check_id for finding in report.findings}`), never
+    `Finding.detail`, so the planted value has no path into the payload - this
+    proves it by scanning the committed bytes with the same patterns A1 itself
+    uses to recognise a credential.
+    """
+    results = run(tmp_path / "work")
+    write(results, tmp_path / "out")
+
+    raw = (tmp_path / "out" / "results.json").read_text(encoding="utf-8")
+
+    # The baseline's own placeholder must actually have been written and
+    # audited (openai/anthropic tasks need a credential); otherwise this test
+    # would pass by never exercising the risky path at all.
+    tasks = json.loads(raw)["tasks"]
+    assert any("A1" in t["manual"]["findings"] for t in tasks)
+
+    for _label, pattern in CREDENTIAL_SHAPES:
+        assert not pattern.search(raw)
 
 
 def test_toolseal_outscores_the_baseline_on_every_supported_cell(tmp_path: Path) -> None:

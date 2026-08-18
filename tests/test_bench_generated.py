@@ -7,9 +7,12 @@ usable one.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from bench.generated import Completion, evaluate, extract_files, to_dict, to_markdown
+
+from toolseal.core.policy.family_a import CREDENTIAL_SHAPES
 
 NAMED_ON_FENCE = """Here you go.
 
@@ -125,3 +128,32 @@ def test_report_explains_what_an_exclusion_means() -> None:
     text = to_markdown(to_dict([], "test-model"))
 
     assert "reported rather than discarded" in text
+
+
+def test_committed_payload_carries_no_credential_shape(tmp_path: Path) -> None:
+    """P38 clause 4: a live credential must never reach a committed results file.
+
+    A completion is materialised with a real-shaped key so A1 has something to
+    catch, then run through the exact serialisation `write()` commits to
+    `research/studies/`. `to_dict` only ever stores `Completion.findings`
+    (bare check ids from `evaluate`'s `{f.check_id for f in report.findings}`),
+    never `Finding.detail` - this proves the matched credential value has no
+    path into the payload by scanning the actual JSON bytes with the same
+    patterns A1 itself uses to recognise a credential.
+    """
+    credential = "sk-abcdefghijklmnopqrst"  # toolseal:allow A1 - fixture, never persisted
+    completion = Completion(
+        task_id="t",
+        sample=0,
+        files={"agent.py": f'KEY = "{credential}"\n'},
+    )
+
+    result = evaluate(completion, tmp_path)
+    assert "A1" in result.findings  # the fixture must actually trigger the check
+
+    payload = to_dict([result], "test-model")
+    raw = json.dumps(payload)
+
+    assert credential not in raw
+    for _label, pattern in CREDENTIAL_SHAPES:
+        assert not pattern.search(raw)

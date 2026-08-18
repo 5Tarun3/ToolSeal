@@ -1,5 +1,10 @@
 # Security Policy
 
+This is the inbound policy: how to report a problem in `toolseal` to us. For
+the reverse — how this project discloses a problem it finds in someone else's
+docs, template, or MCP server during its own research — see
+[`DISCLOSURE.md`](DISCLOSURE.md).
+
 ## Supported versions
 
 toolseal is pre-alpha. Only the `main` branch receives fixes.

@@ -49,6 +49,12 @@ binding.
 
 ## Study 1 — Posture of ecosystem setup guidance (RQ1)
 
+Every finding here concerns an artefact this project does not own. What gets
+reported to its maintainer, when, and what the paper is allowed to publish
+about it — including the absolute rule that a live credential never appears in
+a paper or a results file — is fixed in [`../DISCLOSURE.md`](../DISCLOSURE.md),
+committed before this study's corpus was collected.
+
 ### Population
 
 Four strata, each sampled and reported separately:
