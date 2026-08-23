@@ -4489,6 +4489,7 @@ version = "0.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "keyring" },
+    { name = "rich" },
     { name = "typer" },
 ]
 
@@ -4513,6 +4514,7 @@ research = [
 [package.metadata]
 requires-dist = [
     { name = "keyring", specifier = ">=25.0" },
+    { name = "rich", specifier = ">=13.8" },
     { name = "typer", specifier = ">=0.15.1" },
 ]
 
