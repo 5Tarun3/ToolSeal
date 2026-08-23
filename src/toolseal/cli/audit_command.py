@@ -174,18 +174,23 @@ def _summary_panel(report: AuditReport) -> Panel:
     counts = Counter(finding.severity for finding in report.findings)
     unknown = sum(1 for result in report.results if result.verdict is Verdict.UNKNOWN)
 
+    # ", " rather than " | " (spec §8: ASCII punctuation only): the panel
+    # this line lives in is itself drawn with `|` side walls on a console
+    # that cannot render rich's box-drawing characters, and a `|` separator
+    # here would read as a badly-aligned continuation of that same border
+    # rather than as four counts in a line (defect: the two glyphs collide).
     detail = Text()
     pieces = [(severity, counts[severity]) for severity in Severity if counts[severity]]
     for index, (severity, count) in enumerate(pieces):
         if index:
-            detail.append(" | ")
+            detail.append(", ")
         # Severity is spelled out as text, not carried by colour alone (spec
         # §8): a colour-blind reader or a plain-text log still gets "3
         # critical", not just a coloured "3".
         detail.append(f"{count} {severity.value}", style=severity_style(severity))
     if unknown:
         if pieces:
-            detail.append(" | ")
+            detail.append(", ")
         detail.append(f"{unknown} not evaluated", style="caveat")
     if not pieces and not unknown:
         detail.append("no findings", style="verdict.good")

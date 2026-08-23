@@ -144,6 +144,47 @@ def test_list_omits_the_legend_when_nothing_is_partial(
     assert "curated subset" not in result.stdout
 
 
+# --- defect: `name` wrapped and doubled row height in a narrow terminal -----
+
+
+def test_list_drops_the_name_column_when_the_terminal_is_too_narrow(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # At 80 columns the full standard name ("ISO/IEC 42001:2023 (Annex A, by
+    # reference)") does not fit beside `standard`/`coverage`/`checkable`
+    # without wrapping. `name` is the least important column, so it is
+    # dropped rather than wrapped - the id, coverage and checkable columns
+    # that a reader actually scans stay one line per row either way.
+    monkeypatch.setenv("COLUMNS", "80")
+
+    result = runner.invoke(app, ["policy", "list"])
+
+    assert result.exit_code == 0
+    lines = result.stdout.splitlines()
+    header = lines[0]
+    assert header.split() == ["standard", "coverage", "checkable"]
+    assert "ISO/IEC" not in result.stdout
+    # The curated-subset marker must survive losing the name column - it is
+    # attached to `coverage`, not to `name`.
+    assert "*" in result.stdout
+    assert "curated subset" in result.stdout
+
+
+def test_list_keeps_the_name_column_when_it_fits_on_one_line(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("COLUMNS", "150")
+
+    result = runner.invoke(app, ["policy", "list"])
+
+    assert result.exit_code == 0
+    lines = result.stdout.splitlines()
+    header = lines[0]
+    assert header.split()[:4] == ["standard", "coverage", "checkable", "name"]
+    # The full name renders on a single line - not wrapped across two.
+    assert "ISO/IEC 42001:2023 (Annex A, by reference)" in result.stdout
+
+
 def test_explain_a_check_states_the_rule_and_the_fix() -> None:
     result = runner.invoke(app, ["policy", "explain", "B3"])
 
@@ -158,6 +199,32 @@ def test_explain_a_check_names_its_obligations() -> None:
 
     assert "LLM06" in result.stdout
     assert "Excessive Agency" in result.stdout
+
+
+def test_explain_indents_fix_and_obligations_bodies_consistently() -> None:
+    # "How to fix it" indented its body by two columns while "Obligations
+    # this serves" left its rows flush against the panel's left edge - same
+    # structure, two treatments. Both must indent identically now.
+    result = runner.invoke(app, ["policy", "explain", "B3"])
+    lines = result.stdout.splitlines()
+
+    fix_heading = next(i for i, line in enumerate(lines) if "How to fix it" in line)
+    fix_body = lines[fix_heading + 1]
+
+    obligations_heading = next(
+        i for i, line in enumerate(lines) if "Obligations this serves" in line
+    )
+    obligations_body = lines[obligations_heading + 1]
+
+    def content_indent(line: str) -> int:
+        # Every panel line carries the border's own left wall plus one space
+        # of padding ("<border><pad>content..."); strip exactly that before
+        # measuring the content's own indent.
+        content = line[2:]
+        return len(content) - len(content.lstrip(" "))
+
+    assert content_indent(fix_body) == 2
+    assert content_indent(obligations_body) == 2
 
 
 def test_explain_is_case_insensitive() -> None:

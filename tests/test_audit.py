@@ -545,6 +545,31 @@ def test_blocking_appears_adjacent_to_the_score_not_as_a_trailing_line(tmp_path:
     assert "BLOCKING" in score_line
 
 
+def test_summary_panel_counts_do_not_collide_with_the_panel_border(tmp_path: Path) -> None:
+    # The severity-counts line used a `|` separator inside a panel whose own
+    # side walls render as `|` in a plain-ASCII console (ASCII box-drawing
+    # substitution, spec §8) - the two glyphs collided and the line read as
+    # four badly-aligned cells rather than four counts. A project with more
+    # than one severity present is enough to exercise the separator between
+    # them.
+    (tmp_path / "config.py").write_text(
+        'OPENAI_API_KEY = "sk-abcdefghijklmnopqrst"\n',  # toolseal:allow A1 - fixture
+        encoding="utf-8",
+    )
+    (tmp_path / "requirements.txt").write_text("requests\n", encoding="utf-8")
+
+    result = runner.invoke(app, ["audit", str(tmp_path)])
+    # The score line also contains "critical" (via `BLOCKING: 1 critical
+    # check failed`); the counts line is the one naming more than one
+    # severity.
+    counts_line = next(
+        line for line in result.stdout.splitlines() if "critical" in line and "high" in line
+    )
+
+    assert " | " not in counts_line
+    assert ", " in counts_line
+
+
 def test_severity_is_spelled_out_as_text_not_only_by_colour(tmp_path: Path) -> None:
     # Piped output carries no colour at all - if severity were colour-only,
     # a log file would lose it entirely (spec §8).

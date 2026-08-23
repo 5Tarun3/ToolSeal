@@ -16,6 +16,7 @@ from typing import Annotated
 
 import typer
 from rich.console import Group, RenderableType
+from rich.padding import Padding
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
@@ -87,7 +88,12 @@ def _explain_check(check: Check) -> None:
         for ref in check.controls:
             control = resolve(ref, catalogues)
             obligations.add_row(f"{ref.standard}:{control.id}", control.title)
-        sections.append(obligations)
+        # Indented by 2, matching "How to fix it"'s body above (defect: this
+        # section used to sit flush against the panel's left edge while the
+        # other section indented its content - same structure, two
+        # treatments). `rich.padding.Padding` does the indenting, not a
+        # hand-rolled leading-space prefix on every row.
+        sections.append(Padding(obligations, (0, 0, 0, 2)))
 
     panel = Panel(
         Group(*sections),
@@ -144,16 +150,53 @@ def _explain_control(raw: str) -> None:
         typer.echo("No check covers this yet.")
 
 
+def _standards_table(rows: Sequence[tuple[str, Text, str, str]]) -> Table:
+    """Build the `policy list` table, dropping the `name` column when the
+    terminal is too narrow to hold every column on one line.
+
+    `name` is the least important column here - a reader scans `standard`,
+    `coverage`, and `checkable` down the page, and the full standard name is
+    reference detail, not something compared row to row. Letting it wrap
+    instead doubled every row's height and broke that scan (defect: the
+    id/coverage/checkable columns no longer lined up visually). Dropping the
+    column is the fix rather than clipping its text, because an ellipsis
+    would need a non-ASCII character (spec §8 bans that outside `_ui.py`) and
+    a hard character-count crop has no way to signal that it truncated -
+    dropping the whole column is honest about what happened instead.
+
+    The fit check is `rich`'s own measurement, not hand-rolled width
+    arithmetic (spec §5): `console.measure` with `max_width` raised well
+    past any real terminal reports how wide the table would be if nothing
+    in it wrapped, which is then compared against the terminal's actual
+    width.
+    """
+    full = new_table()
+    full.add_column("standard")
+    full.add_column("coverage", justify="right")
+    full.add_column("checkable", justify="right")
+    full.add_column("name", no_wrap=True)
+    for standard, coverage, checkable, name in rows:
+        full.add_row(standard, coverage, checkable, name)
+
+    unclamped = console.options.update(max_width=10_000)
+    natural_width = console.measure(full, options=unclamped).maximum
+    if natural_width <= console.size.width:
+        return full
+
+    narrow = new_table()
+    narrow.add_column("standard")
+    narrow.add_column("coverage", justify="right")
+    narrow.add_column("checkable", justify="right")
+    for standard, coverage, checkable, _name in rows:
+        narrow.add_row(standard, coverage, checkable)
+    return narrow
+
+
 def list_standards() -> None:
     """List the standards and regimes shipped with toolseal."""
     catalogues = load_catalogues()
 
-    table = new_table()
-    table.add_column("standard")
-    table.add_column("coverage", justify="right")
-    table.add_column("checkable", justify="right")
-    table.add_column("name")
-
+    rows: list[tuple[str, Text, str, str]] = []
     partial_seen = False
     for key in sorted(catalogues):
         catalogue = catalogues[key]
@@ -167,9 +210,9 @@ def list_standards() -> None:
             coverage.append("*", style="caveat")
             partial_seen = True
 
-        table.add_row(key, coverage, f"{report.covered}/{report.checkable_total}", catalogue.name)
+        rows.append((key, coverage, f"{report.covered}/{report.checkable_total}", catalogue.name))
 
-    print_table(console, table)
+    print_table(console, _standards_table(rows))
 
     if partial_seen:
         console.print()
