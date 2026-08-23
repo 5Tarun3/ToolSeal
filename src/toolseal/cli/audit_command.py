@@ -23,7 +23,6 @@ from pathlib import Path
 from typing import Annotated, Any
 
 import typer
-from rich.padding import Padding
 from rich.panel import Panel
 from rich.text import Text
 
@@ -32,6 +31,8 @@ from toolseal.cli._ui import (
     console,
     new_progress_observer,
     new_table,
+    print_table,
+    print_wrapped,
     score_style,
     severity_style,
 )
@@ -177,14 +178,14 @@ def _summary_panel(report: AuditReport) -> Panel:
     pieces = [(severity, counts[severity]) for severity in Severity if counts[severity]]
     for index, (severity, count) in enumerate(pieces):
         if index:
-            detail.append(" · ")
+            detail.append(" | ")
         # Severity is spelled out as text, not carried by colour alone (spec
         # §8): a colour-blind reader or a plain-text log still gets "3
         # critical", not just a coloured "3".
         detail.append(f"{count} {severity.value}", style=severity_style(severity))
     if unknown:
         if pieces:
-            detail.append(" · ")
+            detail.append(" | ")
         detail.append(f"{unknown} not evaluated", style="caveat")
     if not pieces and not unknown:
         detail.append("no findings", style="verdict.good")
@@ -206,19 +207,20 @@ def _print_finding(finding: Finding) -> None:
 
     # Location and detail are muted; `fix` is the loudest line, inverting the
     # old dim-grey remediation - it is the reason the tool exists (spec §1).
-    # `Padding` rather than a literal leading-space prefix, so a detail long
-    # enough to wrap keeps its hanging indent on every wrapped line instead
-    # of dropping back to column zero.
+    # `print_wrapped` rather than `rich.padding.Padding`, so a detail long
+    # enough to wrap keeps its hanging indent on every wrapped line - under
+    # the text, never under a label - without padding any line out to the
+    # container width.
     where = ""
     if finding.location:
         where = finding.location + (f":{finding.line}" if finding.line else "")
-    detail_text = Text(f"{where} · {finding.detail}" if where else finding.detail, style="muted")
-    console.print(Padding(detail_text, (0, 0, 0, _CONTINUATION_WIDTH)))
+    detail_body = f"{where} - {finding.detail}" if where else finding.detail
+    print_wrapped(console, detail_body, indent=_CONTINUATION_WIDTH, style="muted")
 
     if finding.remediation:
-        fix_text = Text("fix  ", style="fix")
-        fix_text.append(finding.remediation, style="fix")
-        console.print(Padding(fix_text, (0, 0, 0, _CONTINUATION_WIDTH)))
+        print_wrapped(
+            console, finding.remediation, indent=_CONTINUATION_WIDTH, style="fix", label="fix  "
+        )
 
     console.print()
 
@@ -238,7 +240,7 @@ def _family_table(report: AuditReport) -> None:
             str(family.failed),
             str(family.not_applicable),
         )
-    console.print(table)
+    print_table(console, table)
 
 
 def _print_report(
@@ -265,6 +267,6 @@ def _print_report(
         # Load-bearing text (spec §7): "data unavailable, not a pass" must
         # survive verbatim - it is what stops "we could not look" from being
         # read as "we looked and it passed".
-        caveat.append(" — data unavailable, not a pass")
+        caveat.append(" - data unavailable, not a pass")
         caveat.stylize("caveat")
         console.print(caveat)

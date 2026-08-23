@@ -19,7 +19,7 @@ carries `complete_enumeration` through from the catalogue so a percentage is
 never presented without saying which kind of denominator produced it.
 
 What "covered" means is narrower than it sounds, and worth being explicit
-about: `ControlCoverage.is_covered` is `bool(self.check_ids)` — a control
+about: `ControlCoverage.is_covered` is `bool(self.check_ids)` - a control
 counts as covered the moment one check cites it. That citation is not evidence
 the check adequately discharges the obligation, only that someone judged it
 relevant enough to reference. A coverage percentage says how much of a

@@ -114,6 +114,32 @@ def new_table(*, box_style: box.Box = box.SIMPLE) -> Table:
     )
 
 
+def print_table(out: Console, table: Table) -> None:
+    """Print `table`, with every rendered line right-trimmed.
+
+    `rich.table.Table` pads every cell - including an unbordered last
+    column's - out to its column's own computed width, so two rows whose
+    last-column values differ in length otherwise differ in trailing
+    whitespace too (spec: "stop padding"). There is no per-table switch for
+    this: turning it off would mean abandoning column alignment, which is the
+    entire point of a table.
+
+    This does not hand-roll that layout - `Console.render_lines` still does
+    every bit of the column sizing and cell wrapping. It only reassembles
+    each already-rendered line into a `Text` (preserving every segment's
+    style, so a coloured cell like the `caveat` marker survives intact) and
+    trims the trailing whitespace `render_lines(..., pad=True)` would have
+    added, the same boundary-level trim `print_wrapped` applies to wrapped
+    prose.
+    """
+    for line in out.render_lines(table, out.options, pad=False):
+        text = Text.assemble(
+            *[(segment.text, segment.style or "") for segment in line if segment.text]
+        )
+        text.rstrip()
+        out.print(text)
+
+
 # ---------------------------------------------------------------------------
 # Progress (spec §4). Determinate work gets a progress bar with `n/total`;
 # indeterminate work gets a status line. Both are no-ops off a TTY, and both
@@ -235,4 +261,49 @@ def blocking_text(count: int) -> Text:
     """`BLOCKING`, styled `sev.critical` per spec §2's palette table, with the
     count of critical checks that failed - never as a bare trailing word."""
     plural = "check" if count == 1 else "checks"
-    return Text(f"BLOCKING — {count} critical {plural} failed", style="sev.critical")
+    return Text(f"BLOCKING: {count} critical {plural} failed", style="sev.critical")
+
+
+def print_line(out: Console, text: str, *, style: str) -> None:
+    """Print one already-composed line of status/confirmation text in a
+    theme colour - the shared replacement for a bare `typer.secho(fg=...)`.
+
+    `soft_wrap=True`: this is a single line, not prose to reflow. Without it,
+    `rich`'s default word-wrap would break a long path or message across
+    lines the way `typer.secho` never did - a real regression, since a
+    project path on a CI runner or a Windows temp directory can easily
+    exceed 80 columns.
+    """
+    out.print(Text(text, style=style), soft_wrap=True)
+
+
+def print_wrapped(out: Console, body: str, *, indent: int, style: str, label: str = "") -> None:
+    """Print `body` word-wrapped to `out`'s width, with a hanging indent: the
+    first line starts with `label` at column `indent`, continuation lines
+    align under the text (column `indent + len(label)`), never under `label`
+    itself (spec: continuations must not read as a new field).
+
+    No line is ever padded out to the container width - each line is only as
+    long as its own content. `rich.padding.Padding` cannot do this: its
+    `pad=True` fill-to-width is not configurable, which is what produced the
+    trailing whitespace this function exists to avoid. Wrapping itself still
+    comes entirely from `Console.render_lines` - rich's own line-splitting -
+    so this is a thin adapter around a public rich API, not a hand-rolled
+    wrapper.
+    """
+    if not body:
+        if label:
+            out.print(Text((" " * indent + label).rstrip(), style=style))
+        return
+
+    prefix_width = indent + len(label)
+    available = max(out.size.width - prefix_width, 1)
+    options = out.options.update_width(available)
+    rendered = out.render_lines(Text(body), options, pad=False)
+
+    first_prefix = " " * indent + label
+    continuation_prefix = " " * prefix_width
+    for index, line in enumerate(rendered):
+        text = "".join(segment.text for segment in line).rstrip()
+        prefix = first_prefix if index == 0 else continuation_prefix
+        out.print(Text(prefix + text, style=style))

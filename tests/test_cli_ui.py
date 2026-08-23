@@ -11,10 +11,13 @@ not dim.
 from __future__ import annotations
 
 import io
+import pathlib
 import sys
 
 import pytest
 from rich.console import Console
+from rich.table import Table
+from rich.text import Text
 
 from toolseal.cli import _ui
 
@@ -175,3 +178,159 @@ def test_status_context_manager_is_a_noop_off_a_tty(monkeypatch: pytest.MonkeyPa
 
     with _ui.status("scaffolding"):
         pass
+
+
+# --- defect 1: no non-ASCII punctuation anywhere outside this module --------
+#
+# A Windows console that cannot encode a literal "-" or "." in our own source
+# renders it as U+FFFD ("?"), and that garbling survives being piped into a
+# log, a CI job, or an incident ticket - none of which we control. Rich's own
+# box-drawing characters are exempt: rich substitutes ASCII for those itself
+# when the target encoding cannot represent them, which is a solved problem
+# one layer down. It is only *our own literal strings* - an em dash, a middle
+# dot used as a separator - that this test exists to keep out.
+#
+# "§" (SECTION SIGN, "§") is allow-listed: it is used exclusively in
+# comments and docstrings to reference a section of the visual-language spec
+# (e.g. "spec § 3"), never inside a string that reaches a user.
+
+
+_ALLOWED_NON_ASCII = {"§"}
+_CLI_SOURCE_ROOT = pathlib.Path(__file__).resolve().parents[1] / "src" / "toolseal"
+
+
+def _cli_source_files() -> list[pathlib.Path]:
+    return [
+        path
+        for path in sorted(_CLI_SOURCE_ROOT.rglob("*.py"))
+        if path.name != "_ui.py" and "__pycache__" not in path.parts
+    ]
+
+
+def test_no_non_ascii_characters_outside_the_ui_module() -> None:
+    offenders: list[str] = []
+    for path in _cli_source_files():
+        text = path.read_text(encoding="utf-8")
+        for line_number, line in enumerate(text.splitlines(), start=1):
+            stray = sorted({c for c in line if ord(c) > 127} - _ALLOWED_NON_ASCII)
+            if stray:
+                offenders.append(f"{path}:{line_number}: {stray!r}")
+
+    assert not offenders, "non-ASCII character(s) found:\n" + "\n".join(offenders)
+
+
+def test_source_files_were_actually_scanned() -> None:
+    # A guard on the guard: if the glob above ever matched nothing (a moved
+    # package, a typo'd root), the non-ASCII test above would pass vacuously
+    # and silently stop meaning anything.
+    assert len(_cli_source_files()) > 20
+
+
+# --- defect 2 & 3: `print_wrapped`'s hanging indent, no padding -------------
+
+
+def _wrapped_lines(body: str, *, width: int = 40, **kwargs: object) -> list[str]:
+    # `print_wrapped` never consults `is_tty()` - it has no "off a TTY"
+    # branch of its own (unlike `progress_bar`/`status`), so a plain
+    # non-terminal `Console` is sufficient here.
+    buf = io.StringIO()
+    console = Console(file=buf, theme=_ui.THEME, force_terminal=False, width=width, markup=False)
+    _ui.print_wrapped(console, body, **kwargs)  # type: ignore[arg-type]
+    return buf.getvalue().splitlines()
+
+
+def test_print_wrapped_continuation_lines_indent_under_the_text_not_the_label() -> None:
+    lines = _wrapped_lines(
+        "Move the value into the OS keychain and revoke the exposed credential.",
+        indent=13,
+        style="fix",
+        label="fix  ",
+    )
+
+    assert len(lines) >= 2
+    assert lines[0].startswith(" " * 13 + "fix  ")
+    # The continuation must align under the text that follows "fix  " (column
+    # 18), never under the "fix" label itself (column 13) - a continuation
+    # starting at column 13 would read as a new field, which is defect 3.
+    for continuation in lines[1:]:
+        assert continuation.startswith(" " * 18)
+        assert not continuation.startswith(" " * 18 + " ")  # exactly 18, not more
+        assert "fix" not in continuation[:18]
+
+
+def test_print_wrapped_with_no_label_still_indents_flat() -> None:
+    lines = _wrapped_lines(
+        "config.py:1 - OpenAI-style key found somewhere deep inside config.py",
+        indent=13,
+        style="muted",
+    )
+
+    assert len(lines) >= 2
+    for line in lines:
+        assert line.startswith(" " * 13)
+        assert not line.startswith(" " * 14)
+
+
+def test_print_wrapped_never_pads_a_line_to_the_container_width() -> None:
+    lines = _wrapped_lines(
+        "Move the value into the OS keychain and revoke the exposed credential; "
+        "it must be treated as compromised.",
+        indent=13,
+        style="fix",
+        label="fix  ",
+        width=60,
+    )
+
+    assert len(lines) >= 2
+    for line in lines:
+        assert line == line.rstrip(), f"trailing whitespace on: {line!r}"
+        # None of these lines legitimately need all 60 columns; padding to
+        # the container width is exactly the defect this function prevents.
+        assert len(line) < 60
+
+
+def test_print_wrapped_on_an_empty_body_prints_only_the_label() -> None:
+    lines = _wrapped_lines("", indent=13, style="fix", label="fix  ")
+
+    assert lines == [" " * 13 + "fix"]
+
+
+# --- table trailing whitespace (spec: "stop padding") -----------------------
+
+
+def test_print_table_never_leaves_trailing_whitespace_on_a_short_row() -> None:
+    # `rich.table.Table` pads every cell - including a left-justified last
+    # column's - out to that column's own width, so a short value in the
+    # widest column would otherwise trail whitespace up to the longest one.
+    buf = io.StringIO()
+    console = Console(file=buf, theme=_ui.THEME, force_terminal=False, width=80, markup=False)
+    table = _ui.new_table()
+    table.add_column("field")
+    table.add_column("value")
+    table.add_row("git", "not found")
+    table.add_row("executable", "/a/very/long/path/that/is/much/longer/than/not/found")
+
+    _ui.print_table(console, table)
+
+    for line in buf.getvalue().splitlines():
+        assert line == line.rstrip(), f"trailing whitespace on: {line!r}"
+
+
+def test_print_table_preserves_per_cell_styling() -> None:
+    # The rewrite that trims trailing whitespace must not flatten a styled
+    # cell (e.g. the `caveat` marker in `policy list`) back to plain text.
+    buf = io.StringIO()
+    console = Console(
+        file=buf, theme=_ui.THEME, force_terminal=True, width=80, markup=False, highlight=False
+    )
+    table = Table(show_header=False, box=None, pad_edge=False)
+    table.add_column()
+    table.add_column()
+    styled = Text("33%")
+    styled.append("*", style="caveat")
+    table.add_row("iso-42001", styled)
+
+    _ui.print_table(console, table)
+
+    out = buf.getvalue()
+    assert "33m" in out  # the caveat token's yellow survived the rewrite
