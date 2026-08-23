@@ -371,6 +371,43 @@ def test_advisory_lookup_failure_surfaces_as_unknown(monkeypatch: pytest.MonkeyP
     assert c2.verdict is Verdict.UNKNOWN
 
 
+def test_c2_reports_an_indeterminate_status_to_the_installed_observer(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # One network round trip with no meaningful sub-steps - `total` must be
+    # `None`, an indeterminate status rather than a bar that can never move
+    # meaningfully (spec §4).
+    monkeypatch.setattr("toolseal.core.policy.family_c.query_osv", lambda *_a, **_k: {})
+
+    calls: list[tuple[object, ...]] = []
+
+    class Recorder:
+        def start(self, phase: str, total: int | None) -> None:
+            calls.append(("start", phase, total))
+
+        def advance(self, phase: str, step: int = 1) -> None:
+            calls.append(("advance", phase, step))
+
+        def finish(self, phase: str) -> None:
+            calls.append(("finish", phase))
+
+    model = ProjectModel(
+        root=Path(),
+        dependencies=DependencySet(
+            declared=(Dependency("requests", "==2.32.3", pinned=True, resolved_version="2.32.3"),)
+        ),
+        runtime=RuntimeConfig(redacts_credentials=True),
+    )
+
+    from toolseal.core.policy import progress
+
+    with progress.observe(Recorder()):
+        audit_model(model)
+
+    assert ("start", "querying advisories", None) in calls
+    assert ("finish", "querying advisories") in calls
+
+
 # --- extraction ------------------------------------------------------------
 
 
@@ -457,10 +494,14 @@ def test_family_table_is_headed_and_aligned(tmp_path: Path) -> None:
     lines = result.stdout.splitlines()
 
     header_line = next(
-        line for line in lines if line.split() == ["family", "score", "pass", "fail", "n/a"]
+        line for line in lines if line.split() == ["Family", "Score", "Pass", "Fail", "N/A"]
     )
     header_index = lines.index(header_line)
-    trailer = lines[header_index + 1 :]
+    # `rich.table`'s `box.SIMPLE` draws one rule line under the header (spec
+    # §5: "rules under headers") before the data rows begin.
+    rule_line = lines[header_index + 1]
+    assert set(rule_line.strip()) == {"─"}
+    trailer = lines[header_index + 2 :]
     family_rows = trailer[: trailer.index("")] if "" in trailer else trailer
     assert family_rows
 
@@ -468,9 +509,97 @@ def test_family_table_is_headed_and_aligned(tmp_path: Path) -> None:
     # blocks; if a heading lost (or won unnecessarily) the width comparison
     # against its data, the separator would drift between the header and the
     # rows beneath it.
-    score_column = header_line.index("score")
+    score_column = header_line.index("Score")
     for row in family_rows:
         assert row[score_column - 2 : score_column] == "  "
+
+
+# --- the redesigned report: verdict-first (spec §3) -------------------------
+
+
+def test_summary_panel_precedes_the_findings(tmp_path: Path) -> None:
+    (tmp_path / "config.py").write_text(
+        'OPENAI_API_KEY = "sk-abcdefghijklmnopqrst"\n',  # toolseal:allow A1 - drives a finding
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["audit", str(tmp_path)])
+
+    score_line = next(i for i, line in enumerate(result.stdout.splitlines()) if "score" in line)
+    finding_line = next(
+        i for i, line in enumerate(result.stdout.splitlines()) if "CRITICAL" in line
+    )
+    assert score_line < finding_line
+
+
+def test_blocking_appears_adjacent_to_the_score_not_as_a_trailing_line(tmp_path: Path) -> None:
+    (tmp_path / "config.py").write_text(
+        'OPENAI_API_KEY = "sk-abcdefghijklmnopqrst"\n',  # toolseal:allow A1 - critical, so blocking
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["audit", str(tmp_path)])
+    lines = result.stdout.splitlines()
+
+    score_line = next(line for line in lines if line.strip().startswith("│ score"))
+    assert "BLOCKING" in score_line
+
+
+def test_severity_is_spelled_out_as_text_not_only_by_colour(tmp_path: Path) -> None:
+    # Piped output carries no colour at all - if severity were colour-only,
+    # a log file would lose it entirely (spec §8).
+    (tmp_path / "config.py").write_text(
+        'OPENAI_API_KEY = "sk-abcdefghijklmnopqrst"\n',  # toolseal:allow A1 - fixture
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["audit", str(tmp_path)])
+
+    assert "CRITICAL" in result.stdout
+
+
+def test_piped_output_has_no_ansi_escape_codes(tmp_path: Path) -> None:
+    (tmp_path / "config.py").write_text(
+        'OPENAI_API_KEY = "sk-abcdefghijklmnopqrst"\n',  # toolseal:allow A1 - fixture
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["audit", str(tmp_path)])
+
+    assert "\x1b[" not in result.stdout
+
+
+def test_progress_does_not_appear_when_stdout_is_not_a_tty(tmp_path: Path) -> None:
+    # `CliRunner` captures through a stream that never reports as a TTY, so
+    # this exercises the real suppression path, not a mocked one: a project
+    # dependency drives C3's per-name resolution, and no spinner residue -
+    # not even a stray carriage return - may reach either stream.
+    (tmp_path / "requirements.txt").write_text("requests==2.32.3\n", encoding="utf-8")
+    (tmp_path / "uv.lock").write_text("", encoding="utf-8")
+
+    result = runner.invoke(app, ["audit", str(tmp_path)])
+
+    assert "resolving package names" not in result.stdout
+    assert "resolving package names" not in result.output
+
+
+def test_json_output_is_byte_identical_to_the_pinned_machine_contract(tmp_path: Path) -> None:
+    # `--json` is a machine contract - SARIF, CI, and the study harnesses all
+    # parse it - so the redesigned human report (a summary panel, rich
+    # tables, colour) must change none of it. This computes the payload the
+    # same way the command does internally and diffs the CLI's actual stdout
+    # against it, byte for byte, catching any stray console formatting that
+    # leaked into the machine path.
+    from toolseal.cli.audit_command import _as_dict
+
+    (tmp_path / "main.py").write_text("x = 1\n", encoding="utf-8")
+
+    report = audit(tmp_path)
+    expected = json.dumps(_as_dict(report, report.findings, ()), indent=2, sort_keys=True) + "\n"
+
+    result = runner.invoke(app, ["audit", str(tmp_path), "--json"])
+
+    assert result.stdout == expected
 
 
 def test_every_registered_check_has_a_remediation() -> None:

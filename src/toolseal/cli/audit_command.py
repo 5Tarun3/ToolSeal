@@ -6,32 +6,42 @@ a false positive forfeits that argument on the first bad match.
 
 The outcome travels in the exit code rather than in prose, so CI can branch on
 it: `0` clean, `1` findings present.
+
+The human-readable report is verdict-first (spec `docs/superpowers/specs/
+2026-08-19-cli-visual-language.md` §3): a summary panel carrying the score,
+`BLOCKING`, and the severity counts renders *before* the findings, so the wall
+of detail below is optional reading. `--json`/`--sarif` are untouched by any
+of this - `_as_dict` and `to_sarif` are the machine contract and this module
+never changes what they produce.
 """
 
 from __future__ import annotations
 
 import json
+from collections import Counter
 from pathlib import Path
 from typing import Annotated, Any
 
 import typer
+from rich.padding import Padding
+from rich.panel import Panel
+from rich.text import Text
 
-from toolseal.cli._columns import col_width
+from toolseal.cli._ui import (
+    blocking_text,
+    console,
+    new_progress_observer,
+    new_table,
+    score_style,
+    severity_style,
+)
 from toolseal.core.audit import audit as run_audit
 from toolseal.core.manifest import Manifest
-from toolseal.core.policy.model import AuditReport, Severity, Verdict
+from toolseal.core.policy import progress as progress_hook
+from toolseal.core.policy.model import AuditReport, Finding, Severity, Verdict
 from toolseal.core.policy.profile import apply_resolution, load_profile, resolve
 from toolseal.core.report import to_sarif
 from toolseal.errors import ExitCode
-
-GOOD_SCORE = 80
-
-_SEVERITY_COLOUR = {
-    Severity.CRITICAL: typer.colors.RED,
-    Severity.HIGH: typer.colors.RED,
-    Severity.MEDIUM: typer.colors.YELLOW,
-    Severity.LOW: typer.colors.CYAN,
-}
 
 
 def audit(
@@ -52,7 +62,15 @@ def audit(
 ) -> None:
     """Score a project against the misconfiguration taxonomy."""
     root = path or Path.cwd()
-    report = run_audit(root)
+
+    # C3's per-name resolution and C2's advisory query are the two phases of
+    # an audit that can run long enough to look like a hang (spec §4/§1) - a
+    # forty-dependency project spends on the order of twenty seconds in C3
+    # alone. The observer installed here is what turns that silence into
+    # "resolving package names 14/40" on stderr; `core/` itself never learns
+    # a terminal exists (see `core/policy/progress.py`).
+    with progress_hook.observe(new_progress_observer()):
+        report = run_audit(root)
 
     # No-flag integration (spec §10): a profile declared in toolseal.toml
     # applies automatically. Resolution happens here, in the CLI/core-policy
@@ -124,56 +142,129 @@ def _as_dict(
     }
 
 
+# Severity label column: wide enough that "CRITICAL" (the longest value) still
+# leaves a one-space gap before the check id, so every check id lands in the
+# same column down the page regardless of which severity precedes it.
+_SEVERITY_GUTTER = 10
+_CONTINUATION_WIDTH = 2 + _SEVERITY_GUTTER + 1
+
+
+def _blocking_count(report: AuditReport) -> int:
+    return sum(
+        1
+        for result in report.results
+        if result.verdict is Verdict.FAIL and result.check.severity is Severity.CRITICAL
+    )
+
+
+def _summary_panel(report: AuditReport) -> Panel:
+    """Verdict first (spec §3): score and `BLOCKING` in the same panel,
+    adjacent to each other and above every finding. They belong together on
+    purpose - a severity-weighted average can hide one critical finding
+    behind a long tail of passes, and this panel is where that tension has
+    to stay visible, never as a line trailing the findings wall below.
+    """
+    headline = Text(f"score {report.score}/100", style=score_style(report.score))
+    blocking = _blocking_count(report)
+    if blocking:
+        headline.append("   ")
+        headline.append_text(blocking_text(blocking))
+
+    counts = Counter(finding.severity for finding in report.findings)
+    unknown = sum(1 for result in report.results if result.verdict is Verdict.UNKNOWN)
+
+    detail = Text()
+    pieces = [(severity, counts[severity]) for severity in Severity if counts[severity]]
+    for index, (severity, count) in enumerate(pieces):
+        if index:
+            detail.append(" · ")
+        # Severity is spelled out as text, not carried by colour alone (spec
+        # §8): a colour-blind reader or a plain-text log still gets "3
+        # critical", not just a coloured "3".
+        detail.append(f"{count} {severity.value}", style=severity_style(severity))
+    if unknown:
+        if pieces:
+            detail.append(" · ")
+        detail.append(f"{unknown} not evaluated", style="caveat")
+    if not pieces and not unknown:
+        detail.append("no findings", style="verdict.good")
+
+    body = Text()
+    body.append_text(headline)
+    body.append("\n")
+    body.append_text(detail)
+    return Panel(body, expand=False)
+
+
+def _print_finding(finding: Finding) -> None:
+    gutter = Text(f"{finding.severity.value.upper():<{_SEVERITY_GUTTER}} ")
+    gutter.stylize(severity_style(finding.severity), 0, len(finding.severity.value))
+    header = Text("  ")
+    header.append_text(gutter)
+    header.append(f"{finding.check_id}  {finding.title}")
+    console.print(header)
+
+    # Location and detail are muted; `fix` is the loudest line, inverting the
+    # old dim-grey remediation - it is the reason the tool exists (spec §1).
+    # `Padding` rather than a literal leading-space prefix, so a detail long
+    # enough to wrap keeps its hanging indent on every wrapped line instead
+    # of dropping back to column zero.
+    where = ""
+    if finding.location:
+        where = finding.location + (f":{finding.line}" if finding.line else "")
+    detail_text = Text(f"{where} · {finding.detail}" if where else finding.detail, style="muted")
+    console.print(Padding(detail_text, (0, 0, 0, _CONTINUATION_WIDTH)))
+
+    if finding.remediation:
+        fix_text = Text("fix  ", style="fix")
+        fix_text.append(finding.remediation, style="fix")
+        console.print(Padding(fix_text, (0, 0, 0, _CONTINUATION_WIDTH)))
+
+    console.print()
+
+
+def _family_table(report: AuditReport) -> None:
+    table = new_table()
+    table.add_column("Family")
+    table.add_column("Score", justify="right")
+    table.add_column("Pass", justify="right")
+    table.add_column("Fail", justify="right")
+    table.add_column("N/A", justify="right")
+    for family in report.family_scores():
+        table.add_row(
+            family.family,
+            str(family.score),
+            str(family.passed),
+            str(family.failed),
+            str(family.not_applicable),
+        )
+    console.print(table)
+
+
 def _print_report(
     report: AuditReport, findings: tuple[Any, ...], active_profiles: tuple[str, ...] = ()
 ) -> None:
-    typer.echo(f"{report.root}\n")
+    console.print(f"{report.root}\n")
 
     if active_profiles:
-        typer.echo(f"  profile: {', '.join(active_profiles)} (see `toolseal policy show`)\n")
+        console.print(f"  profile: {', '.join(active_profiles)} (see `toolseal policy show`)\n")
+
+    console.print(_summary_panel(report))
+    console.print()
 
     for finding in findings:
-        colour = _SEVERITY_COLOUR[finding.severity]
-        where = f" {finding.location}" + (f":{finding.line}" if finding.line else "")
-        typer.secho(f"  {finding.severity.upper():<8}", fg=colour, nl=False)
-        typer.echo(f"{finding.check_id}  {finding.title}{where}")
-        typer.echo(f"           {finding.detail}")
-        if finding.remediation:
-            typer.secho(f"           fix: {finding.remediation}", fg=typer.colors.BRIGHT_BLACK)
-        typer.echo("")
+        _print_finding(finding)
 
-    families = report.family_scores()
-    family_w = col_width("family", (f.family for f in families))
-    score_w = col_width("score", (str(f.score) for f in families))
-    pass_w = col_width("pass", (str(f.passed) for f in families))
-    fail_w = col_width("fail", (str(f.failed) for f in families))
-    na_w = col_width("n/a", (str(f.not_applicable) for f in families))
-
-    typer.secho(
-        f"  {'family'.ljust(family_w)}  {'score'.rjust(score_w)}  {'pass'.rjust(pass_w)}  "
-        f"{'fail'.rjust(fail_w)}  {'n/a'.rjust(na_w)}",
-        bold=True,
-    )
-    for family in families:
-        typer.echo(
-            f"  {family.family.ljust(family_w)}  {str(family.score).rjust(score_w)}  "
-            f"{str(family.passed).rjust(pass_w)}  {str(family.failed).rjust(fail_w)}  "
-            f"{str(family.not_applicable).rjust(na_w)}"
-        )
-
-    # `blocking` is printed separately from the score on purpose: an average can
-    # hide one critical finding behind a long tail of passes.
-    typer.echo("")
-    typer.secho(
-        f"  score {report.score}/100",
-        fg=typer.colors.GREEN if report.score >= GOOD_SCORE else typer.colors.YELLOW,
-    )
-    if report.blocking:
-        typer.secho("  BLOCKING: a critical check failed", fg=typer.colors.RED, bold=True)
+    _family_table(report)
 
     unknown = [r.check.id for r in report.results if r.verdict is Verdict.UNKNOWN]
     if unknown:
-        typer.secho(
-            f"  not evaluated: {', '.join(unknown)} (data unavailable, not a pass)",
-            fg=typer.colors.YELLOW,
-        )
+        console.print()
+        caveat = Text("  not evaluated: ")
+        caveat.append(", ".join(unknown))
+        # Load-bearing text (spec §7): "data unavailable, not a pass" must
+        # survive verbatim - it is what stops "we could not look" from being
+        # read as "we looked and it passed".
+        caveat.append(" — data unavailable, not a pass")
+        caveat.stylize("caveat")
+        console.print(caveat)
