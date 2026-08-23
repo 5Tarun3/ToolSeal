@@ -58,6 +58,10 @@ def add_framework(
     )
     injection = inject(root, files, label=f"{framework}@{provider}")
 
+    # Not every framework has a platform caveat to report - only claude-code
+    # does today - so this is read off the adapter rather than assumed.
+    warnings = adapter.scaffold_warnings() if hasattr(adapter, "scaffold_warnings") else ()
+
     if as_json:
         typer.echo(
             json.dumps(
@@ -68,6 +72,7 @@ def add_framework(
                     "files": [item.path for item in injection.files],
                     "created": [f.path for f in injection.files if f.created],
                     "backed_up": [f.path for f in injection.files if not f.created],
+                    "warnings": list(warnings),
                 },
                 indent=2,
                 sort_keys=True,
@@ -81,6 +86,9 @@ def add_framework(
         typer.echo(f"  {marker} {item.path}")
     typer.echo("\n  ~ means the previous content was backed up.")
     typer.echo("  Undo with: toolseal revert")
+    for message in warnings:
+        typer.echo("")
+        typer.secho(f"  warning: {message}", fg=typer.colors.YELLOW)
 
 
 def revert(

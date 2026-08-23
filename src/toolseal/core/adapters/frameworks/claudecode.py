@@ -23,6 +23,7 @@ reversible with `toolseal revert`.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import PurePosixPath
 from typing import Any, Final
 
@@ -73,15 +74,86 @@ DEFAULT_DENY: Final[tuple[str, ...]] = (
     # B3: reads stay inside the project.
     "Read(/**)",
     "Read(~/**)",
-    # B2/E1: no arbitrary execution, however it is spelled.
+    # B2: three named commands are denied outright. This is a claim about
+    # *these three commands*, not about arbitrary execution generally: it
+    # blocks Claude's built-in tools and any Bash invocation Claude Code
+    # recognises as `curl`, `wget` or `rm -rf`. A subprocess that performs
+    # the same request or deletion itself - a Python script calling
+    # `urllib.request.urlopen` or `shutil.rmtree` - is invisible to a
+    # permission rule, which matches command text rather than behaviour.
+    # https://code.claude.com/docs/en/permissions: deny rules "apply to
+    # Claude's built-in file tools and to file commands Claude Code
+    # recognizes in Bash ... They don't apply to arbitrary subprocesses that
+    # read or write files indirectly." Closing that gap for any subprocess,
+    # named or not, is what `sandbox` below is for.
     "Bash(curl:*)",
     "Bash(wget:*)",
     "Bash(rm -rf:*)",
 )
 
+# Native Windows cannot run the sandbox at all - WSL2 reports `sys.platform
+# == "linux"`, not `"win32"`, so checking against `"win32"` is exactly the
+# native-vs-WSL2 split that matters.
+# https://code.claude.com/docs/en/sandboxing: "The sandbox is built into
+# Claude Code and runs on macOS, Linux, and WSL2. Native Windows is not
+# supported."
+NATIVE_WINDOWS: Final = "win32"
 
-def build_settings(spec: ScaffoldSpec) -> dict[str, Any]:
+SANDBOX_UNAVAILABLE_WARNING: Final = (
+    "This project's .claude/settings.json declares a sandbox, but the sandbox "
+    "does not engage on native Windows (only macOS, Linux and WSL2 run it). "
+    "Until it engages, Read/Edit deny rules still cover Claude's built-in "
+    "file tools and Bash commands Claude Code recognises (cat, head, tail, "
+    "sed, and similar) - they do not cover arbitrary subprocesses that read "
+    "or write files themselves, such as `python -c \"open('.env').read()\"`. "
+    "Running Claude Code inside WSL2 closes that gap."
+)
+
+
+def sandbox_will_engage(platform: str | None = None) -> bool:
+    """Whether the sandbox this scaffold declares can actually start here.
+
+    WSL2 is Linux as far as Python is concerned - `sys.platform` there is
+    `"linux"` - so testing against `sys.platform == "win32"` is precisely the
+    native-Windows case the sandbox does not support.
+    """
+    return (platform if platform is not None else sys.platform) != NATIVE_WINDOWS
+
+
+def _credential_env_vars(provider: ProviderProtocol) -> tuple[dict[str, str], ...]:
+    """The one environment variable a permission rule cannot touch.
+
+    `sandbox.credentials.envVars` unsets a named variable before every
+    sandboxed command runs - nothing in `permissions.deny` can do that, since
+    permission rules gate tool calls and have no notion of process
+    environment. A provider with no credential (Ollama) contributes nothing;
+    reporting one would misstate what the project actually holds.
+    """
+    if provider.credential_env_var is None:
+        return ()
+    return ({"name": provider.credential_env_var, "mode": "deny"},)
+
+
+def build_settings(spec: ScaffoldSpec, provider: ProviderProtocol) -> dict[str, Any]:
     """The settings document, assembled so each rule maps to a stated check."""
+    # Only what the sandbox uniquely provides is spelled out here.
+    # `DEFAULT_DENY`'s Read rules are documented to merge automatically into
+    # the sandbox's OS-level boundary - duplicating their paths under
+    # `filesystem.denyRead` would say the same thing twice. What is *not*
+    # documented to merge is a Read *allow* rule: only deny rules are. Left
+    # alone, the promoted `Read(/**)`/`Read(~/**)` denies would leave the
+    # sandbox unable to read the project it runs commands in, so
+    # `allowRead: ["."]` re-opens exactly that - the project root, resolved
+    # relative to this settings file per
+    # https://code.claude.com/docs/en/sandboxing.
+    sandbox: dict[str, Any] = {
+        "enabled": True,
+        "filesystem": {"allowRead": ["."]},
+    }
+    env_vars = _credential_env_vars(provider)
+    if env_vars:
+        sandbox["credentials"] = {"envVars": list(env_vars)}
+
     return {
         "permissions": {
             "allow": list(DEFAULT_ALLOW),
@@ -93,6 +165,13 @@ def build_settings(spec: ScaffoldSpec) -> dict[str, Any]:
         # F1: a record of what ran, which is the only way an incident can be
         # reviewed afterwards.
         "env": {"TOOLSEAL_MANAGED": "1"},
+        # OS-level enforcement for Bash subprocesses and their children,
+        # regardless of how they touch a file. Fails open by default: on an
+        # unsupported platform (native Windows) or with a dependency
+        # missing, Claude Code warns and runs unsandboxed rather than
+        # refusing to run at all - `sandbox_will_engage` is how the CLI
+        # decides whether to warn about that at scaffold time.
+        "sandbox": sandbox,
     }
 
 
@@ -119,9 +198,22 @@ class ClaudeCodeFramework:
         """
         return frozenset(str(prop) for prop in profile("claude-code").expressible)
 
+    def scaffold_warnings(self) -> tuple[str, ...]:
+        """Platform caveats to print at `add` time, not baked into settings.json.
+
+        The sandbox block is identical regardless of host - the same file
+        should work unchanged if the project later runs under WSL2 - but
+        whether it actually engages depends on the platform running Claude
+        Code right now, which is only observable here, not from the
+        rendered JSON.
+        """
+        if sandbox_will_engage():
+            return ()
+        return (SANDBOX_UNAVAILABLE_WARNING,)
+
     def render(self, spec: ScaffoldSpec, provider: ProviderProtocol) -> tuple[RenderedFile, ...]:
         """Produce the configuration files. Touches no filesystem."""
-        settings = json.dumps(build_settings(spec), indent=2, sort_keys=True) + "\n"
+        settings = json.dumps(build_settings(spec, provider), indent=2, sort_keys=True) + "\n"
 
         return (
             RenderedFile(PurePosixPath(SETTINGS_PATH), settings),
