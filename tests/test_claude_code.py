@@ -14,6 +14,7 @@ all.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path, PurePosixPath
 
 import pytest
@@ -22,6 +23,7 @@ from typer.testing import CliRunner
 from toolseal.cli import app
 from toolseal.core.adapters import RenderedFile, ScaffoldSpec, framework_registry
 from toolseal.core.adapters.frameworks import ClaudeCodeFramework, LangGraphFramework
+from toolseal.core.adapters.frameworks import claudecode as cc
 from toolseal.core.adapters.providers import GeminiProvider, OllamaProvider
 from toolseal.core.injection import inject, load, plan_revert, revert
 from toolseal.core.registry.utd import (
@@ -112,6 +114,96 @@ def test_instructions_explain_how_to_undo(tmp_path: Path) -> None:
     assert "toolseal revert" in rendered(tmp_path)["CLAUDE.md"]
 
 
+def test_instructions_no_longer_claim_permissions_are_the_whole_posture(
+    tmp_path: Path,
+) -> None:
+    # The overclaim this task exists to correct: permission rules stop at
+    # Claude's built-in tools and recognised Bash commands, and the sandbox
+    # is what extends enforcement to arbitrary subprocesses.
+    instructions = rendered(tmp_path)["CLAUDE.md"]
+
+    assert "the whole of this project's security posture" not in instructions
+    assert "sandbox" in instructions
+    assert "native Windows" in instructions
+
+
+# --- the sandbox -------------------------------------------------------------
+
+
+def test_settings_declare_a_sandbox_block(tmp_path: Path) -> None:
+    settings = json.loads(rendered(tmp_path)[".claude/settings.json"])
+
+    sandbox = settings["sandbox"]
+    assert sandbox["enabled"] is True
+    assert sandbox["filesystem"]["allowRead"] == ["."]
+
+
+def test_sandbox_settings_are_valid_json_with_the_documented_key_shape(
+    tmp_path: Path,
+) -> None:
+    # A regression test for the exact defect this task closes: a settings key
+    # Claude Code silently ignores would read as sealed and not be. Every key
+    # asserted here is confirmed from https://code.claude.com/docs/en/sandboxing.
+    settings = json.loads(rendered(tmp_path)[".claude/settings.json"])
+
+    sandbox = settings["sandbox"]
+    assert set(sandbox) <= {"enabled", "filesystem", "credentials"}
+    assert isinstance(sandbox["enabled"], bool)
+    assert set(sandbox["filesystem"]) <= {"allowRead", "denyRead", "allowWrite", "denyWrite"}
+    assert all(isinstance(path, str) for path in sandbox["filesystem"]["allowRead"])
+
+
+def test_credential_env_var_is_denied_in_the_sandbox_when_the_provider_has_one(
+    tmp_path: Path,
+) -> None:
+    # The one thing no permission rule can do: unset a named environment
+    # variable before a sandboxed command runs. Gemini has a credential;
+    # Ollama (the default in `rendered()`) does not, so this needs its own
+    # spec rather than reusing the module-level PROVIDER.
+    spec = ScaffoldSpec(
+        project_name="demo",
+        provider_id="gemini",
+        framework_id="claude-code",
+        workspace_root=tmp_path,
+    )
+    files = {str(f.path): f.content for f in FRAMEWORK.render(spec, GeminiProvider())}
+    settings = json.loads(files[".claude/settings.json"])
+
+    env_vars = settings["sandbox"]["credentials"]["envVars"]
+    assert {"name": "GEMINI_API_KEY", "mode": "deny"} in env_vars
+
+
+def test_no_credentials_block_when_the_provider_has_no_credential(tmp_path: Path) -> None:
+    # Ollama needs no API key; claiming to protect a variable that was never
+    # set would misstate what the project actually holds.
+    settings = json.loads(rendered(tmp_path)[".claude/settings.json"])
+
+    assert "credentials" not in settings["sandbox"]
+
+
+def test_sandbox_will_engage_on_linux_but_not_native_windows() -> None:
+    assert cc.sandbox_will_engage(platform="linux") is True
+    assert cc.sandbox_will_engage(platform="win32") is False
+
+
+def test_scaffold_warns_on_native_windows(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(sys, "platform", "win32")
+
+    warnings = ClaudeCodeFramework().scaffold_warnings()
+
+    assert len(warnings) == 1
+    assert "sandbox" in warnings[0]
+    assert "cat" in warnings[0] and "head" in warnings[0] and "tail" in warnings[0]
+    assert "python -c" in warnings[0]
+    assert "WSL2" in warnings[0]
+
+
+def test_scaffold_is_silent_on_linux(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(sys, "platform", "linux")
+
+    assert ClaudeCodeFramework().scaffold_warnings() == ()
+
+
 # --- the lattice point -----------------------------------------------------
 
 
@@ -146,14 +238,26 @@ def test_destructive_tool_lowers_losslessly() -> None:
 
 def test_the_lattice_row_is_measured_and_says_how() -> None:
     # Promoted from `specified` after a live session confirmed the behaviour:
-    # a read of .env was refused by the deny rule, and the agent declined to
-    # reach the same file through another tool. The note carries that evidence
-    # so the claim can be checked rather than taken on trust.
+    # a read of .env was refused by the deny rule. The note carries that
+    # evidence, plus the documented mechanism (rules evaluated by the client
+    # before a tool runs) and its documented stopping point (arbitrary
+    # subprocesses), so the claim can be checked rather than taken on trust.
     row = profile("claude-code")
 
     assert row.evidence.value == "measured"
     assert "live session" in row.note
     assert ".env" in row.note
+    assert "subprocess" in row.note
+
+
+def test_the_note_cites_mechanism_not_one_session_of_agent_compliance() -> None:
+    # A prior version of this note treated the agent declining to try another
+    # tool as evidence that the rule was enforced. That is compliance, not
+    # enforcement, and citing it conflates the two - this pins the correction.
+    row = profile("claude-code")
+
+    assert "declined" not in row.note
+    assert "boundary rather than an obstacle" not in row.note
 
 
 def test_three_rows_are_now_measured() -> None:
