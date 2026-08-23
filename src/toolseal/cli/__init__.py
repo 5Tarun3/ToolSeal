@@ -26,7 +26,7 @@ from toolseal.cli import (
     policy_command,
     registry_command,
 )
-from toolseal.cli._columns import col_width
+from toolseal.cli._ui import console, new_table
 from toolseal.cli.errors import command as error_boundary
 from toolseal.errors import ExitCode, ToolsealError
 from toolseal.logging import configure_logging
@@ -95,10 +95,12 @@ def doctor(
         typer.echo(json.dumps(report, indent=2, sort_keys=True))
         return
 
-    width = col_width("field", report.keys())
-    typer.secho(f"{'field'.ljust(width)}  value", bold=True)
+    table = new_table()
+    table.add_column("field")
+    table.add_column("value")
     for key, value in report.items():
-        typer.echo(f"{key.ljust(width)}  {value if value is not None else 'not found'}")
+        table.add_row(key, str(value) if value is not None else "not found")
+    console.print(table)
 
 
 def main() -> int:

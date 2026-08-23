@@ -79,12 +79,16 @@ def test_list_is_headed_and_aligned() -> None:
     header = lines[0]
     assert header.split()[:3] == ["standard", "coverage", "checkable"]
 
+    # `rich.table`'s `box.SIMPLE` draws one rule line under the header (spec
+    # §5) before the data rows begin.
+    assert set(lines[1].strip()) == {"─"}
+
     # A column boundary is a literal two-space separator between fixed-width
     # blocks. If a heading lost the width comparison against its data (or won
     # it unnecessarily), that separator would land in a different place on a
     # data row than it does on the header.
     checkable_column = header.index("checkable")
-    trailer = lines[1:]
+    trailer = lines[2:]
     data_lines = trailer[: trailer.index("")] if "" in trailer else trailer
     assert data_lines
     for line in data_lines:

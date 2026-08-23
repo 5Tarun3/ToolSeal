@@ -45,12 +45,16 @@ def test_doctor_human_output_is_headed_and_aligned() -> None:
     lines = result.stdout.splitlines()
     assert lines[0].split()[:2] == ["field", "value"]
 
+    # `rich.table`'s `box.SIMPLE` draws one rule line under the header (spec
+    # §5) before the data rows begin.
+    assert set(lines[1].strip()) == {"─"}
+
     # A column boundary is always a literal two-space separator between two
     # fixed-width blocks, regardless of which side is padded - so the
-    # characters just before "value" must be that separator on every row, or
-    # the heading and the data have drifted out of alignment.
+    # characters just before "value" must be that separator on every data
+    # row, or the heading and the data have drifted out of alignment.
     value_column = lines[0].index("value")
-    for line in lines[1:]:
+    for line in lines[2:]:
         assert line[value_column - 2 : value_column] == "  "
 
 

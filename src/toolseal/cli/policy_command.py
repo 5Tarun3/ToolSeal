@@ -15,8 +15,9 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
+from rich.text import Text
 
-from toolseal.cli._columns import col_width
+from toolseal.cli._ui import console, new_table
 from toolseal.cli.errors import command as error_boundary
 from toolseal.core.audit import audit as run_audit
 from toolseal.core.manifest import MANIFEST_NAME, Manifest
@@ -115,43 +116,33 @@ def list_standards() -> None:
     """List the standards and regimes shipped with toolseal."""
     catalogues = load_catalogues()
 
-    rows = []
+    table = new_table()
+    table.add_column("standard")
+    table.add_column("coverage", justify="right")
+    table.add_column("checkable", justify="right")
+    table.add_column("name")
+
+    partial_seen = False
     for key in sorted(catalogues):
         catalogue = catalogues[key]
         report = coverage_for(key)
-        marker = "" if report.complete_enumeration else "*"
-        rows.append(
-            (
-                key,
-                f"{report.percentage}%{marker}",
-                f"{report.covered}/{report.checkable_total}",
-                catalogue.name,
-            )
-        )
 
-    standard_w = col_width("standard", (row[0] for row in rows))
-    coverage_w = col_width("coverage", (row[1] for row in rows))
-    checkable_w = col_width("checkable", (row[2] for row in rows))
-
-    typer.secho(
-        f"{'standard'.ljust(standard_w)}  {'coverage'.rjust(coverage_w)}  "
-        f"{'checkable'.rjust(checkable_w)}  name",
-        bold=True,
-    )
-
-    partial_seen = False
-    for key, coverage, checkable, name in rows:
-        if "*" in coverage:
+        coverage = Text(f"{report.percentage}%")
+        if not report.complete_enumeration:
+            # Visible, not dim (spec §2): the mark exists so a percentage is
+            # never read as coverage of the full standard when it is only
+            # coverage of our curated subset.
+            coverage.append("*", style="caveat")
             partial_seen = True
-        typer.echo(
-            f"{key.ljust(standard_w)}  {coverage.rjust(coverage_w)}  "
-            f"{checkable.rjust(checkable_w)}  {name}"
-        )
+
+        table.add_row(key, coverage, f"{report.covered}/{report.checkable_total}", catalogue.name)
+
+    console.print(table)
 
     if partial_seen:
-        typer.echo("")
-        typer.echo("* curated subset of the standard, not a full enumeration -")
-        typer.echo("  the percentage measures our selection, not the standard's reach.")
+        console.print()
+        console.print("* curated subset of the standard, not a full enumeration -")
+        console.print("  the percentage measures our selection, not the standard's reach.")
 
 
 def explain(
@@ -254,24 +245,16 @@ def _show_project(
     typer.echo("")
 
     relaxed_ids = {r.check_id for r in relaxations}
-    rows = [
-        (check.id, check.severity.value, _severity_source(check.id, resolution))
-        for check in resolution.checks
-    ]
 
-    id_w = col_width("check", (r[0] for r in rows))
-    sev_w = col_width("severity", (r[1] for r in rows))
-    src_w = col_width("source", (r[2] for r in rows))
-
-    typer.secho(
-        f"{'check'.ljust(id_w)}  {'severity'.ljust(sev_w)}  {'source'.ljust(src_w)}",
-        bold=True,
-    )
-    for check_id, severity, source in rows:
-        marker = " (relaxed - see below)" if check_id in relaxed_ids else ""
-        typer.echo(
-            f"{check_id.ljust(id_w)}  {severity.ljust(sev_w)}  {source.ljust(src_w)}{marker}"
-        )
+    table = new_table()
+    table.add_column("check")
+    table.add_column("severity")
+    table.add_column("source")
+    for check in resolution.checks:
+        marker = " (relaxed - see below)" if check.id in relaxed_ids else ""
+        source = _severity_source(check.id, resolution)
+        table.add_row(check.id, check.severity.value, f"{source}{marker}")
+    console.print(table)
 
     _print_relaxations_table(relaxations)
 

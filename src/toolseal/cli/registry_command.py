@@ -8,7 +8,7 @@ from typing import Annotated
 
 import typer
 
-from toolseal.cli._columns import clip, col_width
+from toolseal.cli._ui import console, new_table
 from toolseal.cli.errors import command as error_boundary
 from toolseal.core.registry.crawl import build_index, crawl_mcp_registry
 from toolseal.core.registry.index import INDEX_FILENAME, IndexEntry, RegistryIndex
@@ -21,9 +21,12 @@ registry_app = typer.Typer(
 )
 
 # Caps on the two free-text columns in `search`, so one long package name
-# cannot blow the table past an 80-column terminal for every row.
-_NAME_WIDTH_MAX = 22
-_PACKAGE_WIDTH_MAX = 26
+# cannot blow the table past an 80-column terminal for every row. Narrower
+# than the raw column count would suggest: `rich.table` adds its own
+# between-column padding on top of these, and the fixed columns (`score`,
+# `registry`, `tools`) must never be the ones a width shortage steals from.
+_NAME_WIDTH_MAX = 20
+_PACKAGE_WIDTH_MAX = 23
 
 
 def default_index_path() -> Path:
@@ -78,7 +81,7 @@ def sync(
 
 
 def _search_row(entry: IndexEntry) -> tuple[str, str, str, str, str, str]:
-    flag = "!" if entry.audit.blocking else " "
+    flag = "!" if entry.audit.blocking else ""
     score = str(entry.audit.score)
     name = entry.descriptor.name
     package_version = f"{entry.descriptor.source.package}@{entry.descriptor.source.version}"
@@ -90,36 +93,27 @@ def _search_row(entry: IndexEntry) -> tuple[str, str, str, str, str, str]:
 def _print_search_results(results: tuple[IndexEntry, ...]) -> None:
     rows = [_search_row(entry) for entry in results]
 
-    score_w = col_width("score", (row[1] for row in rows))
-    name_w = min(_NAME_WIDTH_MAX, col_width("name", (row[2] for row in rows)))
-    package_w = min(_PACKAGE_WIDTH_MAX, col_width("package@version", (row[3] for row in rows)))
-    registry_w = col_width("registry", (row[4] for row in rows))
-    tools_w = col_width("tools", (row[5] for row in rows))
-
-    typer.secho(
-        f"  {'score'.rjust(score_w)}  {'name'.ljust(name_w)}  "
-        f"{'package@version'.ljust(package_w)}  {'registry'.ljust(registry_w)}  "
-        f"{'tools'.rjust(tools_w)}",
-        bold=True,
+    table = new_table()
+    table.add_column("")  # the "!" blocking flag - unnamed, a single character wide
+    table.add_column("score", justify="right")
+    table.add_column("name", max_width=_NAME_WIDTH_MAX, overflow="ellipsis", no_wrap=True)
+    table.add_column(
+        "package@version", max_width=_PACKAGE_WIDTH_MAX, overflow="ellipsis", no_wrap=True
     )
+    table.add_column("registry")
+    table.add_column("tools", justify="right")
+    for row in rows:
+        table.add_row(*row)
+    console.print(table)
 
-    blocking_seen = False
-    unenumerated_seen = False
-    for flag, score, name, package_version, registry, tools in rows:
-        blocking_seen = blocking_seen or flag == "!"
-        unenumerated_seen = unenumerated_seen or tools == "-"
-        typer.echo(
-            f"{flag} {score.rjust(score_w)}  {clip(name, name_w).ljust(name_w)}  "
-            f"{clip(package_version, package_w).ljust(package_w)}  "
-            f"{registry.ljust(registry_w)}  {tools.rjust(tools_w)}"
-        )
-
+    blocking_seen = any(flag == "!" for flag, *_rest in rows)
+    unenumerated_seen = any(tools == "-" for *_rest, tools in rows)
     if blocking_seen or unenumerated_seen:
-        typer.echo("")
+        console.print()
     if blocking_seen:
-        typer.echo("!  blocking: a critical check failed")
+        console.print("!  blocking: a critical check failed")
     if unenumerated_seen:
-        typer.echo("-  tools not enumerated (would require running the server)")
+        console.print("-  tools not enumerated (would require running the server)")
 
 
 def search(
@@ -165,10 +159,12 @@ def _print_entry(entry: IndexEntry) -> None:
         ("publisher", provenance.publisher or "not declared"),
         ("signed", f"yes ({provenance.signature})" if provenance.is_signed else "no"),
     ]
-    field_w = col_width("field", (label for label, _ in fields))
-    typer.secho(f"{'field'.ljust(field_w)}  value", bold=True)
+    table = new_table()
+    table.add_column("field")
+    table.add_column("value")
     for label, value in fields:
-        typer.echo(f"{label.ljust(field_w)}  {value}")
+        table.add_row(label, value)
+    console.print(table)
     typer.echo("")
 
     typer.secho(f"score {entry.audit.score}/100", bold=True)

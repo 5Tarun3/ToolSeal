@@ -142,8 +142,9 @@ def test_search_marks_a_blocking_entry_and_explains_the_marker(index_path: Path)
 
     # Sorted (blocking, -score): the clean, better-assessed "postgres-server"
     # entry (score 92) comes first; the blocking "long" entry (score 40) comes
-    # second and must carry the "!" marker.
-    postgres_row, long_row = result.stdout.splitlines()[1:3]
+    # second and must carry the "!" marker. `box.SIMPLE` draws one rule line
+    # under the header (spec §5) before the data rows begin.
+    postgres_row, long_row = result.stdout.splitlines()[2:4]
     assert not postgres_row.startswith("!")
     assert long_row.startswith("!")
     assert long_row[1:].split()[0] == "40"
@@ -165,7 +166,8 @@ def test_search_heading_survives_a_column_wider_than_the_heading(index_path: Pat
     header = lines[0]
 
     registry_column = header.index("registry")
-    for line in lines[1:3]:
+    # `lines[1]` is `box.SIMPLE`'s header rule; the data rows start at [2:4].
+    for line in lines[2:4]:
         assert line[registry_column - 2 : registry_column] == "  "
 
 
