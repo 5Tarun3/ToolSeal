@@ -15,9 +15,12 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
+from rich.console import Group, RenderableType
+from rich.panel import Panel
+from rich.table import Table
 from rich.text import Text
 
-from toolseal.cli._ui import console, new_table
+from toolseal.cli._ui import console, new_table, print_line, print_table, severity_style
 from toolseal.cli.errors import command as error_boundary
 from toolseal.core.audit import audit as run_audit
 from toolseal.core.manifest import MANIFEST_NAME, Manifest
@@ -55,24 +58,46 @@ def _find_check(check_id: str) -> Check | None:
 
 
 def _explain_check(check: Check) -> None:
-    typer.echo(f"{check.id}  {check.title}")
-    typer.echo(f"severity: {check.severity}")
-    typer.echo("")
-    typer.echo("How to fix it")
-    typer.echo(f"  {check.remediation}")
-    typer.echo("")
+    """The keystone command (spec §6): what a check means, what to run, and
+    which published obligations it serves - one panel, so a developer never
+    has to leave the terminal to open a standards document.
+    """
+    sections: list[RenderableType] = [
+        Text(""),
+        Text("How to fix it", style="bold"),
+        Text(f"  {check.remediation}", style="fix"),
+        Text(""),
+    ]
 
     if not check.controls:
-        typer.echo("Obligations")
+        # A non-checkable control keeps its explanatory sentence (spec §6):
+        # an empty section reads as a bug, which is why this text exists.
         reason = check.unmapped_reason or "no reason recorded"
-        typer.echo(f"  none mapped - {reason}")
-        return
+        sections.append(Text("Obligations", style="bold"))
+        sections.append(Text(f"  none mapped - {reason}"))
+    else:
+        sections.append(Text("Obligations this serves", style="bold"))
+        catalogues = load_catalogues()
+        # `Table.grid`: rich's own column-alignment, not hand-rolled width
+        # arithmetic (spec §5) - each obligation's id and title line up
+        # without this module computing a padding width itself.
+        obligations = Table.grid(padding=(0, 2, 0, 2))
+        obligations.add_column()
+        obligations.add_column()
+        for ref in check.controls:
+            control = resolve(ref, catalogues)
+            obligations.add_row(f"{ref.standard}:{control.id}", control.title)
+        sections.append(obligations)
 
-    typer.echo("Obligations this serves")
-    catalogues = load_catalogues()
-    for ref in check.controls:
-        control = resolve(ref, catalogues)
-        typer.echo(f"  {ref.standard}:{control.id}  {control.title}")
+    panel = Panel(
+        Group(*sections),
+        title=f"{check.id} - {check.title}",
+        title_align="left",
+        subtitle=Text(f"severity: {check.severity.value}", style=severity_style(check.severity)),
+        subtitle_align="right",
+        expand=False,
+    )
+    console.print(panel)
 
 
 def _explain_control(raw: str) -> None:
@@ -93,13 +118,20 @@ def _explain_control(raw: str) -> None:
         # unchanged for its other callers, this is a boundary-only translation.
         raise UsageError(str(exc)) from None
 
-    typer.echo(f"{ref}  {control.title}")
+    print_line(console, f"{ref}  {control.title}", style="bold")
     typer.echo("")
 
     serving = sorted(check.id for check in all_checks() if ref in check.controls)
 
     if not control.checkable:
-        typer.echo("This control is not assessable from configuration alone.")
+        # The explanatory sentence a non-checkable control keeps (spec §6):
+        # an empty section here would read as a bug, not as an honest "we
+        # cannot check this from configuration".
+        print_line(
+            console,
+            "This control is not assessable from configuration alone.",
+            style="caveat",
+        )
         typer.echo("It is recorded so the coverage denominator stays honest.")
         if serving:
             typer.echo("")
@@ -137,7 +169,7 @@ def list_standards() -> None:
 
         table.add_row(key, coverage, f"{report.covered}/{report.checkable_total}", catalogue.name)
 
-    console.print(table)
+    print_table(console, table)
 
     if partial_seen:
         console.print()
@@ -254,7 +286,7 @@ def _show_project(
         marker = " (relaxed - see below)" if check.id in relaxed_ids else ""
         source = _severity_source(check.id, resolution)
         table.add_row(check.id, check.severity.value, f"{source}{marker}")
-    console.print(table)
+    print_table(console, table)
 
     _print_relaxations_table(relaxations)
 
@@ -266,7 +298,7 @@ def _show_tool(
     resolution: Resolution,
     relaxations: tuple[Relaxation, ...],
 ) -> None:
-    typer.secho(f"policy for {tool}", bold=True)
+    print_line(console, f"policy for {tool}", style="bold")
     typer.echo("")
 
     tool_policy = manifest.policy_for(tool) if manifest is not None else None
@@ -364,7 +396,8 @@ def apply_regime(
         or bool(profile.require.get("policy.approval_required_for_destructive", False)),
     )
     (root / MANIFEST_NAME).write_text(updated.to_toml(), encoding="utf-8")
-    typer.secho(f"\nApplied {regime}.", fg=typer.colors.GREEN)
+    console.print()
+    print_line(console, f"Applied {regime}.", style="verdict.good")
 
 
 def _print_apply_diff(
@@ -374,7 +407,7 @@ def _print_apply_diff(
     before: Resolution,
     after: Resolution,
 ) -> None:
-    typer.secho(f"Adopting {regime} ({profile.name})", bold=True)
+    print_line(console, f"Adopting {regime} ({profile.name})", style="bold")
     if profile.source:
         typer.echo(f"  source: {profile.source}")
     if profile.source_url:
@@ -466,7 +499,7 @@ def _print_check_report(
     for result in report.results:
         counts[result.verdict] = counts.get(result.verdict, 0) + 1
 
-    typer.secho("coverage of the technically checkable obligations", bold=True)
+    print_line(console, "coverage of the technically checkable obligations", style="bold")
     for verdict in Verdict:
         typer.echo(f"  {verdict.value:<15} {counts.get(verdict, 0)}")
     typer.echo("")
@@ -493,16 +526,21 @@ def _print_check_report(
         typer.echo("")
 
     if outcome.expired:
-        typer.secho("expired relaxations (lapsed - no longer applied):", fg=typer.colors.YELLOW)
+        print_line(
+            console, "expired relaxations (lapsed - no longer applied):", style="verdict.warn"
+        )
         for relaxation in outcome.expired:
             typer.echo(f"  {relaxation.check_id}  expired {relaxation.expires}")
         typer.echo("")
 
     if report.relaxed_critical:
-        typer.secho(
+        # `sev.critical` (bold red, spec §2) - the same treatment `audit`
+        # gives a critical finding, because that is exactly what this is:
+        # a critical finding, waived rather than fixed.
+        print_line(
+            console,
             "a critical finding was relaxed, not fixed - it is waived, not resolved",
-            fg=typer.colors.RED,
-            bold=True,
+            style="sev.critical",
         )
         typer.echo("")
 
@@ -514,7 +552,7 @@ def _print_check_report(
         typer.echo("  (none declared by the active profile(s))")
     typer.echo("")
 
-    typer.secho(DISCLAIMER, bold=True)
+    print_line(console, DISCLAIMER, style="bold")
 
 
 # --- relax -------------------------------------------------------------------
@@ -613,7 +651,9 @@ def relax(
     parse_relaxations(new_text)
     manifest_path.write_text(new_text, encoding="utf-8")
 
-    typer.secho(f"Relaxed {matched.id} until {parsed_expiry.isoformat()}.", fg=typer.colors.GREEN)
+    print_line(
+        console, f"Relaxed {matched.id} until {parsed_expiry.isoformat()}.", style="verdict.good"
+    )
     typer.echo(f"  reason: {reason.strip()}")
     typer.echo(f"  scope: {', '.join(tools) if tools else 'project-wide'}")
 
@@ -662,7 +702,7 @@ def _seal(root: Path) -> None:
 
     sealed = policy_lock.seal(root)
 
-    typer.secho(f"Sealed {len(sealed.non_relaxable)} checks.", fg=typer.colors.GREEN)
+    print_line(console, f"Sealed {len(sealed.non_relaxable)} checks.", style="verdict.good")
     if sealed.profiles:
         typer.echo(f"  profiles: {', '.join(sealed.profiles)}")
     typer.echo(f"  wrote {policy_lock.LOCK_DIR}/{policy_lock.LOCK_NAME} (read-only)")
@@ -686,7 +726,7 @@ def _release(root: Path) -> None:
 
     policy_lock.release(root)
 
-    typer.secho("Unsealed.", fg=typer.colors.GREEN)
+    print_line(console, "Unsealed.", style="verdict.good")
     typer.echo(f"  removed {policy_lock.LOCK_DIR}/{policy_lock.LOCK_NAME}")
     typer.echo("  `toolseal policy relax` can act on any check again.")
 
@@ -714,10 +754,14 @@ def verify(
         raise typer.Exit(ExitCode.OK)
 
     if not report.drifted:
-        typer.secho("No drift: the sealed policy still matches the project.", fg=typer.colors.GREEN)
+        print_line(
+            console, "No drift: the sealed policy still matches the project.", style="verdict.good"
+        )
         raise typer.Exit(ExitCode.OK)
 
-    typer.secho("Drift detected.", fg=typer.colors.RED, bold=True)
+    # `sev.critical` (bold red, spec §2): a tampered or drifted lock is
+    # exactly the severity of event this token exists to mark.
+    print_line(console, "Drift detected.", style="sev.critical")
     if report.lock_tampered:
         typer.echo(
             f"  {policy_lock.LOCK_DIR}/{policy_lock.LOCK_NAME} was edited directly: its "
