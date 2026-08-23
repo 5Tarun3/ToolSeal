@@ -154,13 +154,24 @@ PROFILES: dict[str, AbstractionProfile] = {
         ),
         evidence=Evidence.MEASURED,
         note=(
-            "Permission allow/ask/deny rules are evaluated before a tool runs, which "
-            "is what makes destructiveHint actionable rather than merely stored. "
-            "Confirmed in a live session against a toolseal-configured project: a "
-            "read of .env was refused by the deny rule, and the agent declined to "
-            "reach the same file through another tool - treating the rule as a "
-            "boundary rather than an obstacle, which is the behaviour the rule "
-            "exists to produce."
+            "Permission allow/ask/deny rules are evaluated by the Claude Code "
+            "client itself before a tool call reaches its implementation - "
+            "documented at https://code.claude.com/docs/en/permissions as applying "
+            "'to every tool: Bash, Read, Edit, WebFetch, MCP, and others' - which is "
+            "what makes destructiveHint actionable and gives clientValidation a real "
+            "mechanism rather than a stored hint. Confirmed in a live session "
+            "against a toolseal-configured project: a read of .env was refused by "
+            "the Read deny rule. The same documentation states where this stops: "
+            "deny rules apply to Claude's built-in file tools and to Bash commands "
+            "Claude Code recognises, such as cat, head, tail and sed, but not to "
+            "'arbitrary subprocesses that read or write files indirectly, like a "
+            "Python or Node script that opens files itself'. A prior version of "
+            "this note cited an agent declining to try another tool as evidence; "
+            "that was the agent's compliance in one session, not something the "
+            "rule mechanism enforces, and it is dropped here. Reaching every "
+            "subprocess, named or not, needs the OS-level sandbox "
+            "(https://code.claude.com/docs/en/sandboxing), which this project's "
+            "claude-code scaffold now enables by default."
         ),
     ),
     "openai_fc": AbstractionProfile(
