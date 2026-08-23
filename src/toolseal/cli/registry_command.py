@@ -8,7 +8,7 @@ from typing import Annotated
 
 import typer
 
-from toolseal.cli._ui import console, new_table
+from toolseal.cli._ui import console, new_table, print_line, print_table, score_style
 from toolseal.cli.errors import command as error_boundary
 from toolseal.core.registry.crawl import build_index, crawl_mcp_registry
 from toolseal.core.registry.index import INDEX_FILENAME, IndexEntry, RegistryIndex
@@ -73,7 +73,7 @@ def sync(
     else:
         typer.echo(f"{report.summary}\nwrote {path}")
         for error in report.errors:
-            typer.secho(f"  {error}", fg=typer.colors.YELLOW)
+            print_line(console, f"  {error}", style="verdict.warn")
 
     # A partial crawl is reported as findings, not success: the index is usable
     # but incomplete, and a scheduled job should be able to notice.
@@ -104,7 +104,7 @@ def _print_search_results(results: tuple[IndexEntry, ...]) -> None:
     table.add_column("tools", justify="right")
     for row in rows:
         table.add_row(*row)
-    console.print(table)
+    print_table(console, table)
 
     blocking_seen = any(flag == "!" for flag, *_rest in rows)
     unenumerated_seen = any(tools == "-" for *_rest, tools in rows)
@@ -164,12 +164,14 @@ def _print_entry(entry: IndexEntry) -> None:
     table.add_column("value")
     for label, value in fields:
         table.add_row(label, value)
-    console.print(table)
+    print_table(console, table)
     typer.echo("")
 
-    typer.secho(f"score {entry.audit.score}/100", bold=True)
+    print_line(console, f"score {entry.audit.score}/100", style=score_style(entry.audit.score))
     if entry.audit.blocking:
-        typer.secho("BLOCKING: a critical check failed", fg=typer.colors.RED, bold=True)
+        # Severity drives weight identically everywhere (spec §1): the same
+        # `sev.critical` treatment `audit` uses for `BLOCKING`.
+        print_line(console, "BLOCKING: a critical check failed", style="sev.critical")
     if entry.audit.findings:
         typer.echo("findings:")
         for finding in entry.audit.findings:
@@ -179,9 +181,8 @@ def _print_entry(entry: IndexEntry) -> None:
     if entry.tools_enumerated:
         typer.echo(f"tools: {descriptor.name}")
     else:
-        typer.secho(
-            "tools not enumerated (would require running the server)",
-            fg=typer.colors.BRIGHT_BLACK,
+        print_line(
+            console, "tools not enumerated (would require running the server)", style="muted"
         )
 
 

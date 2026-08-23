@@ -16,6 +16,7 @@ from typing import Annotated
 
 import typer
 
+from toolseal.cli._ui import console, print_line
 from toolseal.core.adapters.mcp_targets import target_for
 from toolseal.core.injection import inject
 from toolseal.core.manifest import Manifest
@@ -115,8 +116,8 @@ def add_mcp(
         raise typer.Exit(ExitCode.OK if verified else ExitCode.FINDINGS)
 
     mark = "verified" if verified else "UNVERIFIED"
-    colour = typer.colors.GREEN if verified else typer.colors.YELLOW
-    typer.secho(f"Added {binding.name} ({mark}) to {target.config_path}", fg=colour)
+    style = "verdict.good" if verified else "verdict.warn"
+    print_line(console, f"Added {binding.name} ({mark}) to {target.config_path}", style=style)
     typer.echo(f"  {detail}")
     typer.echo("  Undo with: toolseal revert")
     raise typer.Exit(ExitCode.OK if verified else ExitCode.FINDINGS)

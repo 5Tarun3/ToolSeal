@@ -15,6 +15,7 @@ from typing import Annotated
 import typer
 
 from toolseal.cli import mcp_command
+from toolseal.cli._ui import console, print_line
 from toolseal.cli.errors import command as error_boundary
 from toolseal.core.adapters import ScaffoldSpec, framework_registry, provider_registry
 from toolseal.core.injection import inject, load, plan_revert
@@ -80,15 +81,15 @@ def add_framework(
         )
         return
 
-    typer.secho(f"Configured {root} for {adapter.display_name}", fg=typer.colors.GREEN)
+    print_line(console, f"Configured {root} for {adapter.display_name}", style="verdict.good")
     for item in injection.files:
         marker = "+" if item.created else "~"
         typer.echo(f"  {marker} {item.path}")
     typer.echo("\n  ~ means the previous content was backed up.")
     typer.echo("  Undo with: toolseal revert")
     for message in warnings:
-        typer.echo("")
-        typer.secho(f"  warning: {message}", fg=typer.colors.YELLOW)
+        console.print()
+        print_line(console, f"  warning: {message}", style="verdict.warn")
 
 
 def revert(
@@ -136,7 +137,7 @@ def revert(
             for path in plan.missing:
                 typer.echo(f"  gone     {path}")
             for path in plan.modified_since:
-                typer.secho(f"  edited   {path} (blocks revert)", fg=typer.colors.YELLOW)
+                print_line(console, f"  edited   {path} (blocks revert)", style="verdict.warn")
         raise typer.Exit(ExitCode.OK if plan.is_safe else ExitCode.FINDINGS)
 
     plan = revert_injection(root, force=force)
@@ -156,15 +157,16 @@ def revert(
         )
         return
 
-    typer.secho(f"Reverted {root}", fg=typer.colors.GREEN)
+    print_line(console, f"Reverted {root}", style="verdict.good")
     for path in plan.to_delete:
         typer.echo(f"  deleted   {path}")
     for path in plan.to_restore:
         typer.echo(f"  restored  {path}")
     if force and plan.modified_since:
-        typer.secho(
+        print_line(
+            console,
             f"  discarded edits in: {', '.join(plan.modified_since)}",
-            fg=typer.colors.YELLOW,
+            style="verdict.warn",
         )
 
 

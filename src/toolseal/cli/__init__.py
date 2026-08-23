@@ -26,7 +26,7 @@ from toolseal.cli import (
     policy_command,
     registry_command,
 )
-from toolseal.cli._ui import console, new_table
+from toolseal.cli._ui import console, err_console, new_table, print_line, print_table
 from toolseal.cli.errors import command as error_boundary
 from toolseal.errors import ExitCode, ToolsealError
 from toolseal.logging import configure_logging
@@ -75,7 +75,6 @@ app.command(name="revert")(error_boundary(configure_command.revert))
 app.add_typer(policy_command.policy_app)
 
 
-@app.command()
 def doctor(
     as_json: Annotated[
         bool,
@@ -100,7 +99,10 @@ def doctor(
     table.add_column("value")
     for key, value in report.items():
         table.add_row(key, str(value) if value is not None else "not found")
-    console.print(table)
+    print_table(console, table)
+
+
+app.command(name="doctor")(error_boundary(doctor))
 
 
 def main() -> int:
@@ -118,19 +120,15 @@ def main() -> int:
         return code if isinstance(code, int) else int(ExitCode.USAGE)
     except ToolsealError as exc:
         log.debug("toolseal error", exc_info=exc)
-        typer.secho(f"error: {exc}", fg=typer.colors.RED, err=True)
+        print_line(err_console, f"error: {exc}", style="verdict.bad")
         return int(exc.exit_code)
     except KeyboardInterrupt:
-        typer.secho("interrupted", fg=typer.colors.YELLOW, err=True)
+        print_line(err_console, "interrupted", style="verdict.warn")
         return int(ExitCode.INTERNAL)
     # Broad by design: the process boundary must not leak a traceback to the user.
     except Exception as exc:
         log.debug("unhandled error", exc_info=exc)
-        typer.secho(
-            f"internal error: {type(exc).__name__}: {exc}",
-            fg=typer.colors.RED,
-            err=True,
-        )
+        print_line(err_console, f"internal error: {type(exc).__name__}: {exc}", style="verdict.bad")
         return int(ExitCode.INTERNAL)
     return int(ExitCode.OK)
 

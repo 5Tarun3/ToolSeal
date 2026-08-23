@@ -8,6 +8,7 @@ from typing import Annotated, Any
 
 import typer
 
+from toolseal.cli._ui import console, print_line
 from toolseal.core.adapters import ScaffoldSpec, framework_registry, provider_registry
 from toolseal.core.policy.profile import load_profile
 from toolseal.core.scaffold import apply_plan, build_plan
@@ -139,14 +140,16 @@ def _print_dry_run(root: Path, files: Any, conflicts: Any) -> None:
         marker = "!" if item.path in conflicts else "+"
         typer.echo(f"  {marker} {item.path}")
     if conflicts:
-        typer.secho(
-            f"\n{len(conflicts)} file(s) already exist. Re-run with --force to replace them.",
-            fg=typer.colors.YELLOW,
+        console.print()
+        print_line(
+            console,
+            f"{len(conflicts)} file(s) already exist. Re-run with --force to replace them.",
+            style="verdict.warn",
         )
 
 
 def _print_created(root: Path, project_name: str, paths: list[str]) -> None:
-    typer.secho(f"Created {project_name} in {root}", fg=typer.colors.GREEN)
+    print_line(console, f"Created {project_name} in {root}", style="verdict.good")
     for path in sorted(paths):
         typer.echo(f"  {path}")
     typer.echo("\nNext:")

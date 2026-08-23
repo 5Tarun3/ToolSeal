@@ -17,6 +17,7 @@ from typing import Any, TypeVar
 
 import typer
 
+from toolseal.cli._ui import err_console, print_line
 from toolseal.errors import ToolsealError
 
 F = TypeVar("F", bound=Callable[..., Any])
@@ -34,7 +35,7 @@ def command(function: F) -> F:
         try:
             return function(*args, **kwargs)
         except ToolsealError as exc:
-            typer.secho(f"error: {exc}", fg=typer.colors.RED, err=True)
+            print_line(err_console, f"error: {exc}", style="verdict.bad")
             raise typer.Exit(int(exc.exit_code)) from None
 
     return wrapper  # type: ignore[return-value]
