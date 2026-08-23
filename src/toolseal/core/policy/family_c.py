@@ -24,6 +24,7 @@ from importlib import resources
 from typing import Any, Final
 
 from toolseal.core.model import Dependency, MCPServerBinding, ProjectModel
+from toolseal.core.policy import progress
 from toolseal.core.policy.controls import ControlRef
 from toolseal.core.policy.model import Check, Finding, Severity, register
 from toolseal.core.registry.resolve import Channel, Resolution, ResolutionResult, resolve
@@ -143,8 +144,18 @@ def _c1(model: ProjectModel) -> Sequence[Finding]:
     return findings
 
 
+ADVISORY_QUERY_PHASE: Final = "querying advisories"
+
+
 def _c2(model: ProjectModel) -> Sequence[Finding]:
-    affected = query_osv(model.dependencies.declared)
+    hook = progress.current()
+    # One network round trip with no meaningful sub-steps, hence `total=None`
+    # - an indeterminate status rather than a progress bar (spec §4).
+    hook.start(ADVISORY_QUERY_PHASE, None)
+    try:
+        affected = query_osv(model.dependencies.declared)
+    finally:
+        hook.finish(ADVISORY_QUERY_PHASE)
     by_name = {d.name: d for d in model.dependencies.declared}
 
     return [
@@ -284,15 +295,20 @@ def _resolve_cached(
     return resolve(name, channels=channels, known=known)
 
 
+RESOLVE_NAMES_PHASE: Final = "resolving package names"
+
+
 def _findings_for(
     names: Sequence[str], *, channels: tuple[Channel, ...], known: frozenset[str]
 ) -> list[Finding]:
+    hook = progress.current()
     findings: list[Finding] = []
     for name in names:
         # ResolutionError propagates on purpose. An unreachable registry must
         # reach the engine and be recorded as UNKNOWN; swallowing it here would
         # report "we could not look" as "we looked and it was fine".
         result = _resolve_cached(name, channels, known)
+        hook.advance(RESOLVE_NAMES_PHASE)
         if result.resolution is Resolution.EXISTS:
             continue
 
@@ -353,10 +369,16 @@ def _c3(model: ProjectModel) -> Sequence[Finding]:
             continue
         server_packages.add(package)
 
-    return [
-        *_findings_for(dependency_names, channels=(Channel.PYPI,), known=known),
-        *_findings_for(sorted(server_packages), channels=(Channel.NPM,), known=known),
-    ]
+    total = len(dependency_names) + len(server_packages)
+    hook = progress.current()
+    hook.start(RESOLVE_NAMES_PHASE, total)
+    try:
+        return [
+            *_findings_for(dependency_names, channels=(Channel.PYPI,), known=known),
+            *_findings_for(sorted(server_packages), channels=(Channel.NPM,), known=known),
+        ]
+    finally:
+        hook.finish(RESOLVE_NAMES_PHASE)
 
 
 C3 = register(

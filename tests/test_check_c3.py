@@ -19,7 +19,7 @@ from typing import Any
 import pytest
 
 from toolseal.core.model import Dependency, DependencySet, MCPServerBinding, ProjectModel, Transport
-from toolseal.core.policy import all_checks
+from toolseal.core.policy import all_checks, progress
 from toolseal.core.policy.family_c import mcp_package_name
 from toolseal.core.policy.model import Verdict
 from toolseal.core.registry.resolve import Channel, Resolution, ResolutionResult
@@ -384,6 +384,53 @@ def test_an_unextractable_local_server_logs_at_warning_not_info(
     assert len(caplog.records) == 1
     assert caplog.records[0].levelno == logging.WARNING
     assert "custom" in caplog.text
+
+
+# --- progress: the seam `cli/_ui.py` hooks a spinner into (spec §4) --------
+
+
+class _Recorder:
+    def __init__(self) -> None:
+        self.calls: list[tuple[object, ...]] = []
+
+    def start(self, phase: str, total: int | None) -> None:
+        self.calls.append(("start", phase, total))
+
+    def advance(self, phase: str, step: int = 1) -> None:
+        self.calls.append(("advance", phase, step))
+
+    def finish(self, phase: str) -> None:
+        self.calls.append(("finish", phase))
+
+
+def test_c3_reports_start_advance_finish_to_the_installed_observer(
+    resolves: Any,
+) -> None:
+    # One `advance` per name resolved, `start`'s total matching the combined
+    # count up front - this is what turns C3's ~0.56s-per-name network cost
+    # from silence into "resolving package names n/total" on stderr.
+    resolves(
+        {
+            "crewai": ResolutionResult("crewai", Resolution.EXISTS),
+            "langchain": ResolutionResult("langchain", Resolution.EXISTS),
+        }
+    )
+    recorder = _Recorder()
+
+    with progress.observe(recorder):
+        c3().evaluate(model_with("langchain", "crewai"))
+
+    assert recorder.calls[0] == ("start", "resolving package names", 2)
+    assert recorder.calls.count(("advance", "resolving package names", 1)) == 2
+    assert recorder.calls[-1] == ("finish", "resolving package names")
+
+
+def test_c3_reports_no_progress_when_nothing_is_installed(resolves: Any) -> None:
+    # The default observer is a no-op - this must not raise, and is the
+    # state every other test in this module already runs under implicitly.
+    resolves({"langchain": ResolutionResult("langchain", Resolution.EXISTS)})
+
+    assert c3().evaluate(model_with("langchain")).verdict is Verdict.PASS
 
 
 def test_a_remote_server_is_skipped_rather_than_reported_as_unextractable(
