@@ -12,6 +12,7 @@ from rich.text import Text
 
 from toolseal.cli._ui import (
     accent_text,
+    clip_ascii,
     console,
     new_progress_observer,
     new_table,
@@ -37,12 +38,12 @@ registry_app = typer.Typer(
 # between-column padding on top of these, and the fixed columns (`score`,
 # `registry`, `tools`) must never be the ones a width shortage steals from -
 # which is exactly what Rich does instead if these cap too high: it starts
-# ellipsizing the header of whichever column it picks to shrink, rather
-# than these two, once the surrounding frame eats into the terminal's 80
-# columns. `_PACKAGE_WIDTH_MAX` is 4 narrower than the raw arithmetic would
-# suggest for that reason - the panel search results now render inside
-# (spec: every command's report is framed) costs exactly 4 columns of
-# border and padding that a bare table never did.
+# folding whichever column it picks to shrink, rather than these two, once
+# the surrounding frame eats into the terminal's 80 columns. `_PACKAGE_
+# WIDTH_MAX` is 4 narrower than the raw arithmetic would suggest for that
+# reason - the panel search results now render inside (spec: every
+# command's report is framed) costs exactly 4 columns of border and
+# padding that a bare table never did.
 _NAME_WIDTH_MAX = 20
 _PACKAGE_WIDTH_MAX = 19
 
@@ -111,8 +112,15 @@ def sync(
 def _search_row(entry: IndexEntry) -> tuple[str, str, str, str, str, str]:
     flag = "!" if entry.audit.blocking else ""
     score = str(entry.audit.score)
-    name = entry.descriptor.name
-    package_version = f"{entry.descriptor.source.package}@{entry.descriptor.source.version}"
+    # Shortened here, in ASCII, before either value ever reaches `rich`
+    # (spec §8) - not left to the column's own overflow handling, which
+    # would otherwise reach for `rich`'s hardcoded U+2026 HORIZONTAL
+    # ELLIPSIS the moment a name or package string is longer than its cap.
+    name = clip_ascii(entry.descriptor.name, _NAME_WIDTH_MAX)
+    package_version = clip_ascii(
+        f"{entry.descriptor.source.package}@{entry.descriptor.source.version}",
+        _PACKAGE_WIDTH_MAX,
+    )
     registry = entry.descriptor.source.registry
     tools = "1" if entry.tools_enumerated else "-"
     return flag, score, name, package_version, registry, tools
@@ -124,10 +132,14 @@ def _print_search_results(results: tuple[IndexEntry, ...]) -> None:
     table = new_table()
     table.add_column("")  # the "!" blocking flag - unnamed, a single character wide
     table.add_column("score", justify="right")
-    table.add_column("name", max_width=_NAME_WIDTH_MAX, overflow="ellipsis", no_wrap=True)
-    table.add_column(
-        "package@version", max_width=_PACKAGE_WIDTH_MAX, overflow="ellipsis", no_wrap=True
-    )
+    # `overflow="crop"` here is a backstop, not the truncation mechanism:
+    # `_search_row` has already shortened `name`/`package_version` to fit
+    # within these caps, marked with an ASCII "..." via `clip_ascii`. This
+    # should never actually need to crop anything; if it ever does, that is
+    # a bug in the cap arithmetic above, not a value this column is meant to
+    # silently shorten on its own.
+    table.add_column("name", max_width=_NAME_WIDTH_MAX, overflow="crop", no_wrap=True)
+    table.add_column("package@version", max_width=_PACKAGE_WIDTH_MAX, overflow="crop", no_wrap=True)
     table.add_column("registry")
     table.add_column("tools", justify="right")
     for flag, score, name, package_version, registry, tools in rows:

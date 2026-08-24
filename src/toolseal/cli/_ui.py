@@ -19,6 +19,7 @@ from __future__ import annotations
 import sys
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
+from typing import Any
 
 from rich import box
 from rich.console import Console
@@ -145,16 +146,82 @@ def count_style(count: int) -> str:
 # ---------------------------------------------------------------------------
 
 
+def clip_ascii(value: str, width: int) -> str:
+    """Shorten *value* to at most *width* characters, marking the cut with an
+    ASCII "..." so a shortened value still reads as shortened rather than as
+    a normal, complete one.
+
+    This is `cli/_columns.clip` ported forward: the rich migration that
+    deleted that module (replacing every hand-rolled table with
+    `rich.table.Table`) also deleted the only place this codebase truncated
+    a string in ASCII. What took its place - a column's own
+    `overflow="ellipsis"` - hardcodes U+2026 HORIZONTAL ELLIPSIS
+    (`rich.text.Text.truncate`), which is exactly the character a Windows
+    console renders as mojibake (spec §8: no non-ASCII in our own output).
+    A column that needs a bounded, marked-truncated cell (`registry
+    search`'s compact listing, the only place in this CLI where shortening a
+    value on purpose is the point) calls this *before* the value ever
+    reaches `rich`, then declares `overflow="crop"` on the column as a
+    backstop that should never actually fire, since the value already fits.
+    """
+    if len(value) <= width:
+        return value
+    if width <= 3:
+        return value[:width]
+    return value[: width - 3] + "..."
+
+
+class _NoEllipsisTable(Table):
+    """A `rich.table.Table` whose columns default to `overflow="fold"`
+    instead of rich's own default of `overflow="ellipsis"`.
+
+    `rich.table.Column.overflow` defaults to `"ellipsis"` - which hardcodes
+    U+2026 HORIZONTAL ELLIPSIS into *any* column whose content doesn't fit,
+    including one nobody asked to cap. `doctor`'s "value" column (a Windows
+    executable path), `registry show`'s "value" column (a repository URL),
+    and `policy explain`'s obligation-title column all carry free-text with
+    no spaces to wrap on; the moment one is wider than the terminal, rich's
+    default silently reaches for that non-ASCII marker - the same defect
+    `registry search`'s explicit `overflow="ellipsis"` columns shipped with,
+    just triggered by width instead of by an explicit column cap.
+
+    Folding instead keeps every character on screen, in ASCII, at the cost
+    of wrapping across lines - full information over a tidier layout, which
+    matters more here than in `registry search`'s deliberately compact list:
+    a truncated repository URL or executable path is not just shorter, it
+    stops being the value it claims to be.
+
+    A column that genuinely wants a bounded, marked-truncated cell (spec:
+    `registry search`) opts back in explicitly with its own
+    `overflow="crop"`, after shortening the value itself with `clip_ascii` -
+    it never falls through to this default.
+    """
+
+    def add_column(self, *args: Any, **kwargs: Any) -> None:
+        kwargs.setdefault("overflow", "fold")
+        super().add_column(*args, **kwargs)
+
+
 def new_table(*, box_style: box.Box = box.SIMPLE) -> Table:
     """A table in the shared visual language: rules under headers, no heavy
     borders around dense numeric data, no separate width-arithmetic module."""
-    return Table(
+    return _NoEllipsisTable(
         box=box_style,
         show_header=True,
         header_style="table.header",
         pad_edge=False,
         show_edge=False,
     )
+
+
+def new_grid(*, padding: tuple[int, int, int, int] = (0, 0, 0, 0)) -> Table:
+    """A borderless, unheaded alignment grid (spec §5's other table shape:
+    `policy explain`'s obligations list) - `Table.grid()`'s own column
+    alignment, routed through `_NoEllipsisTable` for the same reason
+    `new_table()` is: so a long obligation title wraps instead of picking up
+    rich's non-ASCII ellipsis the moment it doesn't fit.
+    """
+    return _NoEllipsisTable.grid(padding=padding)
 
 
 def print_table(out: Console, table: Table) -> None:

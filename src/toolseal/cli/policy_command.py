@@ -25,6 +25,7 @@ from toolseal.cli._ui import (
     accent_text,
     console,
     count_style,
+    new_grid,
     new_table,
     print_line,
     print_table,
@@ -89,10 +90,14 @@ def _explain_check(check: Check) -> None:
     else:
         sections.append(Text("Obligations this serves", style="heading"))
         catalogues = load_catalogues()
-        # `Table.grid`: rich's own column-alignment, not hand-rolled width
-        # arithmetic (spec §5) - each obligation's id and title line up
-        # without this module computing a padding width itself.
-        obligations = Table.grid(padding=(0, 2, 0, 2))
+        # `new_grid` (`Table.grid` under the shared `_ui` factory, spec §5):
+        # rich's own column-alignment, not hand-rolled width arithmetic -
+        # each obligation's id and title line up without this module
+        # computing a padding width itself. Routed through `_ui` rather than
+        # `rich.table.Table.grid` directly so a control title too long to
+        # fit on one line wraps (spec §8: ASCII only) instead of picking up
+        # rich's own non-ASCII ellipsis.
+        obligations = new_grid(padding=(0, 2, 0, 2))
         obligations.add_column()
         obligations.add_column()
         for ref in check.controls:

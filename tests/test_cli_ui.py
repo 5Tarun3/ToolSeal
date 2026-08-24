@@ -15,11 +15,17 @@ import pathlib
 import sys
 
 import pytest
+from rich import box
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
+from typer.testing import CliRunner
 
-from toolseal.cli import _ui
+from toolseal.cli import _ui, app, policy_command
+from toolseal.core.policy.controls import Control
+from toolseal.core.registry.index import EntryAudit, IndexEntry, RegistryIndex
+from toolseal.core.registry.utd import Provenance, ToolSource, UnifiedToolDescriptor
+from toolseal.errors import ExitCode
 
 
 def _rendered(style: str) -> str:
@@ -284,6 +290,237 @@ def test_source_files_were_actually_scanned() -> None:
     # package, a typo'd root), the non-ASCII test above would pass vacuously
     # and silently stop meaning anything.
     assert len(_cli_source_files()) > 20
+
+
+# --- defect 1, widened: render, don't just scan source ----------------------
+#
+# `test_no_non_ascii_characters_outside_the_ui_module` above checks a
+# literal in *our* source. It has a blind spot: rich's own
+# `overflow="ellipsis"` hardcodes U+2026 HORIZONTAL ELLIPSIS into a
+# truncated cell (`rich.text.Text.truncate`) - and that character never
+# appears in any file the source scan reads, because it does not exist
+# until `rich` renders. `registry search`'s two capped columns shipped with
+# exactly that: a Windows console rendered every truncated name and
+# package string as mojibake, and the guard above passed the whole time,
+# because it was never looking at the right surface.
+#
+# The tests below check what the CLI actually *prints*, not what our
+# source contains. That raises a new problem the source scan never had:
+# `rich` legitimately draws non-ASCII box characters for a table or panel
+# border, and that is correct, desired behaviour (spec: rich substitutes
+# ASCII for those itself when the target encoding cannot represent them) -
+# a naive "reject every non-ASCII byte in the output" assertion would fail
+# on every single table this CLI prints.
+#
+# The line is drawn like this: `_cli_box_allowlist()` does not hardcode a
+# guess at which glyphs count as "a box". It calls `rich.box.Box.substitute`
+# - the exact method `rich` calls internally, right before drawing a
+# border - on the two box styles this codebase actually asks for
+# (`box.SIMPLE` for `new_table()`, `box.ROUNDED` for the `Panel` every
+# table-bearing command wraps its table in; `new_grid()` uses `box=None`,
+# no glyphs at all) against `_ui.console`'s own configuration. Whatever
+# `substitute` returns *is* rich's own drawing for this console, full stop
+# - on a console that cannot encode Unicode at all, `substitute` itself
+# already downgrades to a pure-ASCII box, so the allowlist would come back
+# empty there and the tests below would still hold. Anything outside that
+# resolved, mechanically-derived set - our own cell content, an ellipsis
+# marker, anything else - is a genuine finding, never something drawn by
+# rich's own border logic.
+#
+# `test_offender_scan_flags_a_synthetic_ellipsis` is the guard on this
+# guard (the same shape as `test_source_files_were_actually_scanned`
+# above): it proves the scan actually rejects something, by feeding it a
+# hand-built string carrying the exact character this defect shipped and
+# asserting it gets flagged. A scan that cannot fail on that input would be
+# passing every real test vacuously - exactly the failure mode this
+# project has already had to rebuild one drift guard for.
+
+
+def _rich_box_glyphs(console: Console, style: box.Box) -> set[str]:
+    resolved = style.substitute(console.options, safe=console.safe_box)
+    return {c for c in str(resolved) if ord(c) > 127}
+
+
+def _cli_box_allowlist() -> set[str]:
+    """Every non-ASCII glyph `rich` is entitled to draw for *this* console,
+    derived from the two box styles this CLI's own code asks for - never a
+    hardcoded guess (see the module-level comment above)."""
+    return _rich_box_glyphs(_ui.console, box.SIMPLE) | _rich_box_glyphs(_ui.console, box.ROUNDED)
+
+
+def _non_ascii_offenders(text: str, *, allowed: set[str]) -> set[str]:
+    return {c for c in text if ord(c) > 127 and c not in allowed}
+
+
+def test_box_allowlist_is_not_vacuous() -> None:
+    # A guard on `_cli_box_allowlist` itself: if a future `rich` upgrade
+    # changed `Box.substitute`'s behaviour so this came back empty, the
+    # rendering test below would start rejecting every legitimate table
+    # border - which would very likely get "fixed" by loosening the
+    # assertion instead of by noticing the real cause.
+    assert _cli_box_allowlist()
+
+
+def test_offender_scan_flags_a_synthetic_ellipsis() -> None:
+    """Proof the widened guard can fail, not just pass: a hand-built string
+    carrying the exact character `registry search` shipped with - U+2026
+    HORIZONTAL ELLIPSIS - dressed up inside an otherwise legitimate-looking
+    boxed row, run through the same `allowed`-set scan the rendering test
+    below performs on real command output."""
+    allowed = _cli_box_allowlist()
+    poisoned = "\u2502 name\u2026      \u2502\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n"
+
+    offenders = _non_ascii_offenders(poisoned, allowed=allowed)
+
+    assert offenders == {"\u2026"}
+
+
+def _long_entries_index_path(tmp_path: pathlib.Path) -> pathlib.Path:
+    """A registry index carrying the kind of long, externally-sourced
+    strings that actually triggered this defect: a package name/version
+    long enough for `registry search`'s compact listing to shorten, and a
+    repository URL long enough that `registry show`'s full-detail table -
+    which must never shorten it (`test_show_prints_the_full_description_
+    not_truncated` already pins that for the description) - has to wrap it
+    instead.
+    """
+    descriptor = UnifiedToolDescriptor(
+        id="mcp/long@1.0.0",
+        name="a-tool-with-a-genuinely-long-descriptive-server-name-that-keeps-going",
+        description="",
+        source=ToolSource(
+            kind="mcp",
+            registry="npm",
+            package="@example/a-really-quite-long-package-identifier-indeed",
+            version="1.0.0",
+        ),
+        provenance=Provenance(
+            repository=(
+                "https://github.com/some-org/"
+                "a-genuinely-long-repository-name-that-keeps-going-and-going"
+            ),
+            publisher="example",
+            signature="none",
+            license="MIT",
+        ),
+    )
+    index = RegistryIndex(
+        entries=(
+            IndexEntry(
+                descriptor=descriptor,
+                audit=EntryAudit(score=90, blocking=False, findings=()),
+                tools_enumerated=False,
+            ),
+        ),
+        built_at="fixed",
+    )
+    path = tmp_path / "index.json"
+    index.write(path)
+    return path
+
+
+def _cli_output(args: list[str]) -> str:
+    result = CliRunner().invoke(app, args)
+    assert result.exit_code in {
+        ExitCode.OK,
+        ExitCode.FINDINGS,
+    }, f"{args} exited {result.exit_code}: {result.output}"
+    return result.output
+
+
+def test_cli_output_is_ascii_outside_rich_box_drawing(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Every human-readable command this CLI ships renders to ASCII, once
+    rich's own sanctioned box-drawing glyphs are set aside (see the
+    module-level comment above for how that line is drawn).
+
+    `doctor` and `policy explain` are pushed past their real shipped data
+    with a monkeypatch - a real `sys.executable`/git path or a real
+    catalogue's control title happens to be short enough not to trigger
+    rich's per-column overflow handling most of the time, which would make
+    a check against only real data pass by coincidence rather than by
+    construction. `registry search`/`show` use a purpose-built index
+    instead, for the same reason.
+    """
+    project_root = tmp_path / "demo"
+    init_output = _cli_output(["init", "demo", "--directory", str(project_root)])
+
+    outputs = {
+        "init": init_output,
+        "audit": _cli_output(["audit", str(project_root)]),
+        "policy list": _cli_output(["policy", "list"]),
+        "policy show": _cli_output(["policy", "show", "--directory", str(project_root)]),
+        "policy check": _cli_output(["policy", "check", "--directory", str(project_root)]),
+        "policy apply": _cli_output(
+            ["policy", "apply", "hipaa", "--yes", "--directory", str(project_root)]
+        ),
+        "policy relax": _cli_output(
+            [
+                "policy",
+                "relax",
+                "B2",
+                "--reason",
+                "needs shell access for this demo",
+                "--expires",
+                "2099-12-31",
+                "--directory",
+                str(project_root),
+            ]
+        ),
+        "doctor": _doctor_output_with_a_long_executable_path(monkeypatch),
+        "registry search": _cli_output(
+            ["registry", "search", "", "--index", str(_long_entries_index_path(tmp_path))]
+        ),
+        "registry show": _cli_output(
+            [
+                "registry",
+                "show",
+                "mcp/long@1.0.0",
+                "--index",
+                str(_long_entries_index_path(tmp_path)),
+            ]
+        ),
+        "policy explain": _policy_explain_output_with_a_long_control_title(monkeypatch),
+    }
+
+    add_target = tmp_path / "existing-project"
+    add_target.mkdir()
+    outputs["add framework"] = _cli_output(
+        ["add", "framework", "claude-code", "--directory", str(add_target)]
+    )
+    outputs["revert"] = _cli_output(["revert", "--directory", str(add_target)])
+
+    allowed = _cli_box_allowlist()
+    failures = {
+        label: offenders
+        for label, output in outputs.items()
+        if (offenders := _non_ascii_offenders(output, allowed=allowed))
+    }
+    assert not failures, f"non-ASCII output outside rich's own box drawing: {failures!r}"
+
+
+def _doctor_output_with_a_long_executable_path(monkeypatch: pytest.MonkeyPatch) -> str:
+    monkeypatch.setattr(
+        sys,
+        "executable",
+        r"C:\Users\example\AppData\Local\pipx\venvs\toolseal-cli-app-name"
+        r"\Scripts\toolseal-cli-executable-wrapper.exe",
+    )
+    return _cli_output(["doctor"])
+
+
+def _policy_explain_output_with_a_long_control_title(monkeypatch: pytest.MonkeyPatch) -> str:
+    long_title = (
+        "A-genuinely-long-unbreakable-control-title-with-no-spaces-"
+        "whatsoever-that-keeps-going-and-going"
+    )
+    monkeypatch.setattr(
+        policy_command,
+        "resolve",
+        lambda ref, catalogues: Control(id=ref.control, title=long_title),
+    )
+    return _cli_output(["policy", "explain", "B3"])
 
 
 # --- print_text: a mixed-style line is a line, never reflowed --------------
