@@ -7,11 +7,15 @@ evaluation harness depend on, and nothing else.
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
+import toolseal.cli as cli_module
 from toolseal import __version__
 from toolseal.cli import app
+from toolseal.cli.errors import format_error_line
 from toolseal.errors import ExitCode
 
 runner = CliRunner()
@@ -138,3 +142,54 @@ def test_add_help_splits_scaffold_from_translate() -> None:
     assert result.exit_code == ExitCode.OK
     assert "Scaffold" in result.stdout
     assert "Translate" in result.stdout
+
+
+# --- error output (errors.py) -----------------------------------------------
+
+
+def test_format_error_line_names_the_exit_code_by_number_and_word() -> None:
+    line = format_error_line("error", "something went wrong", ExitCode.USAGE)
+
+    assert line == "error: something went wrong (exit 2: usage)"
+
+
+def test_format_error_line_appends_a_hint_when_given_one() -> None:
+    line = format_error_line(
+        "internal error", "boom", ExitCode.INTERNAL, hint="re-run with --verbose for a traceback"
+    )
+
+    assert line == "internal error: boom (exit 3: internal) - re-run with --verbose for a traceback"
+
+
+def test_usage_error_names_the_exit_code(tmp_path: Path) -> None:
+    # `revert` with nothing to undo is the plainest `UsageError` in the CLI -
+    # no fixture beyond an empty directory needed.
+    result = runner.invoke(app, ["revert", "--directory", str(tmp_path)])
+
+    assert result.exit_code == ExitCode.USAGE
+    assert "error: nothing to revert" in result.output
+    assert "(exit 2: usage)" in result.output
+
+
+def test_main_reports_an_unexpected_exception_with_a_verbose_hint(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # An exception that is not a `ToolsealError` at all - a genuine bug, not
+    # a recognised failure mode - reaches `main()`'s last-resort handler.
+    # The traceback `log.debug` captures there is otherwise invisible unless
+    # `--verbose` raises the root logger to DEBUG, so that flag is the one
+    # generic pointer worth naming (errors.py: "a second, generic [pointer]
+    # here would be chrome an error is not the place for" - except here,
+    # where nothing more specific exists to point at).
+    def boom() -> None:
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(cli_module, "app", boom)
+
+    exit_code = cli_module.main()
+    captured = capsys.readouterr()
+
+    assert exit_code == int(ExitCode.INTERNAL)
+    assert "internal error: RuntimeError: boom" in captured.err
+    assert "(exit 3: internal)" in captured.err
+    assert "--verbose" in captured.err

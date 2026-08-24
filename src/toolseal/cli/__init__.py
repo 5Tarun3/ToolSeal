@@ -30,6 +30,7 @@ from toolseal.cli import (
 )
 from toolseal.cli._ui import accent_text, console, err_console, new_table, print_line
 from toolseal.cli.errors import command as error_boundary
+from toolseal.cli.errors import format_error_line
 from toolseal.errors import ExitCode, ToolsealError
 from toolseal.logging import configure_logging
 
@@ -145,7 +146,8 @@ def main() -> int:
         return code if isinstance(code, int) else int(ExitCode.USAGE)
     except ToolsealError as exc:
         log.debug("toolseal error", exc_info=exc)
-        print_line(err_console, f"error: {exc}", style="verdict.bad")
+        line = format_error_line("error", str(exc), exc.exit_code)
+        print_line(err_console, line, style="verdict.bad")
         return int(exc.exit_code)
     except KeyboardInterrupt:
         print_line(err_console, "interrupted", style="verdict.warn")
@@ -153,7 +155,18 @@ def main() -> int:
     # Broad by design: the process boundary must not leak a traceback to the user.
     except Exception as exc:
         log.debug("unhandled error", exc_info=exc)
-        print_line(err_console, f"internal error: {type(exc).__name__}: {exc}", style="verdict.bad")
+        # The traceback `log.debug` just captured is otherwise invisible -
+        # it only reaches stderr once `--verbose` raises the root logger to
+        # DEBUG (see `logging.configure_logging`) - so the one generic
+        # pointer that earns its place here is the flag that would show it,
+        # not a guess at which command caused an unexpected failure.
+        line = format_error_line(
+            "internal error",
+            f"{type(exc).__name__}: {exc}",
+            ExitCode.INTERNAL,
+            hint="re-run with --verbose for a traceback",
+        )
+        print_line(err_console, line, style="verdict.bad")
         return int(ExitCode.INTERNAL)
     return int(ExitCode.OK)
 
