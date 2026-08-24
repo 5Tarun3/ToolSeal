@@ -28,7 +28,7 @@ from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
 
-from toolseal.core.policy.model import Severity
+from toolseal.core.policy.model import Severity, Verdict
 from toolseal.core.policy.progress import AuditProgress
 
 # ---------------------------------------------------------------------------
@@ -61,6 +61,23 @@ THEME = Theme(
         # qualifies it. A caveat nobody notices is exactly the defect this
         # token was written to prevent - resist the urge to mute it.
         "caveat": "italic yellow",
+        # Identifiers: check ids, catalogue ids, control ids, standard names,
+        # file paths, command examples. Bold cyan rather than plain `sev.low`
+        # cyan - the weight is what marks "this is a name you could type
+        # back", not the hue alone, so a severity-low cell and an identifier
+        # cell in the same row never read as the same kind of thing.
+        "accent": "bold cyan",
+        # Section headings and field labels ("How to fix it", "Obligations
+        # this serves"). Named separately from `accent` even though both
+        # currently render bold: a heading is a structural label, an accent
+        # is a value the reader might copy - the two are allowed to diverge
+        # later without every call site changing.
+        "heading": "bold",
+        # Table column headers. Coloured, not merely bold - the gap this
+        # whole pass exists to close is a `--help` that is more legible than
+        # the tool's own tables because typer colours its headers and we did
+        # not (see spec's own opening complaint).
+        "table.header": "bold cyan",
     }
 )
 
@@ -95,6 +112,32 @@ def severity_style(severity: Severity) -> str:
     return f"sev.{severity.value}"
 
 
+_VERDICT_STYLES: dict[Verdict, str] = {
+    Verdict.PASS: "verdict.good",
+    Verdict.FAIL: "verdict.bad",
+    Verdict.UNKNOWN: "verdict.unknown",
+    Verdict.RELAXED: "verdict.relaxed",
+    # Neither a pass nor a fail - out of the check's reach entirely, which is
+    # a different fact from either. `muted` is the same treatment a zero
+    # count gets (see `count_style` below): a cell reporting "nothing to see
+    # here" rather than a graded outcome.
+    Verdict.NOT_APPLICABLE: "muted",
+}
+
+
+def verdict_style(verdict: Verdict) -> str:
+    """The theme token for a verdict cell: PASS/FAIL/UNKNOWN/RELAXED/n-a each
+    take their own token (spec §2), never a bare unstyled string."""
+    return _VERDICT_STYLES[verdict]
+
+
+def count_style(count: int) -> str:
+    """The theme token for a numeric count cell: zero is muted, a non-zero
+    count - a non-zero failure count in particular - keeps full weight
+    rather than fading into the same grey as an empty column."""
+    return "muted" if count == 0 else ""
+
+
 # ---------------------------------------------------------------------------
 # Tables (spec §5). Replaces the hand-rolled width arithmetic in
 # `cli/_columns.py` - Rich already computes "widest of heading or data"
@@ -108,7 +151,7 @@ def new_table(*, box_style: box.Box = box.SIMPLE) -> Table:
     return Table(
         box=box_style,
         show_header=True,
-        header_style="bold",
+        header_style="table.header",
         pad_edge=False,
         show_edge=False,
     )
@@ -262,6 +305,30 @@ def blocking_text(count: int) -> Text:
     count of critical checks that failed - never as a bare trailing word."""
     plural = "check" if count == 1 else "checks"
     return Text(f"BLOCKING: {count} critical {plural} failed", style="sev.critical")
+
+
+def accent_text(value: str) -> Text:
+    """An identifier - a check id, catalogue id, control id, standard name,
+    package name, or a path/command meant to be read back and typed - styled
+    `accent` (spec §2/§5a) so identifiers carry one consistent treatment
+    everywhere they appear, table cell or inline."""
+    return Text(value, style="accent")
+
+
+def print_text(out: Console, text: Text) -> None:
+    """Print a pre-built, possibly multi-styled `Text` as a single line that
+    is never reflowed - `print_line`'s sibling for a caller that mixes more
+    than one style into one line (an accent id followed by plain prose, for
+    instance) and so cannot just hand `print_line` a single string.
+
+    Without `soft_wrap=True`, `rich` word-wraps a line at the console width,
+    which - for a long path or a long list of check ids - can split a word
+    itself across two lines. A deeply nested temporary directory is exactly
+    the case that surfaced this: wrapping mid-word broke a substring a test
+    was searching for. `print_line` already guards against this for a single
+    style; this closes the same gap for everything else.
+    """
+    out.print(text, soft_wrap=True)
 
 
 def print_line(out: Console, text: str, *, style: str) -> None:

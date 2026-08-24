@@ -76,6 +76,66 @@ def test_score_style_thresholds() -> None:
     assert _ui.score_style(0) == "verdict.bad"
 
 
+# --- identifier/heading/table-header tokens ----------------------------------
+
+
+def test_verdict_style_maps_one_token_per_verdict() -> None:
+    from toolseal.core.policy.model import Verdict
+
+    assert _ui.verdict_style(Verdict.PASS) == "verdict.good"
+    assert _ui.verdict_style(Verdict.FAIL) == "verdict.bad"
+    assert _ui.verdict_style(Verdict.UNKNOWN) == "verdict.unknown"
+    assert _ui.verdict_style(Verdict.RELAXED) == "verdict.relaxed"
+    # Neither a pass nor a fail - muted, the same treatment a zero count
+    # gets, not a colour it would have to share with a graded outcome.
+    assert _ui.verdict_style(Verdict.NOT_APPLICABLE) == "muted"
+
+
+def test_count_style_zero_is_muted_nonzero_is_not() -> None:
+    assert _ui.count_style(0) == "muted"
+    assert _ui.count_style(1) == ""
+    assert _ui.count_style(41) == ""
+
+
+def test_accent_text_uses_the_accent_token() -> None:
+    text = _ui.accent_text("B3")
+    assert str(text) == "B3"
+    assert text.style == "accent"
+
+
+def test_accent_and_heading_are_distinct_tokens() -> None:
+    # Both currently render bold, but they are named separately (spec §2):
+    # an identifier a reader might type back is not the same kind of thing
+    # as a section label, and the two must be free to diverge later without
+    # every call site that uses one of them changing.
+    assert _rendered("accent") != _rendered("heading")
+
+
+def test_table_header_token_is_coloured_not_bare_bold() -> None:
+    out = _rendered("table.header")
+
+    assert "36m" in out  # cyan, not merely the bold `heading`/`fix` treatment
+    assert "1" in out  # bold
+
+
+def test_new_table_headers_render_with_the_table_header_token() -> None:
+    # Colour-forced, unlike `test_new_table_uses_a_rule_under_the_header_not_
+    # a_heavy_border` above (which deliberately checks the *plain*-text
+    # shape) - this is the one place that pins headers actually being
+    # coloured, not merely bold, on a real terminal.
+    buf = io.StringIO()
+    console = Console(file=buf, theme=_ui.THEME, force_terminal=True, width=80, markup=False)
+    table = _ui.new_table()
+    table.add_column("family")
+    table.add_column("score", justify="right")
+    table.add_row("A", "100")
+
+    console.print(table)
+    out = buf.getvalue()
+
+    assert "36m" in out
+
+
 # --- NO_COLOR (spec §1: "Degrade without apology") --------------------------
 
 
@@ -224,6 +284,32 @@ def test_source_files_were_actually_scanned() -> None:
     # package, a typo'd root), the non-ASCII test above would pass vacuously
     # and silently stop meaning anything.
     assert len(_cli_source_files()) > 20
+
+
+# --- print_text: a mixed-style line is a line, never reflowed --------------
+#
+# A regression this project actually hit: a long path built as a multi-span
+# `Text` and printed with a bare `console.print(...)` gets word-wrapped at
+# the console width like prose, which can split a word - even one a test is
+# searching for - across the line break. `print_line` already guarded a
+# single-style line against this; `print_text` is the same guarantee for a
+# line built from more than one style.
+
+
+def test_print_text_never_wraps_a_long_line() -> None:
+    from rich.text import Text
+
+    buf = io.StringIO()
+    console = Console(file=buf, theme=_ui.THEME, force_terminal=False, width=20, markup=False)
+    long_word = "a" * 40
+    text = Text("prefix: ")
+    text.append(long_word, style="accent")
+
+    _ui.print_text(console, text)
+
+    lines = buf.getvalue().splitlines()
+    assert len(lines) == 1
+    assert long_word in lines[0]
 
 
 # --- defect 2 & 3: `print_wrapped`'s hanging indent, no padding -------------
