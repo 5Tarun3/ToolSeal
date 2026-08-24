@@ -26,6 +26,7 @@ from datetime import UTC, datetime
 from typing import Any, Final
 
 from toolseal.core.net import HttpError, get_json
+from toolseal.core.policy import progress
 from toolseal.core.registry.index import EntryAudit, IndexEntry, RegistryIndex
 from toolseal.core.registry.utd import (
     Provenance,
@@ -200,6 +201,9 @@ def assess(descriptor: UnifiedToolDescriptor) -> EntryAudit:
     )
 
 
+FETCH_INDEX_PHASE: Final = "fetching the index"
+
+
 def crawl_mcp_registry(
     *,
     max_pages: int = DEFAULT_MAX_PAGES,
@@ -211,56 +215,71 @@ def crawl_mcp_registry(
 
     *fetch* is injected so the crawl can be tested without a network, and so a
     caller can substitute a cache.
+
+    `max_pages` is always a known bound by the time this runs - `registry
+    sync`'s CLI option always supplies one - so "fetching the index" (spec
+    S4) is reported as a determinate phase, one step per page, through the
+    same no-op-unless-a-caller-installed-one observer `family_c.py` already
+    uses for C2/C3 (`core.policy.progress` - a generic phase-progress seam
+    despite living under `policy/`; this module reuses it rather than
+    inventing a second one, and `core/` still never imports `rich` or a CLI
+    to do so).
     """
     report = CrawlReport()
     cursor: str | None = None
 
-    for page in range(max_pages):
-        url = f"{MCP_REGISTRY_URL}?limit={page_size}"
-        if cursor:
-            url = f"{url}&cursor={cursor}"
+    hook = progress.current()
+    hook.start(FETCH_INDEX_PHASE, max_pages)
+    try:
+        for page in range(max_pages):
+            url = f"{MCP_REGISTRY_URL}?limit={page_size}"
+            if cursor:
+                url = f"{url}&cursor={cursor}"
 
-        try:
-            payload = fetch(url)
-        except HttpError as exc:
-            # Stop rather than retry into an endpoint that is already unhappy;
-            # what was collected so far is still worth returning.
-            report.errors.append(f"page {page + 1}: {exc}")
-            break
+            try:
+                payload = fetch(url)
+            except HttpError as exc:
+                # Stop rather than retry into an endpoint that is already unhappy;
+                # what was collected so far is still worth returning.
+                report.errors.append(f"page {page + 1}: {exc}")
+                break
 
-        servers = payload.get("servers") if isinstance(payload, dict) else None
-        if not isinstance(servers, list):
-            report.errors.append(f"page {page + 1}: response had no server list")
-            break
+            servers = payload.get("servers") if isinstance(payload, dict) else None
+            if not isinstance(servers, list):
+                report.errors.append(f"page {page + 1}: response had no server list")
+                break
 
-        report.pages_fetched += 1
-        for server in servers:
-            if not isinstance(server, dict):
-                report.skipped.append("non-object entry")
-                continue
-            descriptor = to_descriptor(server)
-            if descriptor is None:
-                report.skipped.append(str(server.get("name") or "<unnamed>"))
-                continue
-            report.entries.append(
-                IndexEntry(
-                    descriptor=descriptor,
-                    audit=assess(descriptor),
-                    compat={},
-                    # Enumerating tools means running the server, which this
-                    # project does not do. Recorded, not implied.
-                    tools_enumerated=False,
+            report.pages_fetched += 1
+            hook.advance(FETCH_INDEX_PHASE)
+            for server in servers:
+                if not isinstance(server, dict):
+                    report.skipped.append("non-object entry")
+                    continue
+                descriptor = to_descriptor(server)
+                if descriptor is None:
+                    report.skipped.append(str(server.get("name") or "<unnamed>"))
+                    continue
+                report.entries.append(
+                    IndexEntry(
+                        descriptor=descriptor,
+                        audit=assess(descriptor),
+                        compat={},
+                        # Enumerating tools means running the server, which this
+                        # project does not do. Recorded, not implied.
+                        tools_enumerated=False,
+                    )
                 )
-            )
 
-        metadata = payload.get("metadata") if isinstance(payload, dict) else {}
-        cursor = (metadata or {}).get("nextCursor") or (metadata or {}).get("next_cursor")
-        if not cursor:
-            report.complete = True
-            break
+            metadata = payload.get("metadata") if isinstance(payload, dict) else {}
+            cursor = (metadata or {}).get("nextCursor") or (metadata or {}).get("next_cursor")
+            if not cursor:
+                report.complete = True
+                break
 
-        if delay_seconds:
-            time.sleep(delay_seconds)
+            if delay_seconds:
+                time.sleep(delay_seconds)
+    finally:
+        hook.finish(FETCH_INDEX_PHASE)
 
     return report
 

@@ -15,7 +15,9 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from toolseal.cli import app
+from toolseal.cli import app, registry_command
+from toolseal.core.policy import progress as progress_hook
+from toolseal.core.registry.crawl import CrawlReport
 from toolseal.core.registry.index import EntryAudit, IndexEntry, RegistryIndex
 from toolseal.core.registry.utd import Provenance, ToolSource, UnifiedToolDescriptor
 from toolseal.errors import ExitCode
@@ -110,6 +112,59 @@ def index_path(tmp_path: Path) -> Path:
     path = tmp_path / "index.json"
     index.write(path)
     return path
+
+
+# --- sync (spec §4: "fetching the index") -----------------------------
+
+
+class _ProgressRecorder:
+    def __init__(self) -> None:
+        self.calls: list[tuple[str, ...]] = []
+
+    def start(self, phase: str, total: int | None) -> None:
+        self.calls.append(("start", phase, str(total)))
+
+    def advance(self, phase: str, step: int = 1) -> None:
+        self.calls.append(("advance", phase, str(step)))
+
+    def finish(self, phase: str) -> None:
+        self.calls.append(("finish", phase))
+
+
+def test_sync_installs_an_observer_the_crawl_can_report_progress_through(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`registry sync` wires the CLI's rich-backed observer around the
+    crawl (spec: "fetching the index"). `crawl_mcp_registry` is stubbed
+    here - a real crawl needs the network - to isolate the wiring itself:
+    does `sync()` install an observer the crawl's own progress calls
+    reach, not whether `RichAuditProgress` renders correctly (already
+    pinned in `test_cli_ui.py`).
+    """
+    recorder = _ProgressRecorder()
+    monkeypatch.setattr(registry_command, "new_progress_observer", lambda: recorder)
+
+    def fake_crawl(*, max_pages: int, **_kwargs: object) -> CrawlReport:
+        hook = progress_hook.current()
+        hook.start("fetching the index", max_pages)
+        hook.advance("fetching the index")
+        hook.finish("fetching the index")
+        return CrawlReport(pages_fetched=1, complete=True)
+
+    monkeypatch.setattr(registry_command, "crawl_mcp_registry", fake_crawl)
+
+    output_path = tmp_path / "index.json"
+    result = runner.invoke(
+        app, ["registry", "sync", "--output", str(output_path), "--max-pages", "3"]
+    )
+
+    assert result.exit_code == ExitCode.OK
+    assert recorder.calls == [
+        ("start", "fetching the index", "3"),
+        ("advance", "fetching the index", "1"),
+        ("finish", "fetching the index"),
+    ]
+    assert output_path.is_file()
 
 
 # --- search ------------------------------------------------------------

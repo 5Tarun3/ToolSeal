@@ -13,12 +13,14 @@ from rich.text import Text
 from toolseal.cli._ui import (
     accent_text,
     console,
+    new_progress_observer,
     new_table,
     print_line,
     print_text,
     score_style,
 )
 from toolseal.cli.errors import command as error_boundary
+from toolseal.core.policy import progress as progress_hook
 from toolseal.core.registry.crawl import build_index, crawl_mcp_registry
 from toolseal.core.registry.index import INDEX_FILENAME, IndexEntry, RegistryIndex
 from toolseal.errors import ExitCode, UsageError
@@ -65,7 +67,14 @@ def sync(
     as_json: Annotated[bool, typer.Option("--json", help="Machine-readable output.")] = False,
 ) -> None:
     """Crawl the MCP registry and rebuild the local index."""
-    report = crawl_mcp_registry(max_pages=max_pages)
+    # A several-page crawl against a live registry can run long enough to
+    # look like a hang (spec S4/S1): `--max-pages` is always a known bound
+    # by the time this runs, so `crawl_mcp_registry` reports it as a
+    # determinate phase - the observer installed here is what turns that
+    # into "fetching the index n/max_pages" on stderr, the same bridge
+    # `audit` already uses for C2/C3.
+    with progress_hook.observe(new_progress_observer()):
+        report = crawl_mcp_registry(max_pages=max_pages)
     index = build_index(report)
 
     path = output or default_index_path()

@@ -15,6 +15,7 @@ from typing import Any
 import pytest
 
 from toolseal.core.net import HttpError
+from toolseal.core.policy import progress
 from toolseal.core.registry.crawl import (
     CrawlReport,
     assess,
@@ -152,6 +153,56 @@ def test_max_pages_is_respected() -> None:
 
     assert report.pages_fetched == 3
     assert not report.complete
+
+
+# --- progress (spec §4: "fetching the index") -------------------------------
+#
+# `max_pages` is always a known bound by the time a crawl runs - `registry
+# sync`'s CLI option always supplies one - so this is reported as a
+# determinate phase through the same generic observer `family_c.py` already
+# uses for C2/C3 (`core.policy.progress`), rather than leaving a multi-page
+# crawl against a live registry silent.
+
+
+class _Recorder:
+    def __init__(self) -> None:
+        self.calls: list[tuple[str, ...]] = []
+
+    def start(self, phase: str, total: int | None) -> None:
+        self.calls.append(("start", phase, str(total)))
+
+    def advance(self, phase: str, step: int = 1) -> None:
+        self.calls.append(("advance", phase, str(step)))
+
+    def finish(self, phase: str) -> None:
+        self.calls.append(("finish", phase))
+
+
+def test_crawl_reports_fetching_the_index_as_a_determinate_phase() -> None:
+    recorder = _Recorder()
+
+    with progress.observe(recorder):
+        crawl_mcp_registry(
+            fetch=pages({"servers": [SERVER], "metadata": {}}), delay_seconds=0, max_pages=5
+        )
+
+    assert recorder.calls[0] == ("start", "fetching the index", "5")
+    assert ("advance", "fetching the index", "1") in recorder.calls
+    assert recorder.calls[-1] == ("finish", "fetching the index")
+
+
+def test_crawl_still_finishes_the_phase_when_a_page_fails() -> None:
+    # `finish` must run even on the error-and-break path (a `try`/`finally`
+    # in the crawl, not a call at the bottom of the function) - an observer
+    # left "started" forever is exactly the kind of stuck spinner the
+    # anti-silence principle this progress reporting serves is meant to
+    # prevent, not cause.
+    recorder = _Recorder()
+
+    with progress.observe(recorder):
+        crawl_mcp_registry(fetch=pages({"unexpected": True}), delay_seconds=0)
+
+    assert recorder.calls[-1] == ("finish", "fetching the index")
 
 
 # --- index -----------------------------------------------------------------
