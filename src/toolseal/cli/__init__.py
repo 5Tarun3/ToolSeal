@@ -69,12 +69,26 @@ def cli(
     configure_logging(verbose=verbose)
 
 
-app.command(name="init")(error_boundary(init_command.init))
-app.command(name="audit")(error_boundary(audit_command.audit))
-app.add_typer(registry_command.registry_app)
-app.add_typer(configure_command.add_app)
-app.command(name="revert")(error_boundary(configure_command.revert))
-app.add_typer(policy_command.policy_app)
+# Grouped by pillar (spec: the owner's complaint was "the --help has better
+# UI than the tool itself" - nine subcommands rendered as one undifferentiated
+# list). `rich_help_panel` is documented, public Typer API (both `.command()`
+# and `.add_typer()` accept it) - grouping is the whole change here, nothing
+# private is touched to get it.
+#
+# `init`/`add`/`revert` are a project's lifecycle - create it, configure it,
+# undo what was configured - so they share "Scaffold" even though `add`'s own
+# two subcommands split further (see `configure_command.py`) into Scaffold
+# (`framework`) and Translate (`mcp`): the pillar most of `add` belongs to.
+# `audit` and `policy` sit together under "Audit" on purpose - the spec calls
+# audit a cross-cutting concern rather than a fourth pillar, and `policy` is
+# entirely about the rules audit applies (what they are, why, and how they
+# were sealed), so a reader looking for one finds the other beside it.
+app.command(name="init", rich_help_panel="Scaffold")(error_boundary(init_command.init))
+app.command(name="audit", rich_help_panel="Audit")(error_boundary(audit_command.audit))
+app.add_typer(registry_command.registry_app, rich_help_panel="Registry")
+app.add_typer(configure_command.add_app, rich_help_panel="Scaffold")
+app.command(name="revert", rich_help_panel="Scaffold")(error_boundary(configure_command.revert))
+app.add_typer(policy_command.policy_app, rich_help_panel="Audit")
 
 
 def doctor(
@@ -113,7 +127,7 @@ def doctor(
     console.print(Panel(table, expand=False))
 
 
-app.command(name="doctor")(error_boundary(doctor))
+app.command(name="doctor", rich_help_panel="Diagnostics")(error_boundary(doctor))
 
 
 def main() -> int:

@@ -187,5 +187,13 @@ def revert(
 # Registered after definition so the error boundary wraps it. A subcommand
 # declared with a bare decorator bypasses it and leaks a raw exception with the
 # wrong exit code - the same defect the top-level commands had at P10.
-add_app.command("framework")(error_boundary(add_framework))
-add_app.command("mcp")(error_boundary(mcp_command.add_mcp))
+#
+# The two subcommands split across two different pillars (README: "Scaffold",
+# "Translate") even though both live under `add` - `framework` extends a
+# project's scaffolding in place, `mcp` is the pillar that makes an indexed
+# tool usable from a framework it was not written for. `toolseal add --help`
+# is where that distinction is visible; the top-level listing groups `add`
+# itself under "Scaffold" as a whole, since that is the more common reason
+# someone reaches for it.
+add_app.command("framework", rich_help_panel="Scaffold")(error_boundary(add_framework))
+add_app.command("mcp", rich_help_panel="Translate")(error_boundary(mcp_command.add_mcp))

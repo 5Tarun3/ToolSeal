@@ -109,3 +109,32 @@ def test_unknown_option_is_a_usage_error() -> None:
     result = runner.invoke(app, ["--definitely-not-an-option"])
 
     assert result.exit_code == ExitCode.USAGE
+
+
+# --- --help grouping (owner's remark: "the --help has better UI than the
+# tool itself") -------------------------------------------------------------
+
+
+def test_top_level_help_groups_commands_by_pillar() -> None:
+    result = runner.invoke(app, ["--help"])
+
+    assert result.exit_code == ExitCode.OK
+    # Nine subcommands used to render as one undifferentiated list; grouped
+    # by pillar now (`rich_help_panel`, public Typer API - see `cli/
+    # __init__.py`'s registration block for which command lands where and
+    # why).
+    for panel_title in ("Scaffold", "Registry", "Audit", "Diagnostics"):
+        assert panel_title in result.stdout
+
+
+def test_add_help_splits_scaffold_from_translate() -> None:
+    # `add`'s two subcommands sit on two different pillars even though both
+    # live under the same top-level verb - `framework` extends scaffolding
+    # in place, `mcp` is the Translate pillar (README: "make any indexed
+    # tool usable from any supported framework"). That distinction is only
+    # visible one level down, on `add`'s own help.
+    result = runner.invoke(app, ["add", "--help"])
+
+    assert result.exit_code == ExitCode.OK
+    assert "Scaffold" in result.stdout
+    assert "Translate" in result.stdout
