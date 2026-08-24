@@ -21,7 +21,17 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from toolseal.cli._ui import console, new_table, print_line, print_table, severity_style
+from toolseal.cli._ui import (
+    accent_text,
+    console,
+    count_style,
+    new_table,
+    print_line,
+    print_table,
+    print_text,
+    severity_style,
+    verdict_style,
+)
 from toolseal.cli.errors import command as error_boundary
 from toolseal.core.audit import audit as run_audit
 from toolseal.core.manifest import MANIFEST_NAME, Manifest
@@ -65,7 +75,7 @@ def _explain_check(check: Check) -> None:
     """
     sections: list[RenderableType] = [
         Text(""),
-        Text("How to fix it", style="bold"),
+        Text("How to fix it", style="heading"),
         Text(f"  {check.remediation}", style="fix"),
         Text(""),
     ]
@@ -74,10 +84,10 @@ def _explain_check(check: Check) -> None:
         # A non-checkable control keeps its explanatory sentence (spec §6):
         # an empty section reads as a bug, which is why this text exists.
         reason = check.unmapped_reason or "no reason recorded"
-        sections.append(Text("Obligations", style="bold"))
+        sections.append(Text("Obligations", style="heading"))
         sections.append(Text(f"  none mapped - {reason}"))
     else:
-        sections.append(Text("Obligations this serves", style="bold"))
+        sections.append(Text("Obligations this serves", style="heading"))
         catalogues = load_catalogues()
         # `Table.grid`: rich's own column-alignment, not hand-rolled width
         # arithmetic (spec §5) - each obligation's id and title line up
@@ -87,7 +97,7 @@ def _explain_check(check: Check) -> None:
         obligations.add_column()
         for ref in check.controls:
             control = resolve(ref, catalogues)
-            obligations.add_row(f"{ref.standard}:{control.id}", control.title)
+            obligations.add_row(accent_text(f"{ref.standard}:{control.id}"), control.title)
         # Indented by 2, matching "How to fix it"'s body above (defect: this
         # section used to sit flush against the panel's left edge while the
         # other section indented its content - same structure, two
@@ -95,13 +105,20 @@ def _explain_check(check: Check) -> None:
         # hand-rolled leading-space prefix on every row.
         sections.append(Padding(obligations, (0, 0, 0, 2)))
 
+    title = Text()
+    title.append_text(accent_text(check.id))
+    title.append(f" - {check.title}")
     panel = Panel(
         Group(*sections),
-        title=f"{check.id} - {check.title}",
+        title=title,
         title_align="left",
         subtitle=Text(f"severity: {check.severity.value}", style=severity_style(check.severity)),
         subtitle_align="right",
         expand=False,
+        # The border echoes the same severity colour as the subtitle - the
+        # panel's frame, not only its footer, marks how serious this check
+        # is, matching the weight `--help`'s own coloured panels carry.
+        border_style=severity_style(check.severity),
     )
     console.print(panel)
 
@@ -124,7 +141,9 @@ def _explain_control(raw: str) -> None:
         # unchanged for its other callers, this is a boundary-only translation.
         raise UsageError(str(exc)) from None
 
-    print_line(console, f"{ref}  {control.title}", style="bold")
+    header = accent_text(str(ref))
+    header.append(f"  {control.title}", style="heading")
+    print_text(console, header)
     typer.echo("")
 
     serving = sorted(check.id for check in all_checks() if ref in check.controls)
@@ -141,11 +160,15 @@ def _explain_control(raw: str) -> None:
         typer.echo("It is recorded so the coverage denominator stays honest.")
         if serving:
             typer.echo("")
-            typer.echo(f"Related checks: {', '.join(serving)}")
+            related = Text("Related checks: ")
+            related.append_text(accent_text(", ".join(serving)))
+            print_text(console, related)
         return
 
     if serving:
-        typer.echo(f"Checks that serve it: {', '.join(serving)}")
+        line = Text("Checks that serve it: ")
+        line.append_text(accent_text(", ".join(serving)))
+        print_text(console, line)
     else:
         typer.echo("No check covers this yet.")
 
@@ -176,7 +199,7 @@ def _standards_table(rows: Sequence[tuple[str, Text, str, str]]) -> Table:
     full.add_column("checkable", justify="right")
     full.add_column("name", no_wrap=True)
     for standard, coverage, checkable, name in rows:
-        full.add_row(standard, coverage, checkable, name)
+        full.add_row(accent_text(standard), coverage, checkable, name)
 
     unclamped = console.options.update(max_width=10_000)
     natural_width = console.measure(full, options=unclamped).maximum
@@ -188,7 +211,7 @@ def _standards_table(rows: Sequence[tuple[str, Text, str, str]]) -> Table:
     narrow.add_column("coverage", justify="right")
     narrow.add_column("checkable", justify="right")
     for standard, coverage, checkable, _name in rows:
-        narrow.add_row(standard, coverage, checkable)
+        narrow.add_row(accent_text(standard), coverage, checkable)
     return narrow
 
 
@@ -326,9 +349,14 @@ def _show_project(
     table.add_column("severity")
     table.add_column("source")
     for check in resolution.checks:
-        marker = " (relaxed - see below)" if check.id in relaxed_ids else ""
-        source = _severity_source(check.id, resolution)
-        table.add_row(check.id, check.severity.value, f"{source}{marker}")
+        source = Text(_severity_source(check.id, resolution))
+        if check.id in relaxed_ids:
+            source.append(" (relaxed - see below)", style="verdict.relaxed")
+        table.add_row(
+            accent_text(check.id),
+            Text(check.severity.value, style=severity_style(check.severity)),
+            source,
+        )
     print_table(console, table)
 
     _print_relaxations_table(relaxations)
@@ -341,7 +369,9 @@ def _show_tool(
     resolution: Resolution,
     relaxations: tuple[Relaxation, ...],
 ) -> None:
-    print_line(console, f"policy for {tool}", style="bold")
+    header = Text("policy for ", style="heading")
+    header.append_text(accent_text(tool))
+    print_text(console, header)
     typer.echo("")
 
     tool_policy = manifest.policy_for(tool) if manifest is not None else None
@@ -374,9 +404,14 @@ def _show_tool(
             # `resolution.checks` always has one entry per baseline check id
             # (`resolve()` returns the full baseline, adjusted or not), so
             # every finding's check id resolves here.
-            severity = by_id[finding.check_id].severity.value
+            severity = by_id[finding.check_id].severity
             source = _severity_source(finding.check_id, resolution)
-            typer.echo(f"  {finding.check_id}  {severity}  ({source})  {finding.title}")
+            line = Text("  ")
+            line.append_text(accent_text(finding.check_id))
+            line.append("  ")
+            line.append(severity.value, style=severity_style(severity))
+            line.append(f"  ({source})  {finding.title}")
+            print_text(console, line)
     else:
         typer.echo(f"no current findings name {tool}")
 
@@ -388,12 +423,15 @@ def _print_relaxations_table(relaxations: Sequence[Relaxation]) -> None:
 
     today = date.today()
     for relaxation in relaxations:
-        status = "expired" if relaxation.is_expired(today) else "active"
+        expired = relaxation.is_expired(today)
+        status = "expired" if expired else "active"
         scope = ", ".join(relaxation.tools) if relaxation.tools else "project-wide"
-        typer.echo(
-            f"  {relaxation.check_id}  expires {relaxation.expires}  ({status})  "
-            f"scope: {scope}  reason: {relaxation.reason}"
-        )
+        line = Text("  ")
+        line.append_text(accent_text(relaxation.check_id))
+        line.append(f"  expires {relaxation.expires}  (")
+        line.append(status, style="verdict.warn" if expired else "verdict.relaxed")
+        line.append(f")  scope: {scope}  reason: {relaxation.reason}")
+        print_text(console, line)
 
 
 # --- apply -----------------------------------------------------------------
@@ -450,7 +488,9 @@ def _print_apply_diff(
     before: Resolution,
     after: Resolution,
 ) -> None:
-    print_line(console, f"Adopting {regime} ({profile.name})", style="bold")
+    header = accent_text(regime)
+    header.append(f" ({profile.name})", style="heading")
+    print_text(console, header)
     if profile.source:
         typer.echo(f"  source: {profile.source}")
     if profile.source_url:
@@ -459,15 +499,21 @@ def _print_apply_diff(
 
     before_by_id = {check.id: check for check in before.checks}
     changed = sorted(
-        (check.id, before_by_id[check.id].severity.value, check.severity.value)
+        (check.id, before_by_id[check.id].severity, check.severity)
         for check in after.checks
         if check.id in before_by_id and before_by_id[check.id].severity != check.severity
     )
-    typer.echo("severity changes:")
+    print_line(console, "severity changes:", style="heading")
     if changed:
         id_w = max(len(row[0]) for row in changed)
         for check_id, old, new in changed:
-            typer.echo(f"  {check_id.ljust(id_w)}  {old} -> {new}")
+            line = Text("  ")
+            line.append_text(accent_text(check_id.ljust(id_w)))
+            line.append("  ")
+            line.append(old.value, style=severity_style(old))
+            line.append(" -> ")
+            line.append(new.value, style=severity_style(new))
+            print_text(console, line)
     else:
         typer.echo("  none")
     typer.echo("")
@@ -478,7 +524,7 @@ def _print_apply_diff(
         if key == "policy.approval_required_for_destructive"
         and manifest.approval_required_for_destructive != wanted
     ]
-    typer.echo("settings:")
+    print_line(console, "settings:", style="heading")
     if require_changes:
         for setting_key, was, now in require_changes:
             typer.echo(f"  {setting_key}: {was} -> {now}")
@@ -487,7 +533,11 @@ def _print_apply_diff(
 
     if profile.not_assessed:
         typer.echo("")
-        typer.echo(f"scope this regime does not reach ({len(profile.not_assessed)} items):")
+        print_line(
+            console,
+            f"scope this regime does not reach ({len(profile.not_assessed)} items):",
+            style="heading",
+        )
         for item in profile.not_assessed:
             typer.echo(f"  - {item}")
 
@@ -530,10 +580,13 @@ def _print_check_report(
     outcome: RelaxationOutcome,
 ) -> None:
     report = outcome.report
-    typer.echo(f"{root}\n")
+    print_text(console, accent_text(str(root)))
+    console.print()
 
     if profile_ids:
-        typer.echo(f"profile: {', '.join(profile_ids)}")
+        line = Text("profile: ")
+        line.append_text(accent_text(", ".join(profile_ids)))
+        print_text(console, line)
     else:
         typer.echo("profile: none declared - showing baseline checks only")
     typer.echo("")
@@ -542,30 +595,39 @@ def _print_check_report(
     for result in report.results:
         counts[result.verdict] = counts.get(result.verdict, 0) + 1
 
-    print_line(console, "coverage of the technically checkable obligations", style="bold")
+    print_line(console, "coverage of the technically checkable obligations", style="heading")
     for verdict in Verdict:
-        typer.echo(f"  {verdict.value:<15} {counts.get(verdict, 0)}")
+        count = counts.get(verdict, 0)
+        line = Text(f"  {verdict.value:<15} ", style=verdict_style(verdict))
+        line.append(str(count), style=count_style(count))
+        print_text(console, line)
     typer.echo("")
 
     failing = sorted(
         (r for r in report.results if r.verdict is Verdict.FAIL), key=lambda r: r.check.id
     )
     if failing:
-        typer.echo("failing:")
+        print_line(console, "failing:", style="heading")
         id_w = max(len(r.check.id) for r in failing)
         for result in failing:
-            typer.echo(
-                f"  {result.check.id.ljust(id_w)}  {result.check.severity.value:<8}  "
-                f"{result.check.title}"
-            )
+            line = Text("  ")
+            line.append_text(accent_text(result.check.id.ljust(id_w)))
+            line.append("  ")
+            severity = result.check.severity
+            line.append(f"{severity.value:<8}", style=severity_style(severity))
+            line.append(f"  {result.check.title}")
+            print_text(console, line)
         typer.echo("")
 
     if outcome.applied:
-        typer.echo("relaxed (covered by a declared, unexpired relaxation):")
+        print_line(
+            console, "relaxed (covered by a declared, unexpired relaxation):", style="heading"
+        )
         for relaxation in outcome.applied:
-            typer.echo(
-                f"  {relaxation.check_id}  expires {relaxation.expires}  {relaxation.reason}"
-            )
+            line = Text("  ")
+            line.append_text(accent_text(relaxation.check_id))
+            line.append(f"  expires {relaxation.expires}  {relaxation.reason}")
+            print_text(console, line)
         typer.echo("")
 
     if outcome.expired:
@@ -573,7 +635,10 @@ def _print_check_report(
             console, "expired relaxations (lapsed - no longer applied):", style="verdict.warn"
         )
         for relaxation in outcome.expired:
-            typer.echo(f"  {relaxation.check_id}  expired {relaxation.expires}")
+            line = Text("  ")
+            line.append_text(accent_text(relaxation.check_id))
+            line.append(f"  expired {relaxation.expires}")
+            print_text(console, line)
         typer.echo("")
 
     if report.relaxed_critical:
@@ -587,7 +652,11 @@ def _print_check_report(
         )
         typer.echo("")
 
-    typer.echo(f"not_assessed ({len(resolution.not_assessed)} items outside this tool's reach):")
+    print_line(
+        console,
+        f"not_assessed ({len(resolution.not_assessed)} items outside this tool's reach):",
+        style="heading",
+    )
     if resolution.not_assessed:
         for item in resolution.not_assessed:
             typer.echo(f"  - {item}")
@@ -595,7 +664,7 @@ def _print_check_report(
         typer.echo("  (none declared by the active profile(s))")
     typer.echo("")
 
-    print_line(console, DISCLAIMER, style="bold")
+    print_line(console, DISCLAIMER, style="heading")
 
 
 # --- relax -------------------------------------------------------------------
@@ -694,9 +763,10 @@ def relax(
     parse_relaxations(new_text)
     manifest_path.write_text(new_text, encoding="utf-8")
 
-    print_line(
-        console, f"Relaxed {matched.id} until {parsed_expiry.isoformat()}.", style="verdict.good"
-    )
+    line = Text("Relaxed ", style="verdict.good")
+    line.append_text(accent_text(matched.id))
+    line.append(f" until {parsed_expiry.isoformat()}.", style="verdict.good")
+    print_text(console, line)
     typer.echo(f"  reason: {reason.strip()}")
     typer.echo(f"  scope: {', '.join(tools) if tools else 'project-wide'}")
 
@@ -749,7 +819,9 @@ def _seal(root: Path) -> None:
     if sealed.profiles:
         typer.echo(f"  profiles: {', '.join(sealed.profiles)}")
     typer.echo(f"  wrote {policy_lock.LOCK_DIR}/{policy_lock.LOCK_NAME} (read-only)")
-    typer.echo(f"  hash: {sealed.policy_hash}")
+    hash_line = Text("  hash: ")
+    hash_line.append_text(accent_text(sealed.policy_hash))
+    print_text(console, hash_line)
     typer.echo("")
     typer.echo(policy_lock.TAMPER_EVIDENT_NOTICE)
     typer.echo("")

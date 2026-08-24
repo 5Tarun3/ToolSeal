@@ -27,11 +27,14 @@ from rich.panel import Panel
 from rich.text import Text
 
 from toolseal.cli._ui import (
+    accent_text,
     blocking_text,
     console,
+    count_style,
     new_progress_observer,
     new_table,
     print_table,
+    print_text,
     print_wrapped,
     score_style,
     severity_style,
@@ -199,7 +202,11 @@ def _summary_panel(report: AuditReport) -> Panel:
     body.append_text(headline)
     body.append("\n")
     body.append_text(detail)
-    return Panel(body, expand=False)
+    # The border itself carries the verdict colour too - not the only carrier
+    # of it (the score and every count are still spelled out in text), but a
+    # border that matches `--help`'s rounded, coloured panels rather than
+    # sitting there in the terminal's default foreground.
+    return Panel(body, expand=False, border_style=score_style(report.score))
 
 
 def _print_finding(finding: Finding) -> None:
@@ -207,8 +214,9 @@ def _print_finding(finding: Finding) -> None:
     gutter.stylize(severity_style(finding.severity), 0, len(finding.severity.value))
     header = Text("  ")
     header.append_text(gutter)
-    header.append(f"{finding.check_id}  {finding.title}")
-    console.print(header)
+    header.append_text(accent_text(finding.check_id))
+    header.append(f"  {finding.title}")
+    print_text(console, header)
 
     # Location and detail are muted; `fix` is the loudest line, inverting the
     # old dim-grey remediation - it is the reason the tool exists (spec §1).
@@ -239,11 +247,11 @@ def _family_table(report: AuditReport) -> None:
     table.add_column("N/A", justify="right")
     for family in report.family_scores():
         table.add_row(
-            family.family,
-            str(family.score),
-            str(family.passed),
-            str(family.failed),
-            str(family.not_applicable),
+            accent_text(family.family),
+            Text(str(family.score), style=score_style(family.score)),
+            Text(str(family.passed), style=count_style(family.passed)),
+            Text(str(family.failed), style=count_style(family.failed)),
+            Text(str(family.not_applicable), style=count_style(family.not_applicable)),
         )
     print_table(console, table)
 
@@ -251,10 +259,15 @@ def _family_table(report: AuditReport) -> None:
 def _print_report(
     report: AuditReport, findings: tuple[Any, ...], active_profiles: tuple[str, ...] = ()
 ) -> None:
-    console.print(f"{report.root}\n")
+    print_text(console, accent_text(report.root))
+    console.print()
 
     if active_profiles:
-        console.print(f"  profile: {', '.join(active_profiles)} (see `toolseal policy show`)\n")
+        line = Text("  profile: ")
+        line.append_text(accent_text(", ".join(active_profiles)))
+        line.append(" (see `toolseal policy show`)")
+        print_text(console, line)
+        console.print()
 
     console.print(_summary_panel(report))
     console.print()
@@ -267,11 +280,10 @@ def _print_report(
     unknown = [r.check.id for r in report.results if r.verdict is Verdict.UNKNOWN]
     if unknown:
         console.print()
-        caveat = Text("  not evaluated: ")
-        caveat.append(", ".join(unknown))
+        caveat = Text("  not evaluated: ", style="caveat")
+        caveat.append(", ".join(unknown), style="caveat")
         # Load-bearing text (spec §7): "data unavailable, not a pass" must
         # survive verbatim - it is what stops "we could not look" from being
         # read as "we looked and it passed".
-        caveat.append(" - data unavailable, not a pass")
-        caveat.stylize("caveat")
-        console.print(caveat)
+        caveat.append(" - data unavailable, not a pass", style="caveat")
+        print_text(console, caveat)
