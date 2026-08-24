@@ -114,13 +114,52 @@ def index_path(tmp_path: Path) -> Path:
 
 # --- search ------------------------------------------------------------
 
+_SEARCH_HEADER = ["score", "name", "package@version", "registry", "tools"]
+
+
+def _unbordered_tokens(line: str) -> list[str]:
+    """*line*'s whitespace-split tokens, with a leading/trailing panel
+    border token dropped if present.
+
+    `registry search` frames its results in a `rich.panel.Panel` (spec:
+    every command's report is framed, not a bare table), so the border can
+    be either "|" (a console that cannot encode box-drawing - `rich`'s own
+    ASCII fallback) or the unicode "|" it draws by default; either way it
+    is its own token once split on whitespace, never fused onto a header
+    word.
+    """
+    tokens = line.split()
+    border_chars = {"|", "│"}
+    if tokens and tokens[0] in border_chars:
+        tokens = tokens[1:]
+    if tokens and tokens[-1] in border_chars:
+        tokens = tokens[:-1]
+    return tokens
+
+
+def _strip_frame(line: str) -> str:
+    """*line* with a leading "border + one space" and trailing "space +
+    border" removed, if the panel results are drawn in put them there."""
+    for left, right in (("│ ", " │"), ("| ", " |")):
+        if line.startswith(left) and line.endswith(right):
+            return line[len(left) : -len(right)]
+    return line
+
+
+def _header_index(lines: list[str], expected: list[str]) -> int:
+    """The line carrying *expected*'s header words, wherever it lands -
+    not pinned to line zero, which would rule out ever framing the results
+    in a panel the way every other command's report is framed (spec).
+    """
+    return next(i for i, line in enumerate(lines) if _unbordered_tokens(line) == expected)
+
 
 def test_search_is_headed(index_path: Path) -> None:
     result = runner.invoke(app, ["registry", "search", "", "--index", str(index_path)])
 
     assert result.exit_code == ExitCode.OK
-    header = result.stdout.splitlines()[0]
-    assert header.split() == ["score", "name", "package@version", "registry", "tools"]
+    lines = result.stdout.splitlines()
+    assert any(_unbordered_tokens(line) == _SEARCH_HEADER for line in lines)
 
 
 def test_search_rows_carry_identifying_detail(index_path: Path) -> None:
@@ -140,11 +179,16 @@ def test_search_stays_within_80_columns_even_with_long_values(index_path: Path) 
 def test_search_marks_a_blocking_entry_and_explains_the_marker(index_path: Path) -> None:
     result = runner.invoke(app, ["registry", "search", "", "--index", str(index_path)])
 
+    lines = result.stdout.splitlines()
+    header_index = _header_index(lines, _SEARCH_HEADER)
     # Sorted (blocking, -score): the clean, better-assessed "postgres-server"
     # entry (score 92) comes first; the blocking "long" entry (score 40) comes
-    # second and must carry the "!" marker. `box.SIMPLE` draws one rule line
-    # under the header (spec §5) before the data rows begin.
-    postgres_row, long_row = result.stdout.splitlines()[2:4]
+    # second and must carry the "!" marker. `header_index + 1` is
+    # `box.SIMPLE`'s header rule; the data rows follow it. `_strip_frame`
+    # peels off the panel's own border and padding, so the marker check
+    # below is against the row's actual content, not the frame around it.
+    postgres_row = _strip_frame(lines[header_index + 2])
+    long_row = _strip_frame(lines[header_index + 3])
     assert not postgres_row.startswith("!")
     assert long_row.startswith("!")
     assert long_row[1:].split()[0] == "40"
@@ -163,11 +207,14 @@ def test_search_heading_survives_a_column_wider_than_the_heading(index_path: Pat
     # than the header - the header must not end up narrower than that data.
     result = runner.invoke(app, ["registry", "search", "", "--index", str(index_path)])
     lines = result.stdout.splitlines()
-    header = lines[0]
+    header_index = _header_index(lines, _SEARCH_HEADER)
+    header = lines[header_index]
 
     registry_column = header.index("registry")
-    # `lines[1]` is `box.SIMPLE`'s header rule; the data rows start at [2:4].
-    for line in lines[2:4]:
+    # `header_index + 1` is `box.SIMPLE`'s header rule; the data rows follow
+    # it. The panel frame around the whole table adds the same constant-width
+    # prefix to every line, so `registry_column`'s offset still lines up.
+    for line in lines[header_index + 2 : header_index + 4]:
         assert line[registry_column - 2 : registry_column] == "  "
 
 

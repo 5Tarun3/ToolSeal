@@ -17,6 +17,7 @@ import sys
 from typing import Annotated, Any
 
 import typer
+from rich.panel import Panel
 from rich.text import Text
 
 from toolseal import __version__
@@ -27,7 +28,7 @@ from toolseal.cli import (
     policy_command,
     registry_command,
 )
-from toolseal.cli._ui import accent_text, console, err_console, new_table, print_line, print_table
+from toolseal.cli._ui import accent_text, console, err_console, new_table, print_line
 from toolseal.cli.errors import command as error_boundary
 from toolseal.errors import ExitCode, ToolsealError
 from toolseal.logging import configure_logging
@@ -104,7 +105,12 @@ def doctor(
         else:
             cell = Text(str(value), style="muted")
         table.add_row(accent_text(key), cell)
-    print_table(console, table)
+    # Framed like every other command's report (spec: audit's summary,
+    # policy explain's panel) rather than a bare table with nothing marking
+    # where the report starts and ends. `expand=False`: the box fits the
+    # table's own content width, the same choice those other panels make,
+    # rather than stretching to the full terminal width for no reason.
+    console.print(Panel(table, expand=False))
 
 
 app.command(name="doctor")(error_boundary(doctor))

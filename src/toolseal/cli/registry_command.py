@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
+from rich.panel import Panel
 from rich.text import Text
 
 from toolseal.cli._ui import (
@@ -14,7 +15,6 @@ from toolseal.cli._ui import (
     console,
     new_table,
     print_line,
-    print_table,
     print_text,
     score_style,
 )
@@ -33,9 +33,16 @@ registry_app = typer.Typer(
 # cannot blow the table past an 80-column terminal for every row. Narrower
 # than the raw column count would suggest: `rich.table` adds its own
 # between-column padding on top of these, and the fixed columns (`score`,
-# `registry`, `tools`) must never be the ones a width shortage steals from.
+# `registry`, `tools`) must never be the ones a width shortage steals from -
+# which is exactly what Rich does instead if these cap too high: it starts
+# ellipsizing the header of whichever column it picks to shrink, rather
+# than these two, once the surrounding frame eats into the terminal's 80
+# columns. `_PACKAGE_WIDTH_MAX` is 4 narrower than the raw arithmetic would
+# suggest for that reason - the panel search results now render inside
+# (spec: every command's report is framed) costs exactly 4 columns of
+# border and padding that a bare table never did.
 _NAME_WIDTH_MAX = 20
-_PACKAGE_WIDTH_MAX = 23
+_PACKAGE_WIDTH_MAX = 19
 
 
 def default_index_path() -> Path:
@@ -123,7 +130,11 @@ def _print_search_results(results: tuple[IndexEntry, ...]) -> None:
             registry,
             Text(tools, style="muted" if tools == "-" else ""),
         )
-    print_table(console, table)
+    # Framed like every other command's report (spec: audit's summary panel,
+    # policy explain's panel), not a bare table with nothing marking where
+    # the results start and end. `expand=False`: the box fits the table's
+    # own content width rather than stretching to the terminal's.
+    console.print(Panel(table, expand=False))
 
     blocking_seen = any(flag == "!" for flag, *_rest in rows)
     unenumerated_seen = any(tools == "-" for *_rest, tools in rows)
@@ -190,7 +201,7 @@ def _print_entry(entry: IndexEntry) -> None:
     table.add_column("value")
     for label, value in fields:
         table.add_row(accent_text(label), value)
-    print_table(console, table)
+    console.print(Panel(table, expand=False))
     typer.echo("")
 
     print_line(console, f"score {entry.audit.score}/100", style=score_style(entry.audit.score))
