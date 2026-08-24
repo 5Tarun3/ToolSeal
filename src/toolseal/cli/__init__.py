@@ -17,6 +17,7 @@ import sys
 from typing import Annotated, Any
 
 import typer
+from rich.text import Text
 
 from toolseal import __version__
 from toolseal.cli import (
@@ -26,7 +27,7 @@ from toolseal.cli import (
     policy_command,
     registry_command,
 )
-from toolseal.cli._ui import console, err_console, new_table, print_line, print_table
+from toolseal.cli._ui import accent_text, console, err_console, new_table, print_line, print_table
 from toolseal.cli.errors import command as error_boundary
 from toolseal.errors import ExitCode, ToolsealError
 from toolseal.logging import configure_logging
@@ -98,7 +99,11 @@ def doctor(
     table.add_column("field")
     table.add_column("value")
     for key, value in report.items():
-        table.add_row(key, str(value) if value is not None else "not found")
+        if value is None:
+            cell = Text("not found", style="verdict.warn")
+        else:
+            cell = Text(str(value), style="muted")
+        table.add_row(accent_text(key), cell)
     print_table(console, table)
 
 

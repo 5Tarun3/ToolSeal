@@ -7,8 +7,17 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
+from rich.text import Text
 
-from toolseal.cli._ui import console, new_table, print_line, print_table, score_style
+from toolseal.cli._ui import (
+    accent_text,
+    console,
+    new_table,
+    print_line,
+    print_table,
+    print_text,
+    score_style,
+)
 from toolseal.cli.errors import command as error_boundary
 from toolseal.core.registry.crawl import build_index, crawl_mcp_registry
 from toolseal.core.registry.index import INDEX_FILENAME, IndexEntry, RegistryIndex
@@ -71,7 +80,10 @@ def sync(
             )
         )
     else:
-        typer.echo(f"{report.summary}\nwrote {path}")
+        typer.echo(report.summary)
+        line = Text("wrote ")
+        line.append_text(accent_text(str(path)))
+        print_text(console, line)
         for error in report.errors:
             print_line(console, f"  {error}", style="verdict.warn")
 
@@ -102,8 +114,15 @@ def _print_search_results(results: tuple[IndexEntry, ...]) -> None:
     )
     table.add_column("registry")
     table.add_column("tools", justify="right")
-    for row in rows:
-        table.add_row(*row)
+    for flag, score, name, package_version, registry, tools in rows:
+        table.add_row(
+            Text(flag, style="sev.critical") if flag else Text(""),
+            Text(score, style=score_style(int(score))),
+            accent_text(name),
+            accent_text(package_version),
+            registry,
+            Text(tools, style="muted" if tools == "-" else ""),
+        )
     print_table(console, table)
 
     blocking_seen = any(flag == "!" for flag, *_rest in rows)
@@ -111,9 +130,13 @@ def _print_search_results(results: tuple[IndexEntry, ...]) -> None:
     if blocking_seen or unenumerated_seen:
         console.print()
     if blocking_seen:
-        console.print("!  blocking: a critical check failed")
+        legend = Text("!", style="sev.critical")
+        legend.append("  blocking: a critical check failed")
+        print_text(console, legend)
     if unenumerated_seen:
-        console.print("-  tools not enumerated (would require running the server)")
+        legend = Text("-", style="muted")
+        legend.append("  tools not enumerated (would require running the server)")
+        print_text(console, legend)
 
 
 def search(
@@ -133,7 +156,10 @@ def search(
         return
 
     if not results:
-        typer.echo(f"nothing matching {query!r} in {len(index)} entries")
+        line = Text("nothing matching ")
+        line.append(repr(query), style="accent")
+        line.append(f" in {len(index)} entries")
+        print_text(console, line)
         return
 
     _print_search_results(results)
@@ -144,9 +170,9 @@ def _print_entry(entry: IndexEntry) -> None:
     provenance = descriptor.provenance
     source = descriptor.source
 
-    typer.echo(descriptor.id)
-    typer.echo(descriptor.name)
-    typer.echo("")
+    print_text(console, accent_text(descriptor.id))
+    print_line(console, descriptor.name, style="heading")
+    console.print()
     typer.echo(descriptor.description or "(no description)")
     typer.echo("")
 
@@ -163,7 +189,7 @@ def _print_entry(entry: IndexEntry) -> None:
     table.add_column("field")
     table.add_column("value")
     for label, value in fields:
-        table.add_row(label, value)
+        table.add_row(accent_text(label), value)
     print_table(console, table)
     typer.echo("")
 
@@ -173,13 +199,15 @@ def _print_entry(entry: IndexEntry) -> None:
         # `sev.critical` treatment `audit` uses for `BLOCKING`.
         print_line(console, "BLOCKING: a critical check failed", style="sev.critical")
     if entry.audit.findings:
-        typer.echo("findings:")
+        print_line(console, "findings:", style="heading")
         for finding in entry.audit.findings:
             typer.echo(f"  - {finding}")
     typer.echo("")
 
     if entry.tools_enumerated:
-        typer.echo(f"tools: {descriptor.name}")
+        line = Text("tools: ")
+        line.append_text(accent_text(descriptor.name))
+        print_text(console, line)
     else:
         print_line(
             console, "tools not enumerated (would require running the server)", style="muted"

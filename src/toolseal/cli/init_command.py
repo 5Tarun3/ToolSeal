@@ -7,8 +7,9 @@ from pathlib import Path
 from typing import Annotated, Any
 
 import typer
+from rich.text import Text
 
-from toolseal.cli._ui import console, print_line
+from toolseal.cli._ui import accent_text, console, print_line, print_text
 from toolseal.core.adapters import ScaffoldSpec, framework_registry, provider_registry
 from toolseal.core.policy.profile import load_profile
 from toolseal.core.scaffold import apply_plan, build_plan
@@ -135,10 +136,17 @@ def _emit(as_json: bool, payload: dict[str, Any], human: Any) -> None:
 
 
 def _print_dry_run(root: Path, files: Any, conflicts: Any) -> None:
-    typer.echo(f"Would create {root}")
+    header = Text("Would create ")
+    header.append_text(accent_text(str(root)))
+    print_text(console, header)
     for item in files:
-        marker = "!" if item.path in conflicts else "+"
-        typer.echo(f"  {marker} {item.path}")
+        conflict = item.path in conflicts
+        marker_style = "verdict.warn" if conflict else "verdict.good"
+        marker = Text("!" if conflict else "+", style=marker_style)
+        line = Text("  ")
+        line.append_text(marker)
+        line.append(f" {item.path}", style="muted")
+        print_text(console, line)
     if conflicts:
         console.print()
         print_line(
@@ -149,10 +157,16 @@ def _print_dry_run(root: Path, files: Any, conflicts: Any) -> None:
 
 
 def _print_created(root: Path, project_name: str, paths: list[str]) -> None:
-    print_line(console, f"Created {project_name} in {root}", style="verdict.good")
+    line = Text("Created ", style="verdict.good")
+    line.append_text(accent_text(project_name))
+    line.append(" in ", style="verdict.good")
+    line.append_text(accent_text(str(root)))
+    print_text(console, line)
     for path in sorted(paths):
-        typer.echo(f"  {path}")
-    typer.echo("\nNext:")
-    typer.echo(f"  cd {root.name}")
-    typer.echo("  pip install -r requirements.txt")
-    typer.echo("  toolseal audit")
+        print_line(console, f"  {path}", style="muted")
+    console.print()
+    print_line(console, "Next:", style="heading")
+    for command_example in ("cd " + root.name, "pip install -r requirements.txt", "toolseal audit"):
+        line = Text("  ")
+        line.append_text(accent_text(command_example))
+        print_text(console, line)

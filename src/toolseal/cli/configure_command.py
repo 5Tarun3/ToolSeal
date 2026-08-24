@@ -13,9 +13,10 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
+from rich.text import Text
 
 from toolseal.cli import mcp_command
-from toolseal.cli._ui import console, print_line
+from toolseal.cli._ui import accent_text, console, print_line, print_text
 from toolseal.cli.errors import command as error_boundary
 from toolseal.core.adapters import ScaffoldSpec, framework_registry, provider_registry
 from toolseal.core.injection import inject, load, plan_revert
@@ -81,12 +82,23 @@ def add_framework(
         )
         return
 
-    print_line(console, f"Configured {root} for {adapter.display_name}", style="verdict.good")
+    line = Text("Configured ", style="verdict.good")
+    line.append_text(accent_text(str(root)))
+    line.append(" for ", style="verdict.good")
+    line.append_text(accent_text(adapter.display_name))
+    print_text(console, line)
     for item in injection.files:
-        marker = "+" if item.created else "~"
-        typer.echo(f"  {marker} {item.path}")
-    typer.echo("\n  ~ means the previous content was backed up.")
-    typer.echo("  Undo with: toolseal revert")
+        created = item.created
+        marker = Text("+" if created else "~", style="verdict.good" if created else "muted")
+        entry = Text("  ")
+        entry.append_text(marker)
+        entry.append(f" {item.path}", style="muted")
+        print_text(console, entry)
+    console.print()
+    typer.echo("  ~ means the previous content was backed up.")
+    undo = Text("  Undo with: ")
+    undo.append_text(accent_text("toolseal revert"))
+    print_text(console, undo)
     for message in warnings:
         console.print()
         print_line(console, f"  warning: {message}", style="verdict.warn")
@@ -131,11 +143,11 @@ def revert(
             )
         else:
             for path in plan.to_delete:
-                typer.echo(f"  delete   {path}")
+                print_line(console, f"  delete   {path}", style="muted")
             for path in plan.to_restore:
-                typer.echo(f"  restore  {path}")
+                print_line(console, f"  restore  {path}", style="verdict.good")
             for path in plan.missing:
-                typer.echo(f"  gone     {path}")
+                print_line(console, f"  gone     {path}", style="verdict.warn")
             for path in plan.modified_since:
                 print_line(console, f"  edited   {path} (blocks revert)", style="verdict.warn")
         raise typer.Exit(ExitCode.OK if plan.is_safe else ExitCode.FINDINGS)
@@ -157,11 +169,13 @@ def revert(
         )
         return
 
-    print_line(console, f"Reverted {root}", style="verdict.good")
+    line = Text("Reverted ", style="verdict.good")
+    line.append_text(accent_text(str(root)))
+    print_text(console, line)
     for path in plan.to_delete:
-        typer.echo(f"  deleted   {path}")
+        print_line(console, f"  deleted   {path}", style="muted")
     for path in plan.to_restore:
-        typer.echo(f"  restored  {path}")
+        print_line(console, f"  restored  {path}", style="muted")
     if force and plan.modified_since:
         print_line(
             console,

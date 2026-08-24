@@ -15,8 +15,9 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
+from rich.text import Text
 
-from toolseal.cli._ui import console, print_line
+from toolseal.cli._ui import accent_text, console, print_line, print_text
 from toolseal.core.adapters.mcp_targets import target_for
 from toolseal.core.injection import inject
 from toolseal.core.manifest import Manifest
@@ -117,7 +118,13 @@ def add_mcp(
 
     mark = "verified" if verified else "UNVERIFIED"
     style = "verdict.good" if verified else "verdict.warn"
-    print_line(console, f"Added {binding.name} ({mark}) to {target.config_path}", style=style)
-    typer.echo(f"  {detail}")
-    typer.echo("  Undo with: toolseal revert")
+    line = Text("Added ", style=style)
+    line.append_text(accent_text(binding.name))
+    line.append(f" ({mark}) to ", style=style)
+    line.append_text(accent_text(str(target.config_path)))
+    print_text(console, line)
+    print_line(console, f"  {detail}", style="muted")
+    undo = Text("  Undo with: ")
+    undo.append_text(accent_text("toolseal revert"))
+    print_text(console, undo)
     raise typer.Exit(ExitCode.OK if verified else ExitCode.FINDINGS)
