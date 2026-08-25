@@ -185,11 +185,125 @@ def test_list_keeps_the_name_column_when_it_fits_on_one_line(
     assert "ISO/IEC 42001:2023 (Annex A, by reference)" in result.stdout
 
 
+# --- regimes: the same discoverability gap `explain` closed for checks -----
+
+
+def test_list_names_every_shipped_regime() -> None:
+    from toolseal.core.policy.profile import load_profiles
+
+    result = runner.invoke(app, ["policy", "list"])
+
+    assert result.exit_code == 0
+    regimes = [p for p in load_profiles().values() if p.kind == "regime"]
+    assert regimes, "expected at least one shipped regime to test against"
+    for regime in regimes:
+        assert regime.id in result.stdout
+        # Not a literal substring check on the full name: a long regime name
+        # (e.g. dora's) wraps across two table lines at typical widths, and
+        # `rich` only ever breaks on a space - so every individual word of
+        # the name is still guaranteed to appear intact somewhere in the
+        # rendered output, even though the joined name itself is not.
+        for word in regime.name.split():
+            assert word in result.stdout, f"{word!r} (from {regime.name!r}) missing"
+
+
+def test_list_regimes_never_claim_a_pass_or_fail() -> None:
+    # Constraint: a regime is never scored, and a report run under one never
+    # emits a verdict - the listing must not imply either exists to compute.
+    # Scoped to the text after the "Regimes" heading so a coincidental
+    # substring in unrelated standards output would not produce a false pass.
+    # `not_assessed` legitimately appears (the honest, negated framing this
+    # command uses) so only "pass"/"fail" themselves are banned.
+    result = runner.invoke(app, ["policy", "list"])
+
+    regimes_section = result.stdout.split("Regimes", 1)[1]
+    lowered = regimes_section.lower()
+    for banned in ("pass", "fail"):
+        assert banned not in lowered, f"regimes section should not imply a {banned!r}"
+    assert "not_assessed" in regimes_section or "not scored" in lowered
+
+
+def test_every_regime_the_list_names_round_trips_through_apply_and_check(
+    tmp_path: Path,
+) -> None:
+    """The listing's whole point: an id it prints must be one `policy apply`
+    and `policy check --profile` actually accept - the same failure mode
+    `test_every_id_the_catalogue_lists_resolves_when_explained` guards for
+    checks, applied here to regimes. A listing that advertises an id the
+    tool then rejects would be worse than no listing.
+    """
+    from toolseal.core.policy.profile import load_profiles
+
+    listed = runner.invoke(app, ["policy", "list"])
+    assert listed.exit_code == 0
+
+    regimes = [p for p in load_profiles().values() if p.kind == "regime"]
+    assert regimes, "expected at least one shipped regime to test against"
+
+    for regime in regimes:
+        assert regime.id in listed.stdout, f"{regime.id} not listed by policy list"
+
+        root = _init(tmp_path / regime.id)
+        apply_result = runner.invoke(
+            app, ["policy", "apply", regime.id, "--yes", "--directory", str(root)]
+        )
+        assert apply_result.exit_code == 0, apply_result.output
+
+        check_result = runner.invoke(
+            app, ["policy", "check", "--profile", regime.id, "--directory", str(root)]
+        )
+        assert check_result.exit_code in (
+            ExitCode.OK,
+            ExitCode.FINDINGS,
+        ), check_result.output
+        assert policy_command.DISCLAIMER in check_result.output
+
+
+def test_list_regimes_are_sorted_regardless_of_load_order(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Mirrors `test_gate_coverage_report_does_not_depend_on_catalogue_load_order`
+    # for regimes: `load_profiles()` walks a directory listing via
+    # `importlib.resources`, whose OS-level order is not guaranteed stable.
+    from toolseal.core.policy.profile import load_profiles
+
+    profiles = load_profiles()
+    forward = dict(profiles)
+    backward = dict(reversed(list(profiles.items())))
+    assert list(forward) != list(backward), "the two orderings must actually differ"
+
+    monkeypatch.setattr(policy_command, "load_profiles", lambda: forward)
+    first = runner.invoke(app, ["policy", "list"])
+
+    monkeypatch.setattr(policy_command, "load_profiles", lambda: backward)
+    second = runner.invoke(app, ["policy", "list"])
+
+    assert first.exit_code == 0
+    assert second.exit_code == 0
+    assert first.stdout == second.stdout
+
+
 def test_policy_help_points_at_explain_with_no_argument() -> None:
     result = runner.invoke(app, ["policy", "--help"])
 
     assert result.exit_code == 0
     assert "toolseal policy explain" in result.stdout
+
+
+def test_policy_help_points_at_list_for_standards_and_regimes() -> None:
+    result = runner.invoke(app, ["policy", "--help"])
+
+    assert result.exit_code == 0
+    assert "toolseal policy list" in result.stdout
+
+
+def test_entry_help_mentions_regimes() -> None:
+    result = runner.invoke(app, ["--help"])
+
+    assert result.exit_code == 0
+    assert "toolseal policy list" in result.stdout
+    for regime_hint in ("GDPR", "HIPAA", "DORA"):
+        assert regime_hint in result.stdout
 
 
 def test_explain_help_says_how_to_discover_a_subject() -> None:

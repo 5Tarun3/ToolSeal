@@ -45,6 +45,7 @@ from toolseal.core.policy.profile import (
     Resolution,
     apply_resolution,
     load_profile,
+    load_profiles,
 )
 from toolseal.core.policy.profile import (
     resolve as resolve_profiles,
@@ -60,7 +61,10 @@ from toolseal.errors import ConfigError, ExitCode, UsageError
 policy_app = typer.Typer(
     name="policy",
     help="Inspect security checks and the standards they answer to.",
-    epilog="Run `toolseal policy explain` with no argument to list every check id.",
+    epilog=(
+        "Run `toolseal policy explain` with no argument to list every check id, "
+        "or `toolseal policy list` for the standards and regimes this tool knows about."
+    ),
     no_args_is_help=True,
 )
 
@@ -280,14 +284,47 @@ def _standards_table(rows: Sequence[tuple[str, Text, str, str]]) -> Table:
     return narrow
 
 
-def list_standards() -> None:
-    """List the published standards checks are mapped against, with coverage.
+def _regimes_table(rows: Sequence[tuple[str, str, str]]) -> Table:
+    """Build the regimes half of `policy list`: id, name, and the source it
+    derives from - the three facts spec'd as "enough to act on" (apply it, or
+    look up what it is citing).
 
-    This is the catalogue of *standards* (OWASP, NIST AI RMF, ISO/IEC 42001),
-    not of checks - `toolseal policy explain` (with no argument) is that.
-    It also does not list regimes (`hipaa`, `gdpr`, `dora`; see `policy
-    apply`): those are overlays run under a standard, not standards
-    themselves, and nothing here enumerates them.
+    No coverage or checkable column here, unlike `_standards_table`: a regime
+    pins severities on top of the existing baseline, it does not map to a
+    control list the way a standard does, and it is never scored - a report
+    produced under a regime always ends in `not_assessed`, never a verdict
+    (`policy check`'s `DISCLAIMER`). A coverage-shaped column on a regime row
+    would invite exactly the "percentage read as a pass" misreading the rest
+    of this command's output goes out of its way to avoid.
+    """
+    table = new_table()
+    table.add_column("regime")
+    table.add_column("name")
+    table.add_column("source")
+    for regime_id, name, source in rows:
+        table.add_row(accent_text(regime_id), name, source)
+    return table
+
+
+def list_standards() -> None:
+    """List every published standard and regime this tool knows about.
+
+    Two sections, not one merged table. A **standard** (OWASP, NIST AI RMF,
+    ISO/IEC 42001) is a catalogue checks are mapped *to*, and this command
+    reports coverage of it. A **regime** (GDPR, HIPAA, DORA - `policy
+    apply`) is an overlay run *under* a standard: it pins severities rather
+    than mapping to a control list, and is never scored (see `_regimes_table`
+    for why the regimes table carries no coverage column). Merging the two
+    into one table would mean either a fabricated coverage percentage for
+    every regime row, or blank cells wherever the two concepts simply don't
+    overlap - `Profile.kind` already keeps standards and regimes apart
+    (`core/policy/profile.py`), so this command reads that distinction
+    instead of collapsing it.
+
+    Every id printed in either section is a valid `policy apply <id>` /
+    `policy check --profile <id>` argument - `tests/test_policy_cli.py`
+    checks that round trip, so a listed id can never be one this tool then
+    rejects.
     """
     catalogues = load_catalogues()
 
@@ -313,6 +350,20 @@ def list_standards() -> None:
         console.print()
         console.print("* curated subset of the standard, not a full enumeration -")
         console.print("  the percentage measures our selection, not the standard's reach.")
+
+    regimes = sorted(
+        (profile.id, profile.name, profile.source or "(no source recorded)")
+        for profile in load_profiles().values()
+        if profile.kind == "regime"
+    )
+    console.print()
+    print_line(console, "Regimes", style="heading")
+    print_table(console, _regimes_table(regimes))
+    console.print()
+    console.print("Regimes pin severities on top of the baseline above; they are never scored")
+    console.print("and a report run under one never ends in a verdict, only in not_assessed.")
+    console.print("Run `toolseal policy apply <id>` to adopt one, or `toolseal policy check")
+    console.print("--profile <id>` for the configuration evidence.")
 
 
 def explain(

@@ -44,7 +44,9 @@ app = typer.Typer(
     epilog=(
         "Every check `audit` can report is documented: run `toolseal policy "
         "explain` with no argument to list all 28, or `toolseal policy "
-        "explain A1` for one."
+        "explain A1` for one. Working under a regulation? `toolseal policy "
+        "list` also names the regimes (GDPR, HIPAA, DORA) that `policy "
+        "apply` and `init --profile` accept."
     ),
     no_args_is_help=True,
     add_completion=False,
