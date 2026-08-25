@@ -39,6 +39,13 @@ log = logging.getLogger(__name__)
 app = typer.Typer(
     name="toolseal",
     help="Secure-by-default scaffolding and cross-framework tool registry for agentic systems.",
+    # The owner's own ask: a path to the check catalogue from the entry
+    # help, not just from three levels down at `policy explain --help`.
+    epilog=(
+        "Every check `audit` can report is documented: run `toolseal policy "
+        "explain` with no argument to list all 28, or `toolseal policy "
+        "explain A1` for one."
+    ),
     no_args_is_help=True,
     add_completion=False,
 )

@@ -467,6 +467,51 @@ def test_findings_produce_exit_code_one(tmp_path: Path) -> None:
     assert runner.invoke(app, ["audit", str(tmp_path)]).exit_code == ExitCode.FINDINGS
 
 
+# --- discoverability: a finding must name a path to `policy explain` --------
+
+
+def test_audit_with_findings_points_at_policy_explain_by_real_id(tmp_path: Path) -> None:
+    (tmp_path / "config.py").write_text(
+        'OPENAI_API_KEY = "sk-abcdefghijklmnopqrst"\n',  # toolseal:allow A1 - drives a finding
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["audit", str(tmp_path)])
+
+    assert result.exit_code == ExitCode.FINDINGS
+    assert "toolseal policy explain A1" in result.stdout
+
+
+def test_clean_audit_says_nothing_about_policy_explain(tmp_path: Path) -> None:
+    spec = ScaffoldSpec(
+        project_name="demo",
+        provider_id="ollama",
+        framework_id="langgraph",
+        workspace_root=tmp_path / "demo",
+    )
+    apply_plan(build_plan(spec))
+    (tmp_path / "demo" / "uv.lock").write_text("", encoding="utf-8")
+
+    result = runner.invoke(app, ["audit", str(tmp_path / "demo")])
+
+    assert result.exit_code == ExitCode.OK
+    assert "policy explain" not in result.stdout
+
+
+def test_audit_json_is_unaffected_by_the_policy_explain_pointer(tmp_path: Path) -> None:
+    # The pointer is human-report-only decoration; the machine contract must
+    # not gain a field or a stray string because of it.
+    (tmp_path / "config.py").write_text(
+        'OPENAI_API_KEY = "sk-abcdefghijklmnopqrst"\n',  # toolseal:allow A1 - fixture
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["audit", str(tmp_path), "--json"])
+
+    assert "policy explain" not in result.stdout
+    json.loads(result.stdout)  # still valid, untouched JSON
+
+
 def test_json_output_carries_scores_and_families(tmp_path: Path) -> None:
     (tmp_path / "main.py").write_text("x = 1\n", encoding="utf-8")
 

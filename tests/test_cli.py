@@ -131,6 +131,16 @@ def test_top_level_help_groups_commands_by_pillar() -> None:
         assert panel_title in result.stdout
 
 
+def test_top_level_help_points_at_the_check_catalogue() -> None:
+    # The owner's own ask: "add a path right from the entry help explicitly
+    # to policy explain" - a user should not have to already know `policy`
+    # and `explain` both exist to find the check catalogue.
+    result = runner.invoke(app, ["--help"])
+
+    assert result.exit_code == ExitCode.OK
+    assert "toolseal policy explain" in result.stdout
+
+
 def test_add_help_splits_scaffold_from_translate() -> None:
     # `add`'s two subcommands sit on two different pillars even though both
     # live under the same top-level verb - `framework` extends scaffolding

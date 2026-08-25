@@ -287,3 +287,19 @@ def _print_report(
         # read as "we looked and it passed".
         caveat.append(" - data unavailable, not a pass", style="caveat")
         print_text(console, caveat)
+
+    if findings:
+        # The sharpest discoverability gap this pass fixes: a user hits a
+        # finding's check id right here and had no path from it to `policy
+        # explain` - not a generic pointer, but the real id of a finding in
+        # *this* report, since that is the one that resolves without the
+        # user needing to already know the taxonomy. `findings` (not the
+        # unfiltered `report.findings`) so this names something the user can
+        # actually see above, and so `--min-severity` filtering everything
+        # out suppresses the pointer along with the findings it would refer
+        # to - same condition the exit code below already keys off.
+        console.print()
+        pointer = Text("Run ")
+        pointer.append_text(accent_text(f"toolseal policy explain {findings[0].check_id}"))
+        pointer.append(" for what a check means and how to fix it.")
+        print_text(console, pointer)
