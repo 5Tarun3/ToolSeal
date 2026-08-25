@@ -1,0 +1,263 @@
+name: release
+
+# Triggered by a version tag: v0.1.0 publishes to PyPI, v0.1.0rc1 (or any tag
+# carrying a PEP 440 pre-release segment) publishes to TestPyPI instead, so a
+# pre-alpha project can rehearse this whole path without burning a version
+# number on the real index.
+#
+# Job graph:
+#   check_tag -> gate -> build -+-> publish_testpypi -+
+#                                +-> publish_pypi     -+
+#                                +-> sign             -+-> release
+#
+# publish_testpypi and publish_pypi are mutually exclusive (one always
+# skips - see check_tag's `prerelease` output); `release` waits on whichever
+# one ran, plus `sign`, and only then creates the GitHub release.
+#
+# Nothing here is a long-lived secret: `id-token: write` is what lets
+# pypa/gh-action-pypi-publish and the sigstore action mint short-lived OIDC
+# tokens (PyPI Trusted Publishing, Sigstore keyless signing) instead of a
+# stored token or key.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  # One release workflow per tag, never cancelled mid-publish.
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check_tag:
+    name: check tag matches the declared version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      prerelease: ${{ steps.check.outputs.prerelease }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: true
+
+      - name: Check tag matches the declared version
+        id: check
+        # A mismatch or malformed tag exits non-zero here and stops the
+        # workflow before the gate, the build, or anything else runs.
+        run: >-
+          uv run --no-project python scripts/check_release_tag.py
+          "${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+
+  gate:
+    name: full gate (with self-audit)
+    needs: check_tag
+    # Same steps ci.yml runs on every pull request, plus the self-audit -
+    # see gate.yml's header for why this is a call, not a copy.
+    uses: ./.github/workflows/gate.yml
+    with:
+      python-version: "3.13"
+      with-audit: true
+
+  build:
+    name: build wheel, sdist, and SBOM
+    needs: gate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Build wheel and sdist
+        run: uv build
+
+      - name: Verify the built artefacts carry the released version
+        # A local build tag or a stale uv.lock could produce a wheel that
+        # does not actually match the tag being released. Catch that here
+        # rather than have PyPI or an installer catch it later.
+        run: |
+          version="${{ needs.check_tag.outputs.version }}"
+          shopt -s nullglob
+          matches=(dist/*"${version}"*)
+          if [ "${#matches[@]}" -lt 2 ]; then
+            echo "::error::expected a wheel and an sdist for ${version} in dist/, found: $(ls dist/)"
+            exit 1
+          fi
+
+      - name: Regenerate the SBOM
+        # Never the committed sbom.json: it can be stale, and the SBOM
+        # attached to a release must describe the artefact actually
+        # published, not whatever was last checked in.
+        run: uv run python scripts/generate_sbom.py
+
+      - name: Upload distributions
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom
+          path: sbom.json
+          if-no-files-found: error
+
+  publish_testpypi:
+    name: publish to TestPyPI (pre-release tags)
+    needs: [check_tag, build]
+    if: needs.check_tag.outputs.prerelease == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/toolseal/
+    permissions:
+      id-token: write # Trusted Publishing (OIDC) - no token in secrets.
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: dist
+          path: dist
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          attestations: true # PEP 740 - TestPyPI supports it too.
+          skip-existing: true # A rehearsal tag may be re-pushed.
+
+  publish_pypi:
+    name: publish to PyPI (final tags)
+    needs: [check_tag, build]
+    if: needs.check_tag.outputs.prerelease == 'false'
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/toolseal/
+    permissions:
+      id-token: write # Trusted Publishing (OIDC) - no token in secrets.
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: dist
+          path: dist
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          attestations: true # PEP 740 attestations, via the same OIDC trust.
+
+  sign:
+    name: sigstore-sign the release artefacts
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Sigstore keyless signing - no key in secrets.
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: dist
+          path: dist
+
+      - name: Download SBOM
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: sbom
+          path: dist
+
+      - name: Sign wheel, sdist, and SBOM with sigstore
+        uses: sigstore/gh-action-sigstore-python@790bc6befb9d733738f18d8f895854b453640ec9 # v3.5.0
+        with:
+          inputs: |
+            dist/*.whl
+            dist/*.tar.gz
+            dist/sbom.json
+          upload-signing-artifacts: true
+          # This is not a `release` event, so the action's own release-upload
+          # would never fire anyway; the `release` job attaches the signing
+          # artifacts itself, explicitly, once publishing has also succeeded.
+          release-signing-artifacts: false
+
+  release:
+    name: create the GitHub release
+    needs: [check_tag, sign, publish_testpypi, publish_pypi]
+    # publish_testpypi and publish_pypi are mutually exclusive - exactly one
+    # of them is skipped, never both. Wait for whichever one ran, and only
+    # create the release if it (and signing) actually succeeded.
+    if: >-
+      always() &&
+      needs.sign.result == 'success' &&
+      (needs.publish_testpypi.result == 'success' || needs.publish_pypi.result == 'success')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # To create the GitHub release itself.
+    steps:
+      - name: Checkout
+        # Only for CHANGELOG.md; nothing here is built from source.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: true
+
+      - name: Download distributions
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: dist
+          path: release
+
+      - name: Download SBOM
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: sbom
+          path: release
+
+      - name: Download sigstore signatures
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          # Named by the sigstore action from the signing job's id ("sign").
+          name: signing-artifacts-sign
+          path: release
+
+      - name: Extract this version's changelog section
+        # Fails the release if CHANGELOG.md was not updated for this
+        # version, rather than publish with an empty or wrong release body.
+        run: >-
+          uv run --no-project python scripts/changelog_section.py
+          "${{ needs.check_tag.outputs.version }}" > release-notes.md
+
+      - name: Create the GitHub release
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        with:
+          name: ${{ github.ref_name }}
+          body_path: release-notes.md
+          prerelease: ${{ needs.check_tag.outputs.prerelease }}
+          fail_on_unmatched_files: true
+          files: release/*

@@ -20,9 +20,12 @@ Usage:
 argument exists so this can be exercised against a fixture file in tests
 without touching the real one.
 
-On a match, prints `prerelease=true` or `prerelease=false` to stdout and
-exits 0. On a mismatch or a malformed tag, prints why to stderr and exits 1.
-Exits 2 for a usage error (wrong number of arguments).
+On a match, prints two `key=value` lines to stdout - `version=<version>` and
+`prerelease=true`/`prerelease=false` - and exits 0. That is deliberately also
+valid `GITHUB_OUTPUT` syntax, so a workflow step can capture both with one
+`>> "$GITHUB_OUTPUT"` redirect instead of re-deriving either value itself.
+On a mismatch or a malformed tag, prints why to stderr and exits 1. Exits 2
+for a usage error (wrong number of arguments).
 """
 
 from __future__ import annotations
@@ -63,8 +66,8 @@ def is_prerelease(version: str) -> bool:
     return _PRERELEASE.search(version) is not None
 
 
-def check(tag: str, declared: str) -> bool:
-    """Return whether `tag` is a pre-release, after asserting it matches.
+def check(tag: str, declared: str) -> tuple[str, bool]:
+    """Return `(version, is_prerelease)`, after asserting the tag matches.
 
     Raises `ValueError` - with a message safe to print directly - if the tag
     is malformed or does not match the declared version.
@@ -76,7 +79,7 @@ def check(tag: str, declared: str) -> bool:
             f"declares {declared!r}. Refusing to release."
         )
         raise ValueError(message)
-    return is_prerelease(declared)
+    return declared, is_prerelease(declared)
 
 
 def main(argv: list[str]) -> int:
@@ -88,11 +91,12 @@ def main(argv: list[str]) -> int:
     pyproject = Path(argv[1]) if len(argv) == 2 else ROOT / "pyproject.toml"
 
     try:
-        prerelease = check(tag, declared_version(pyproject))
+        version, prerelease = check(tag, declared_version(pyproject))
     except (OSError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 
+    print(f"version={version}")
     print(f"prerelease={'true' if prerelease else 'false'}")
     return 0
 

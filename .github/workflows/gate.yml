@@ -1,0 +1,63 @@
+name: gate
+
+# The checks a change to this repository must pass, factored out of ci.yml so
+# release.yml can call the exact same steps instead of a pasted copy that can
+# drift out of sync with what pull requests are actually held to. If this
+# file's steps and ci.yml's expectations ever disagree, the fix is here, once.
+#
+# Only a workflow_call trigger: this file never runs on its own.
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: Python version to run the gate under.
+        type: string
+        default: "3.13"
+      with-audit:
+        description: >-
+          Also run `toolseal audit .` against this repository and fail on any
+          finding. Off by default so pull requests keep today's behaviour;
+          release.yml turns it on, because a tool whose whole claim is
+          configuring other people's supply chains correctly cannot publish
+          an artefact that fails its own audit.
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    name: gate (python ${{ inputs.python-version }})
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked --python ${{ inputs.python-version }}
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Format check
+        run: uv run ruff format --check .
+
+      - name: Types
+        run: uv run mypy
+
+      - name: Tests
+        run: uv run pytest
+
+      - name: Self-audit
+        if: inputs.with-audit
+        # Exit 1 means findings, which is exactly what should stop a release.
+        run: uv run toolseal audit .

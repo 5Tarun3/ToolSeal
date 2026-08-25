@@ -56,14 +56,14 @@ def test_matching_tag_succeeds_and_reports_final(pyproject: Path) -> None:
     result = _run(str(CHECK_TAG), "v1.2.3", str(pyproject))
 
     assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == "prerelease=false"
+    assert result.stdout.splitlines() == ["version=1.2.3", "prerelease=false"]
 
 
 def test_matching_prerelease_tag_is_routed_to_testpypi(prerelease_pyproject: Path) -> None:
     result = _run(str(CHECK_TAG), "v1.2.3rc1", str(prerelease_pyproject))
 
     assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == "prerelease=true"
+    assert result.stdout.splitlines() == ["version=1.2.3rc1", "prerelease=true"]
 
 
 def test_mismatched_tag_fails_loudly(pyproject: Path) -> None:
