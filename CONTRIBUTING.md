@@ -20,7 +20,12 @@ uv run pytest
 
 If you change dependencies, commit the updated `uv.lock` — CI installs with
 `--locked` and will fail if the lockfile is stale — and regenerate `sbom.json`
-with `uv run python scripts/generate_sbom.py`.
+with `uv run python scripts/generate_sbom.py`. Nothing currently enforces this:
+it is a manual step, easy to forget, and the committed copy has gone stale
+before. Treat it as a reviewable snapshot for local use, not as ground truth —
+the release workflow (`.github/workflows/release.yml`) regenerates it from
+scratch before every release and never trusts the committed file, precisely
+because it can drift.
 
 ## Conventions
 

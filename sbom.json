@@ -9,6 +9,13 @@
       "version": "25.7.0"
     },
     {
+      "bom-ref": "pkg:pypi/rich@14.3.4",
+      "name": "rich",
+      "purl": "pkg:pypi/rich@14.3.4",
+      "type": "library",
+      "version": "14.3.4"
+    },
+    {
       "bom-ref": "pkg:pypi/typer@0.27.1",
       "name": "typer",
       "purl": "pkg:pypi/typer@0.27.1",

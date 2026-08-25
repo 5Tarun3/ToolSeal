@@ -28,6 +28,12 @@ dependencies = [
     "typer>=0.15.1",
 ]
 
+[project.urls]
+Homepage = "https://github.com/5Tarun3/ToolSeal"
+Repository = "https://github.com/5Tarun3/ToolSeal"
+Issues = "https://github.com/5Tarun3/ToolSeal/issues"
+Changelog = "https://github.com/5Tarun3/ToolSeal/blob/main/CHANGELOG.md"
+
 [project.scripts]
 toolseal = "toolseal.cli:main"
 
