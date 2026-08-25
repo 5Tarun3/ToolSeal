@@ -482,6 +482,7 @@ def test_cli_output_is_ascii_outside_rich_box_drawing(
             ]
         ),
         "policy explain": _policy_explain_output_with_a_long_control_title(monkeypatch),
+        "policy explain (bare)": _cli_output(["policy", "explain"]),
     }
 
     add_target = tmp_path / "existing-project"

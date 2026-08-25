@@ -185,6 +185,71 @@ def test_list_keeps_the_name_column_when_it_fits_on_one_line(
     assert "ISO/IEC 42001:2023 (Annex A, by reference)" in result.stdout
 
 
+def test_policy_help_points_at_explain_with_no_argument() -> None:
+    result = runner.invoke(app, ["policy", "--help"])
+
+    assert result.exit_code == 0
+    assert "toolseal policy explain" in result.stdout
+
+
+def test_explain_help_says_how_to_discover_a_subject() -> None:
+    # Previously named one example (B3) and nothing else - a user with no
+    # id yet had no path from `--help` to finding one.
+    result = runner.invoke(app, ["policy", "explain", "--help"])
+
+    assert result.exit_code == 0
+    assert "list every check" in result.stdout.lower() or "list" in result.stdout.lower()
+
+
+# --- explain with no argument: the browsable catalogue (discoverability) -----
+
+
+def test_explain_with_no_argument_lists_every_check() -> None:
+    from toolseal.core.policy.model import all_checks
+
+    result = runner.invoke(app, ["policy", "explain"])
+
+    assert result.exit_code == 0
+    for check in all_checks():
+        assert check.id in result.stdout
+
+
+def test_explain_with_no_argument_groups_by_family() -> None:
+    result = runner.invoke(app, ["policy", "explain"])
+
+    for family_heading in ("Family A", "Family B", "Family G"):
+        assert family_heading in result.stdout
+
+
+def test_explain_with_no_argument_says_how_to_explain_one() -> None:
+    result = runner.invoke(app, ["policy", "explain"])
+
+    assert "toolseal policy explain" in result.stdout
+    # Not just the bare form again - a real, resolvable id as the example.
+    assert "toolseal policy explain A1" in result.stdout
+
+
+def test_every_id_the_catalogue_lists_resolves_when_explained() -> None:
+    # The catalogue that lists an id `explain` then rejects would be worse
+    # than no catalogue at all - this is the round-trip proof that never
+    # happens.
+    from toolseal.core.policy.model import all_checks
+
+    for check in all_checks():
+        result = runner.invoke(app, ["policy", "explain", check.id])
+        assert result.exit_code == 0, f"{check.id} listed by the catalogue but not explainable"
+
+
+def test_explain_an_unknown_subject_points_at_the_catalogue_not_at_list() -> None:
+    # `policy list` enumerates standards, not checks - pointing a check-id
+    # typo there was a real bug (a user asking "what checks exist" would
+    # have gotten catalogue ids, coverage percentages, no check id at all).
+    result = runner.invoke(app, ["policy", "explain", "Z99"])
+
+    assert "toolseal policy explain" in result.output
+    assert "policy list" not in result.output
+
+
 def test_explain_a_check_states_the_rule_and_the_fix() -> None:
     result = runner.invoke(app, ["policy", "explain", "B3"])
 
@@ -572,6 +637,8 @@ def test_relax_refuses_an_unknown_check_id(tmp_path: Path) -> None:
 
     assert result.exit_code == ExitCode.USAGE
     assert "Z99" in result.output
+    assert "toolseal policy explain" in result.output
+    assert "policy list" not in result.output
 
 
 def test_relax_refuses_a_malformed_expiry(tmp_path: Path) -> None:

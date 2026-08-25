@@ -60,13 +60,73 @@ from toolseal.errors import ConfigError, ExitCode, UsageError
 policy_app = typer.Typer(
     name="policy",
     help="Inspect security checks and the standards they answer to.",
+    epilog="Run `toolseal policy explain` with no argument to list every check id.",
     no_args_is_help=True,
 )
+
+
+# The taxonomy's own family headings (`reference/taxonomy.md`, one `##` per
+# family). Not derived from `Check.family` at runtime because no shipped
+# `Check` carries a display name for its family, only the single letter - this
+# is the one place that letter is spelled out for a human browsing the
+# catalogue rather than reading a table keyed by letter alone (`audit`'s
+# family table, `policy show`). Families are added at the rate of about one
+# per taxonomy version, so a hand-kept mapping here is not a drift risk on the
+# scale `tests/test_control_mapping.py` guards against for control citations.
+_FAMILY_NAMES: dict[str, str] = {
+    "A": "Credential exposure",
+    "B": "Capability overprovisioning",
+    "C": "Supply-chain integrity",
+    "D": "Transport and endpoint",
+    "E": "Execution containment",
+    "F": "Accountability",
+    "G": "Translation integrity",
+}
 
 
 def _find_check(check_id: str) -> Check | None:
     wanted = check_id.strip().upper()
     return next((check for check in all_checks() if check.id == wanted), None)
+
+
+def _list_checks() -> None:
+    """The catalogue `policy explain` opens on with no argument: every
+    registered check, grouped by family, so a user who does not already know
+    an id can find one. This is the "make the catalogue browsable" half of
+    the discoverability fix - the keystone (spec §6) already explains one
+    check in depth; this is what lets a user reach it without having read
+    `reference/taxonomy.md` first.
+    """
+    checks = all_checks()
+    by_family: dict[str, list[Check]] = {}
+    for check in checks:
+        by_family.setdefault(check.family, []).append(check)
+
+    for index, family in enumerate(sorted(by_family)):
+        if index:
+            console.print()
+        heading = Text(f"Family {family}", style="heading")
+        heading.append(f" - {_FAMILY_NAMES.get(family, family)}")
+        print_text(console, heading)
+
+        table = new_table()
+        table.add_column("id")
+        table.add_column("severity")
+        table.add_column("title")
+        for check in by_family[family]:
+            table.add_row(
+                accent_text(check.id),
+                Text(check.severity.value, style=severity_style(check.severity)),
+                check.title,
+            )
+        print_table(console, table)
+
+    console.print()
+    example = checks[0].id if checks else "A1"
+    footer = Text(f"{len(checks)} checks total. Run ")
+    footer.append_text(accent_text(f"toolseal policy explain {example}"))
+    footer.append(" for what one means, how to fix it, and which obligations it serves.")
+    print_text(console, footer)
 
 
 def _explain_check(check: Check) -> None:
@@ -221,7 +281,14 @@ def _standards_table(rows: Sequence[tuple[str, Text, str, str]]) -> Table:
 
 
 def list_standards() -> None:
-    """List the standards and regimes shipped with toolseal."""
+    """List the published standards checks are mapped against, with coverage.
+
+    This is the catalogue of *standards* (OWASP, NIST AI RMF, ISO/IEC 42001),
+    not of checks - `toolseal policy explain` (with no argument) is that.
+    It also does not list regimes (`hipaa`, `gdpr`, `dora`; see `policy
+    apply`): those are overlays run under a standard, not standards
+    themselves, and nothing here enumerates them.
+    """
     catalogues = load_catalogues()
 
     rows: list[tuple[str, Text, str, str]] = []
@@ -250,18 +317,34 @@ def list_standards() -> None:
 
 def explain(
     subject: Annotated[
-        str,
-        typer.Argument(help="A check id (B3) or a control (owasp-llm-top10:LLM02)."),
-    ],
+        str | None,
+        typer.Argument(
+            help=(
+                "A check id (e.g. A1) or a control (owasp-llm-top10:LLM02). "
+                "Omit this argument to list every check id."
+            ),
+        ),
+    ] = None,
 ) -> None:
-    """Explain a check or a control: what it means, and what to do about it."""
+    """Explain a check or a control, or list every check when given neither.
+
+    Run with no argument first if you do not already know an id: it lists
+    all 28 checks, grouped by family, severity included. Then run it again
+    with one of those ids (`toolseal policy explain A1`) for what the check
+    means, how to fix it, and which published obligations it serves - the
+    keystone this command exists for.
+    """
+    if subject is None:
+        _list_checks()
+        return
+
     if ":" in subject:
         _explain_control(subject)
         return
 
     check = _find_check(subject)
     if check is None:
-        message = f"no check named {subject!r}; try `toolseal policy list`"
+        message = f"no check named {subject!r}; run `toolseal policy explain` to list them"
         raise UsageError(message)
 
     _explain_check(check)
@@ -720,7 +803,7 @@ def relax(
 
     matched = _find_check(check_id)
     if matched is None:
-        message = f"no check named {check_id!r}; try `toolseal policy list`"
+        message = f"no check named {check_id!r}; run `toolseal policy explain` to list them"
         raise UsageError(message)
 
     # §8: `enforce` seals the resolved policy and marks every check
