@@ -1,0 +1,81 @@
+{
+  "tool_count": 92,
+  "targets": {
+    "langchain": {
+      "lossless": 92,
+      "guards": {},
+      "prop_fate": {
+        "descriptionIntegrity": {
+          "preserved": 92
+        },
+        "readOnlyHint": {
+          "preserved": 92
+        },
+        "destructiveHint": {
+          "preserved": 92
+        },
+        "openWorldHint": {
+          "preserved": 92
+        },
+        "idempotentHint": {
+          "preserved": 84
+        },
+        "inputConstraints": {
+          "preserved": 52
+        }
+      }
+    },
+    "crewai": {
+      "lossless": 0,
+      "guards": {
+        "preserve_description": 92,
+        "annotate_sidecar": 337,
+        "require_approval": 23
+      },
+      "prop_fate": {
+        "descriptionIntegrity": {
+          "compensated": 92
+        },
+        "readOnlyHint": {
+          "compensated": 92
+        },
+        "destructiveHint": {
+          "compensated": 92
+        },
+        "openWorldHint": {
+          "compensated": 92
+        },
+        "idempotentHint": {
+          "compensated": 84
+        },
+        "inputConstraints": {
+          "preserved": 52
+        }
+      }
+    },
+    "claude-code": {
+      "lossless": 92,
+      "guards": {},
+      "prop_fate": {
+        "descriptionIntegrity": {
+          "preserved": 92
+        },
+        "readOnlyHint": {
+          "preserved": 92
+        },
+        "destructiveHint": {
+          "preserved": 92
+        },
+        "openWorldHint": {
+          "preserved": 92
+        },
+        "idempotentHint": {
+          "preserved": 84
+        },
+        "inputConstraints": {
+          "preserved": 52
+        }
+      }
+    }
+  }
+}
