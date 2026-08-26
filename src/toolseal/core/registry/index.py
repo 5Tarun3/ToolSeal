@@ -14,6 +14,13 @@ dependencies should be able to justify each of its own.
 Every entry carries its audit result. The index is not a catalogue with security
 bolted on; the security assessment *is* the entry, and a tool that has not been
 assessed is visibly unassessed rather than quietly listed.
+
+Two on-disk instances of this class exist, read the same way but for different
+purposes. `read(path)` loads whatever a user's own `registry sync` produced -
+current as of their last crawl, and absent until they run it once.
+`read_packaged()` loads the curated 100-200 entry seed (P16) shipped inside the
+package itself, so `registry search` returns something before anyone has
+crawled anything.
 """
 
 from __future__ import annotations
@@ -21,6 +28,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from importlib import resources
 from pathlib import Path
 from typing import Any, Final
 
@@ -29,6 +37,9 @@ from toolseal.errors import RegistryError
 
 INDEX_VERSION: Final = 1
 INDEX_FILENAME: Final = "index.json"
+
+CURATED_DATA_PACKAGE: Final = "toolseal.data.registry"
+CURATED_FILENAME: Final = "curated.json"
 
 
 @dataclass(frozen=True)
@@ -222,3 +233,23 @@ class RegistryIndex:
             message = f"index at {path} is not valid JSON: {exc}"
             raise RegistryError(message) from None
         return cls.from_dict(data)
+
+    @classmethod
+    def read_packaged(cls) -> RegistryIndex:
+        """The curated set shipped with the package (P16): 100-200 entries
+        selected by `bench/registry_seed.py` from the criteria fixed in
+        `research/registry-curation-criteria.md`.
+
+        Read through `importlib.resources` rather than a filesystem path
+        relative to this module, mirroring `policy.controls.load_catalogues()`
+        - so this works from an installed wheel, not only from a checkout.
+        A user who has never run `registry sync` still gets a usable
+        `registry search` right after install; this is what backs that.
+        """
+        resource = resources.files(CURATED_DATA_PACKAGE) / CURATED_FILENAME
+        try:
+            text = resource.read_text(encoding="utf-8")
+        except (FileNotFoundError, OSError) as exc:
+            message = f"the packaged curated index is missing: {exc}"
+            raise RegistryError(message) from None
+        return cls.from_dict(json.loads(text))

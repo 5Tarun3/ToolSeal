@@ -386,6 +386,26 @@ def test_inactive_server_is_scored_down() -> None:
     assert any("status" in finding for finding in assess(descriptor).findings)
 
 
+# --- the packaged curated set (P16) -----------------------------------------
+
+
+def test_packaged_curated_index_loads_and_is_within_the_v1_cap() -> None:
+    # Reads through `importlib.resources`, so this exercises the same path an
+    # installed wheel uses - no filesystem path relative to this module.
+    index = RegistryIndex.read_packaged()
+
+    assert 0 < len(index) <= 200
+
+
+def test_packaged_curated_entries_have_no_tools_enumerated() -> None:
+    # A real limitation of the registry as shipped: enumerating a server's
+    # tools means running it, which this project does not do. Every shipped
+    # entry, curated or not, says so rather than implying an empty tool set.
+    index = RegistryIndex.read_packaged()
+
+    assert all(not entry.tools_enumerated for entry in index.entries)
+
+
 def test_a_crawl_of_wrapped_records_skips_nothing() -> None:
     report = crawl_mcp_registry(
         fetch=pages({"servers": [WRAPPED, WRAPPED], "metadata": {}}), delay_seconds=0

@@ -317,6 +317,71 @@ def test_search_missing_index_fails_cleanly_not_with_a_traceback(tmp_path: Path)
     assert "registry sync" in result.output
 
 
+# --- default index resolution (P16: search works with no crawl yet) --------
+#
+# A user who just ran `pip install toolseal` has no `~/.cache/toolseal/`.
+# `search`/`show` with no `--index` must still return something - the
+# curated set shipped inside the package - rather than telling every new
+# user to crawl the whole registry before they can look anything up. Once
+# they *have* synced, their own cache takes priority: it is current as of
+# their last crawl and reflects a choice they made.
+
+
+def test_search_falls_back_to_the_packaged_curated_set(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(registry_command, "default_index_path", lambda: tmp_path / "absent.json")
+    packaged = RegistryIndex(entries=(_entry("mcp/curated@1.0.0", "curated-only-tool"),))
+    monkeypatch.setattr(RegistryIndex, "read_packaged", classmethod(lambda cls: packaged))
+
+    result = runner.invoke(app, ["registry", "search", ""])
+
+    assert result.exit_code == 0
+    assert "curated-only-tool" in result.stdout
+
+
+def test_search_prefers_the_synced_cache_over_the_packaged_set(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    cache_path = tmp_path / "index.json"
+    RegistryIndex(entries=(_entry("mcp/synced@1.0.0", "synced-tool"),)).write(cache_path)
+    monkeypatch.setattr(registry_command, "default_index_path", lambda: cache_path)
+
+    def _fail_if_read() -> RegistryIndex:
+        message = "should not fall back to the packaged set when a cache exists"
+        raise AssertionError(message)
+
+    monkeypatch.setattr(RegistryIndex, "read_packaged", classmethod(lambda cls: _fail_if_read()))
+
+    result = runner.invoke(app, ["registry", "search", ""])
+
+    assert result.exit_code == 0
+    assert "synced-tool" in result.stdout
+
+
+def test_show_falls_back_to_the_packaged_curated_set(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(registry_command, "default_index_path", lambda: tmp_path / "absent.json")
+    packaged = RegistryIndex(entries=(_entry("mcp/curated@1.0.0", "curated-only-tool"),))
+    monkeypatch.setattr(RegistryIndex, "read_packaged", classmethod(lambda cls: packaged))
+
+    result = runner.invoke(app, ["registry", "show", "mcp/curated@1.0.0"])
+
+    assert result.exit_code == 0
+    assert "curated-only-tool" in result.stdout
+
+
+def test_explicit_index_flag_still_overrides_both_fallbacks(index_path: Path) -> None:
+    # An explicit `--index` is never shadowed by either default: it fails
+    # cleanly if absent (pinned above), and here it wins even though a
+    # packaged fallback exists in the real, installed package.
+    result = runner.invoke(app, ["registry", "search", "", "--index", str(index_path)])
+
+    assert result.exit_code == 0
+    assert "postgres-server" in result.stdout
+
+
 # --- show ----------------------------------------------------------------
 
 

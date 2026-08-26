@@ -58,6 +58,23 @@ def default_index_path() -> Path:
     return base / INDEX_FILENAME
 
 
+def _default_index() -> RegistryIndex:
+    """The index `search`/`show` fall back to when `--index` is not given.
+
+    A user's own synced cache wins once it exists - it is current as of
+    their last `registry sync` and reflects their choice to crawl. Only when
+    that cache is absent (a fresh install, before anyone has run `sync`) does
+    this fall back to the curated set shipped inside the package (P16), so
+    `registry search` returns something useful immediately after `pip
+    install` rather than telling every new user to crawl the whole registry
+    first.
+    """
+    cached = default_index_path()
+    if cached.exists():
+        return RegistryIndex.read(cached)
+    return RegistryIndex.read_packaged()
+
+
 def sync(
     output: Annotated[
         Path | None, typer.Option("--output", "-o", help="Where to write the index.")
@@ -180,7 +197,7 @@ def search(
     as_json: Annotated[bool, typer.Option("--json", help="Machine-readable output.")] = False,
 ) -> None:
     """Search the index, best-assessed first."""
-    index = RegistryIndex.read(index_path or default_index_path())
+    index = RegistryIndex.read(index_path) if index_path is not None else _default_index()
     results = index.search(query, limit=limit)
 
     if as_json:
@@ -252,7 +269,7 @@ def show(
     as_json: Annotated[bool, typer.Option("--json", help="Machine-readable output.")] = False,
 ) -> None:
     """Show everything known about one registry entry."""
-    index = RegistryIndex.read(index_path or default_index_path())
+    index = RegistryIndex.read(index_path) if index_path is not None else _default_index()
     entry = index.get(entry_id)
     if entry is None:
         message = f"no entry {entry_id!r} in the index; try `toolseal registry search`"

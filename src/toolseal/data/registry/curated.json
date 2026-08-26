@@ -1,0 +1,6174 @@
+{
+  "built_at": "2026-08-17T18:16:54+00:00",
+  "count": 109,
+  "entries": [
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Automated DOCX Redlining Engine",
+        "id": "mcp/ai.adeu/adeu@1.7.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.adeu/adeu",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.adeu",
+          "repository": "https://github.com/dealfluence/adeu",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@adeu/mcp-server",
+          "registry": "npm",
+          "version": "1.7.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Affiliate network reporting in your AI client. Bring your own keys. Most adapters experimental.",
+        "id": "mcp/ai.agenticaffiliate/affiliate-networks-mcp@0.19.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agenticaffiliate/affiliate-networks-mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agenticaffiliate",
+          "repository": "https://github.com/bobberrisford/affiliatemcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "affiliate-networks-mcp",
+          "registry": "npm",
+          "version": "0.19.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Identity, trust, and A2A orchestration for autonomous AI agents. Official A2A partner.",
+        "id": "mcp/ai.agenttrust/mcp-server@1.1.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agenttrust/mcp-server",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agenttrust",
+          "repository": "https://github.com/agenttrust/mcp-server",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@agenttrust/mcp-server",
+          "registry": "npm",
+          "version": "1.1.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for the @agentutility agentops cluster \u2014 pay-per-call x402 tools, no API keys, USDC on\u2026",
+        "id": "mcp/ai.agentutility/mcp-agentops@0.1.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agentutility/mcp-agentops",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agentutility",
+          "repository": "https://github.com/rooz21/x402",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@agentutility/mcp-agentops",
+          "registry": "npm",
+          "version": "0.1.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for the @agentutility bestiary cluster \u2014 pay-per-call x402 tools, no API keys, USDC on\u2026",
+        "id": "mcp/ai.agentutility/mcp-bestiary@0.1.3",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agentutility/mcp-bestiary",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agentutility",
+          "repository": "https://github.com/rooz21/x402",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@agentutility/mcp-bestiary",
+          "registry": "npm",
+          "version": "0.1.3"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for the @agentutility browser-workflow cluster \u2014 pay-per-call x402 tools, no API keys\u2026",
+        "id": "mcp/ai.agentutility/mcp-browser-workflow@0.1.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agentutility/mcp-browser-workflow",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agentutility",
+          "repository": "https://github.com/rooz21/x402",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@agentutility/mcp-browser-workflow",
+          "registry": "npm",
+          "version": "0.1.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for the @agentutility compose cluster \u2014 pay-per-call x402 tools, no API keys, USDC on\u2026",
+        "id": "mcp/ai.agentutility/mcp-compose@0.13.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agentutility/mcp-compose",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agentutility",
+          "repository": "https://github.com/rooz21/x402",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@agentutility/mcp-compose",
+          "registry": "npm",
+          "version": "0.13.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for the @agentutility edge-finance cluster \u2014 pay-per-call x402 tools, no API keys, USDC\u2026",
+        "id": "mcp/ai.agentutility/mcp-edge-finance@0.18.8",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agentutility/mcp-edge-finance",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agentutility",
+          "repository": "https://github.com/rooz21/x402",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@agentutility/mcp-edge-finance",
+          "registry": "npm",
+          "version": "0.18.8"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for the @agentutility edge-market cluster \u2014 pay-per-call x402 tools, no API keys, USDC\u2026",
+        "id": "mcp/ai.agentutility/mcp-edge-market@0.15.6",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agentutility/mcp-edge-market",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agentutility",
+          "repository": "https://github.com/rooz21/x402",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@agentutility/mcp-edge-market",
+          "registry": "npm",
+          "version": "0.15.6"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for the @agentutility locale cluster \u2014 pay-per-call x402 tools, no API keys, USDC on\u2026",
+        "id": "mcp/ai.agentutility/mcp-locale@0.8.7",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agentutility/mcp-locale",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agentutility",
+          "repository": "https://github.com/rooz21/x402",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@agentutility/mcp-locale",
+          "registry": "npm",
+          "version": "0.8.7"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for the @agentutility matchpoint cluster \u2014 pay-per-call x402 tools, no API keys, USDC\u2026",
+        "id": "mcp/ai.agentutility/mcp-matchpoint@0.1.4",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agentutility/mcp-matchpoint",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agentutility",
+          "repository": "https://github.com/rooz21/x402",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@agentutility/mcp-matchpoint",
+          "registry": "npm",
+          "version": "0.1.4"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for the @agentutility mediakit cluster \u2014 pay-per-call x402 tools, no API keys, USDC on\u2026",
+        "id": "mcp/ai.agentutility/mcp-mediakit@0.11.9",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agentutility/mcp-mediakit",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agentutility",
+          "repository": "https://github.com/rooz21/x402",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@agentutility/mcp-mediakit",
+          "registry": "npm",
+          "version": "0.11.9"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for the @agentutility model-router cluster \u2014 pay-per-call x402 tools, no API keys, USDC\u2026",
+        "id": "mcp/ai.agentutility/mcp-model-router@0.1.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agentutility/mcp-model-router",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agentutility",
+          "repository": "https://github.com/rooz21/x402",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@agentutility/mcp-model-router",
+          "registry": "npm",
+          "version": "0.1.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for the @agentutility prooflayer cluster \u2014 pay-per-call x402 tools, no API keys, USDC\u2026",
+        "id": "mcp/ai.agentutility/mcp-prooflayer@0.2.4",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agentutility/mcp-prooflayer",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agentutility",
+          "repository": "https://github.com/rooz21/x402",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@agentutility/mcp-prooflayer",
+          "registry": "npm",
+          "version": "0.2.4"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for the @agentutility retail cluster \u2014 pay-per-call x402 tools, no API keys, USDC on\u2026",
+        "id": "mcp/ai.agentutility/mcp-retail@0.2.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agentutility/mcp-retail",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agentutility",
+          "repository": "https://github.com/rooz21/x402",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@agentutility/mcp-retail",
+          "registry": "npm",
+          "version": "0.2.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for the @agentutility rollforge cluster \u2014 pay-per-call x402 tools, no API keys, USDC on\u2026",
+        "id": "mcp/ai.agentutility/mcp-rollforge@0.1.5",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agentutility/mcp-rollforge",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agentutility",
+          "repository": "https://github.com/rooz21/x402",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@agentutility/mcp-rollforge",
+          "registry": "npm",
+          "version": "0.1.5"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for the @agentutility statline cluster \u2014 pay-per-call x402 tools, no API keys, USDC on\u2026",
+        "id": "mcp/ai.agentutility/mcp-statline@0.1.3",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agentutility/mcp-statline",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agentutility",
+          "repository": "https://github.com/rooz21/x402",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@agentutility/mcp-statline",
+          "registry": "npm",
+          "version": "0.1.3"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for the @agentutility synthforge cluster \u2014 pay-per-call x402 tools, no API keys, USDC\u2026",
+        "id": "mcp/ai.agentutility/mcp-synthforge@0.8.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agentutility/mcp-synthforge",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agentutility",
+          "repository": "https://github.com/rooz21/x402",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@agentutility/mcp-synthforge",
+          "registry": "npm",
+          "version": "0.8.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for the @agentutility web-probe cluster \u2014 pay-per-call x402 tools, no API keys, USDC on\u2026",
+        "id": "mcp/ai.agentutility/mcp-web-probe@0.32.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agentutility/mcp-web-probe",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agentutility",
+          "repository": "https://github.com/rooz21/x402",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@agentutility/mcp-web-probe",
+          "registry": "npm",
+          "version": "0.32.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:12+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for the @agentutility wordmint cluster \u2014 pay-per-call x402 tools, no API keys, USDC on\u2026",
+        "id": "mcp/ai.agentutility/mcp-wordmint@0.16.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.agentutility/mcp-wordmint",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.agentutility",
+          "repository": "https://github.com/rooz21/x402",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@agentutility/mcp-wordmint",
+          "registry": "npm",
+          "version": "0.16.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:14+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for Anki flashcards: adaptive review, notes, media, and deck management via AnkiConnect.",
+        "id": "mcp/ai.ankimcp/anki-mcp-server@0.24.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.ankimcp/anki-mcp-server",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.ankimcp",
+          "repository": "https://github.com/ankimcp/anki-mcp-server",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@ankimcp/anki-mcp-server",
+          "registry": "npm",
+          "version": "0.24.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:14+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Data observability tools for engineering teams: alerts, freshness, schema drift, lineage, quality.",
+        "id": "mcp/ai.anomalyarmor/armor-mcp@0.6.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.anomalyarmor/armor-mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.anomalyarmor",
+          "repository": "https://github.com/anomalyarmor/agents",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "armor-mcp",
+          "registry": "pypi",
+          "version": "0.6.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:14+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Personal context management for AI assistants",
+        "id": "mcp/ai.autoblocks/contextlayer-mcp@0.0.3",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.autoblocks/contextlayer-mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.autoblocks",
+          "repository": "https://github.com/autoblocksai/ctxl",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@contextlayer/mcp",
+          "registry": "npm",
+          "version": "0.0.3"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:14+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Personal context management for AI assistants",
+        "id": "mcp/ai.autoblocks/ctxl-mcp@0.0.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.autoblocks/ctxl-mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.autoblocks",
+          "repository": "https://github.com/autoblocksai/ctxl",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "ctxl-mcp",
+          "registry": "npm",
+          "version": "0.0.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:14+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Personal context management for AI assistants",
+        "id": "mcp/ai.autoblocks/ctxl@0.0.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.autoblocks/ctxl",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.autoblocks",
+          "repository": "https://github.com/autoblocksai/ctxl",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "ctxl",
+          "registry": "npm",
+          "version": "0.0.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:14+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Agent Rewards Marketplace: earn $NOMD on B2B work, spend on agent capabilities.",
+        "id": "mcp/ai.autonomad/computeback@1.1.3",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.autonomad/computeback",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.autonomad",
+          "repository": "https://github.com/Autonomad1/computeback-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@autonomad1/computeback-mcp",
+          "registry": "npm",
+          "version": "1.1.3"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:14+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "AI travel agent \u2014 book flights, hotels, activities, and events worldwide via autonomad.ai.",
+        "id": "mcp/ai.autonomad/travel@1.4.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.autonomad/travel",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.autonomad",
+          "repository": "https://github.com/Autonomad1/autonomad1",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "autonomad-travel",
+          "registry": "npm",
+          "version": "1.4.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:16+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "The bolthub API marketplace, L402 gateways, and your other MCP servers, on one Lightning budget.",
+        "id": "mcp/ai.bolthub/mcp@0.7.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.bolthub/mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.bolthub",
+          "repository": "https://github.com/signaltech-org/bolthub-sdk",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@bolthub/mcp",
+          "registry": "npm",
+          "version": "0.7.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:16+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Agent-native web hosting \u2014 deploy sites, manage DNS, register domains, scale infrastructure",
+        "id": "mcp/ai.borealhost/mcp@0.3.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.borealhost/mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.borealhost",
+          "repository": "https://github.com/alainsvrd/borealhost-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "borealhost-mcp",
+          "registry": "pypi",
+          "version": "0.3.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:31+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Do things on live websites: prices, availability, quotes, bookings, anything behind a form or login.",
+        "id": "mcp/ai.bowmark/bowmark@8.50.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.bowmark/bowmark",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.bowmark",
+          "repository": "https://github.com/bowmark-ai/skill",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "bowmark-mcp",
+          "registry": "pypi",
+          "version": "8.50.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:33+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Product search, price comparison, and affiliate-ready shopping across Singapore and US retailers.",
+        "id": "mcp/ai.buywhere/buywhere-mcp@0.3.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.buywhere/buywhere-mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.buywhere",
+          "repository": "https://github.com/BuyWhere/buywhere-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@buywhere/mcp-server",
+          "registry": "npm",
+          "version": "0.3.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:33+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "One MCP tool contract for telephony \u2014 any call provider, hosted, local, or BYOK.",
+        "id": "mcp/ai.callmcp/server@0.1.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.callmcp/server",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.callmcp",
+          "repository": "https://github.com/CallMCP/callmcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@callmcp/server",
+          "registry": "npm",
+          "version": "0.1.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:33+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "CertScore website risk-signal tools for scans, findings, evidence, and latest-domain lookups.",
+        "id": "mcp/ai.certscore/mcp@0.2.4",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.certscore/mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.certscore",
+          "repository": "https://github.com/ergoveritas1-alt/certscore.ai",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@certscore/mcp",
+          "registry": "npm",
+          "version": "0.2.4"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:33+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Calendar API for AI agents: events, availability, Google/Microsoft setup, scheduling, and iCal.",
+        "id": "mcp/ai.chronary/mcp@1.5.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.chronary/mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.chronary",
+          "repository": "https://github.com/Chronary/chronary-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@chronary/mcp",
+          "registry": "npm",
+          "version": "1.5.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:33+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Circulara Observe MCP plugin - meters your AI agents' token spend and carbon, free tier.",
+        "id": "mcp/ai.circulara/plugin@0.1.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.circulara/plugin",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.circulara",
+          "repository": "https://github.com/CircularRoute/circulara-core",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@circulara/plugin",
+          "registry": "npm",
+          "version": "0.1.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:33+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Score agent manifests, generate CI workflows, and pull Clarx scan findings into your IDE.",
+        "id": "mcp/ai.clarx/mcp@0.2.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.clarx/mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.clarx",
+          "repository": "https://github.com/Gernika-Labs/clarx-cloud",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@clarxai/mcp",
+          "registry": "npm",
+          "version": "0.2.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:33+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Web intelligence for AI agents: fetch, render, extract, research. x402 micropayments, no API keys.",
+        "id": "mcp/ai.clawfetch/mcp@0.2.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.clawfetch/mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.clawfetch",
+          "repository": "https://github.com/clawfetch/clawfetch-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@clawfetch/mcp",
+          "registry": "npm",
+          "version": "0.2.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:33+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Search and rate AI tools, MCP servers, and agent skills reviewed by real agent use.",
+        "id": "mcp/ai.clelp/clelp@1.1.8",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.clelp/clelp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.clelp",
+          "repository": "https://github.com/oscarsterling/clelp-skills",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "clelp-mcp-server",
+          "registry": "npm",
+          "version": "1.1.8"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:33+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Real-world actions for AI coding agents: domains, email, deploys, payments, and media generation.",
+        "id": "mcp/ai.clize/clize@0.23.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.clize/clize",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.clize",
+          "repository": "https://github.com/cooldk/clize-cli",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@clize/clize",
+          "registry": "npm",
+          "version": "0.23.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:33+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Source-linked CodeGraph exploration, ranked search, and static navigation for coding agents.",
+        "id": "mcp/ai.codenib/codenib@0.2.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.codenib/codenib",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.codenib",
+          "repository": "https://github.com/sysevol-ai/CodeNib",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "codenib",
+          "registry": "pypi",
+          "version": "0.2.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Schedule agent work and report write-once outcomes via CueAPI from any MCP host.",
+        "id": "mcp/ai.cueapi/mcp@0.1.3",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.cueapi/mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.cueapi",
+          "repository": "https://github.com/cueapi/cueapi-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@cueapi/mcp",
+          "registry": "npm",
+          "version": "0.1.3"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "SKILL-02 (not SKILL-01): AI influencer search on TikTok, Instagram & YouTube. sk_live_ token.",
+        "id": "mcp/ai.deinai/creator-skill-v2@0.2.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.deinai/creator-skill-v2",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.deinai",
+          "repository": "https://github.com/deinai/skill-service",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "creator-skill-v2",
+          "registry": "pypi",
+          "version": "0.2.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "AI influencer search on TikTok, Instagram, YouTube. Deinai MCP token required; credits per result.",
+        "id": "mcp/ai.deinai/creator-skill@1.0.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.deinai/creator-skill",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.deinai",
+          "repository": "https://github.com/deinai/deinai_backend",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "deinai-mcp",
+          "registry": "pypi",
+          "version": "1.0.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Rust MCP server and CLI for Apprise notification fan-out across dozens of delivery backends.",
+        "id": "mcp/ai.dinglebear/apprise-rmcp@0.1.3",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/apprise-rmcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/jmagar/apprise-rmcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "apprise-rmcp",
+          "registry": "npm",
+          "version": "0.1.3"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Rust MCP server and CLI for Arcane Docker and container management.",
+        "id": "mcp/ai.dinglebear/arcane-rmcp@0.4.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/arcane-rmcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/jmagar/arcane-rmcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "arcane-rmcp",
+          "registry": "npm",
+          "version": "0.4.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Rust MCP server for homelab logs, syslog, Docker logs, FTS search, and AI transcript correlation.",
+        "id": "mcp/ai.dinglebear/cortex-rmcp@3.9.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/cortex-rmcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/jmagar/cortex",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "cortex-rmcp",
+          "registry": "npm",
+          "version": "3.9.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Self-hosted homelab log intelligence over MCP, CLI, and REST with SQLite/FTS.",
+        "id": "mcp/ai.dinglebear/cortex@3.13.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/cortex",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/dinglebear-ai/cortex",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@dinglebear/cortex",
+          "registry": "npm",
+          "version": "3.13.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Rust MCP server and CLI for Gotify push notifications and message management.",
+        "id": "mcp/ai.dinglebear/gotify-rmcp@0.1.3",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/gotify-rmcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/jmagar/gotify-rmcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "gotify-rmcp",
+          "registry": "npm",
+          "version": "0.1.3"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Rust MCP gateway with Code Mode, authentication, setup, logs, CLI, HTTP API, and operator web UI.",
+        "id": "mcp/ai.dinglebear/labby@1.8.9",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/labby",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/dinglebear-ai/labby",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@dinglebear/labby",
+          "registry": "npm",
+          "version": "1.8.9"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Apprise notifications over MCP and CLI with authenticated stdio and HTTP transports.",
+        "id": "mcp/ai.dinglebear/rapprise@0.3.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/rapprise",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/dinglebear-ai/rapprise",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@dinglebear/rapprise",
+          "registry": "npm",
+          "version": "0.3.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Arcane Docker and Compose management over MCP and CLI with authenticated stdio and HTTP.",
+        "id": "mcp/ai.dinglebear/rarcane@0.4.4",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/rarcane",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/dinglebear-ai/rarcane",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@dinglebear/rarcane",
+          "registry": "npm",
+          "version": "0.4.4"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Gotify notifications and app, client, and message management over MCP and CLI.",
+        "id": "mcp/ai.dinglebear/rgotify@0.2.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/rgotify",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/dinglebear-ai/rgotify",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@dinglebear/rgotify",
+          "registry": "npm",
+          "version": "0.2.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Tailscale device, route, DNS, key, user, and ACL management over MCP and CLI.",
+        "id": "mcp/ai.dinglebear/rtailscale@0.1.4",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/rtailscale",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/dinglebear-ai/rtailscale",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@dinglebear/rtailscale",
+          "registry": "npm",
+          "version": "0.1.4"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Rust MCP server and CLI for UniFi Network controller operations.",
+        "id": "mcp/ai.dinglebear/runifi@0.2.5",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/runifi",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/dinglebear-ai/runifi",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@dinglebear/runifi",
+          "registry": "npm",
+          "version": "0.2.5"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "yt-dlp search, download, metadata, delivery, and Plex workflows over MCP and CLI.",
+        "id": "mcp/ai.dinglebear/rytdl@1.0.4",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/rytdl",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/dinglebear-ai/rytdl",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@dinglebear/rytdl",
+          "registry": "npm",
+          "version": "1.0.4"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "RMCP runtime for provider-backed agents with CLI, REST, HTTP MCP, plugins, and scaffold support.",
+        "id": "mcp/ai.dinglebear/soma@0.10.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/soma",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/dinglebear-ai/soma",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@dinglebear/soma",
+          "registry": "npm",
+          "version": "0.10.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Rust MCP and CLI server for Docker, host inspection, SSH, logs, ZFS, and safe file operations.",
+        "id": "mcp/ai.dinglebear/synapse-rmcp@0.5.4",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/synapse-rmcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/jmagar/synapse-rmcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "synapse-rmcp",
+          "registry": "npm",
+          "version": "0.5.4"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Host, Docker, Compose, SSH, logs, ZFS, and file operations over MCP and CLI.",
+        "id": "mcp/ai.dinglebear/synapse@1.0.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/synapse",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/dinglebear-ai/synapse",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@dinglebear/synapse",
+          "registry": "npm",
+          "version": "1.0.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Rust MCP server and CLI for Tailscale devices, users, keys, policies, and auth.",
+        "id": "mcp/ai.dinglebear/tailscale-rmcp@0.1.3",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/tailscale-rmcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/jmagar/tailscale-rmcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "tailscale-rmcp",
+          "registry": "npm",
+          "version": "0.1.3"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Rust MCP server and CLI for UniFi Network controller operations.",
+        "id": "mcp/ai.dinglebear/unifi-rmcp@0.2.4",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/unifi-rmcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/jmagar/unifi-rmcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "unifi-rmcp",
+          "registry": "npm",
+          "version": "0.2.4"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for Unraid API \u2014 provides tools to interact with an Unraid server's GraphQL API.",
+        "id": "mcp/ai.dinglebear/unraid-mcp@2.10.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/unraid-mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/dinglebear-ai/unraid",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "unraid-mcp",
+          "registry": "pypi",
+          "version": "2.10.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Rust MCP server and CLI for Unraid GraphQL, NAS, Docker, VM, and storage workflows.",
+        "id": "mcp/ai.dinglebear/unraid-rmcp@0.2.3",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/unraid-rmcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/jmagar/unraid-rmcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "unraid-rmcp",
+          "registry": "npm",
+          "version": "0.2.3"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Rust MCP server and CLI for Unraid GraphQL operations across NAS, Docker, VM, and storage workflows.",
+        "id": "mcp/ai.dinglebear/unraid@0.3.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/unraid",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/dinglebear-ai/unraid",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@dinglebear/unraid",
+          "registry": "npm",
+          "version": "0.3.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Rust MCP and CLI server for Sonarr, Radarr, Prowlarr, Plex, Jellyfin, and download clients.",
+        "id": "mcp/ai.dinglebear/yarr-mcp@1.1.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/yarr-mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/jmagar/yarr",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "yarr-mcp",
+          "registry": "npm",
+          "version": "1.1.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Self-hosted media fleet operations across Sonarr, Radarr, Plex, and related apps over MCP and CLI.",
+        "id": "mcp/ai.dinglebear/yarr@2.2.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/yarr",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/dinglebear-ai/yarr",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@dinglebear/yarr",
+          "registry": "npm",
+          "version": "2.2.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:36+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Rust MCP server and CLI for yt-dlp search, downloads, metadata, transfers, and Plex playlists.",
+        "id": "mcp/ai.dinglebear/ytdl-rmcp@1.0.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dinglebear/ytdl-rmcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dinglebear",
+          "repository": "https://github.com/jmagar/ytdl-rmcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "ytdl-rmcp",
+          "registry": "npm",
+          "version": "1.0.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:38+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Give your AI agent the ability to respond with live, interactive apps that evolve.",
+        "id": "mcp/ai.dynsoft/sac@0.1.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.dynsoft/sac",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.dynsoft",
+          "repository": "https://github.com/Software-As-Content/software-as-content-sdk",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "sac-sdk",
+          "registry": "pypi",
+          "version": "0.1.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:38+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Crypto social intelligence from X and Telegram, plus the Elfa Auto condition engine",
+        "id": "mcp/ai.elfa/mcp@3.0.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.elfa/mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.elfa",
+          "repository": "https://github.com/elfa-ai/mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@elfa-ai/mcp",
+          "registry": "npm",
+          "version": "3.0.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:38+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Human-in-the-loop for AI agents over MCP elicitation: confirm/form dialogs plus a capability doctor",
+        "id": "mcp/ai.elicitly/elicitly@0.4.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.elicitly/elicitly",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.elicitly",
+          "repository": "https://github.com/elicitly/elicitly",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "elicitly",
+          "registry": "npm",
+          "version": "0.4.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:38+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Trainable non-fiction writing voice, presets, and an anti-AI-tells audit for Claude, via MCP.",
+        "id": "mcp/ai.etincel/etincel-nonfiction@0.10.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.etincel/etincel-nonfiction",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.etincel",
+          "repository": "https://github.com/AIStoryHub/etincel",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "etincel",
+          "registry": "npm",
+          "version": "0.10.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:38+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Expert-curated knowledge, brand, research & earnings intelligence \u2014 31 tools, 220+ graphs.",
+        "id": "mcp/ai.fodda/mcp-server@1.32.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.fodda/mcp-server",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.fodda",
+          "repository": "https://github.com/piers-fawkes/fodda-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "fodda-mcp",
+          "registry": "npm",
+          "version": "1.32.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:38+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Reliable web access for AI agents: smart HTTP, rotating proxies, and full-browser rendering.",
+        "id": "mcp/ai.foura/mcp@0.6.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.foura/mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.foura",
+          "repository": "https://github.com/fouradata/mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@fouradata/mcp",
+          "registry": "npm",
+          "version": "0.6.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:40+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Permission-aware retrieval for AI systems: policy-enforced access to organizational knowledge.",
+        "id": "mcp/ai.gateco/gateco@1.8.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.gateco/gateco",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.gateco",
+          "repository": "https://github.com/fortisil/gateco-sdk-python",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "gateco",
+          "registry": "pypi",
+          "version": "1.8.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:40+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Gency AI product image generation - MCP server for Claude, Codex, Cursor, VS Code",
+        "id": "mcp/ai.gency/gency-mcp@0.6.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.gency/gency-mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.gency",
+          "repository": "https://github.com/studiolab-dev/gency-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@gency-ai/gency-mcp",
+          "registry": "npm",
+          "version": "0.6.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:40+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Discover and vet MCP servers: search 200K+ AI tools with security verification and schemas.",
+        "id": "mcp/ai.getvet/vet@0.4.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.getvet/vet",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.getvet",
+          "repository": "https://github.com/getvetai/vet",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@getvetai/mcp",
+          "registry": "npm",
+          "version": "0.4.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:40+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "AI-powered translation for 48 languages with context-aware quality",
+        "id": "mcp/ai.i18nagent/i18n-agent@1.16.3",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.i18nagent/i18n-agent",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.i18nagent",
+          "repository": "https://github.com/i18n-agent/mcp-client",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@i18n-agent/mcp-client",
+          "registry": "npm",
+          "version": "1.16.3"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:40+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for dossier automation standard - enables LLMs to discover, verify, and execute dossiers",
+        "id": "mcp/ai.imboard/dossier@1.0.4",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.imboard/dossier",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.imboard",
+          "repository": "https://github.com/imboard-ai/ai-dossier",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@ai-dossier/mcp-server",
+          "registry": "npm",
+          "version": "1.0.4"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:46+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Live, end-to-end encrypted, ephemeral file transfer between your AI agent and any device.",
+        "id": "mcp/ai.justdrop/mcp@0.1.6",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.justdrop/mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.justdrop",
+          "repository": "https://github.com/Managed-Digital-LLC/justdrop-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "justdrop-mcp",
+          "registry": "npm",
+          "version": "0.1.6"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:46+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Discover Kavel's AI photo/video generators, get tuned prompts, and open the right tool on kavel.ai.",
+        "id": "mcp/ai.kavel/kavel-mcp@0.1.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.kavel/kavel-mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.kavel",
+          "repository": "https://github.com/hanshs474/kavel-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "kavel-mcp",
+          "registry": "npm",
+          "version": "0.1.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:46+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Team-aware memory: intent, decisions, real-time conflicts for AI coding assistants.",
+        "id": "mcp/ai.kawacode/mcp@8.1.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.kawacode/mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.kawacode",
+          "repository": "https://github.com/kawacode-ai/kawa.mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@kawacode/mcp",
+          "registry": "npm",
+          "version": "8.1.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:46+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Live web search and clean-markdown page fetch over the Keenable web index.",
+        "id": "mcp/ai.keenable/web-search@0.1.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.keenable/web-search",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.keenable",
+          "repository": "https://github.com/keenableai/keenable-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@keenable/mcp",
+          "registry": "npm",
+          "version": "0.1.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:46+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Semantic code retrieval over a graph of entities, relationships, changes, and provenance.",
+        "id": "mcp/ai.kinlab/kin@0.5.37",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.kinlab/kin",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.kinlab",
+          "repository": "https://github.com/firelock-ai/kin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@kinlab/kin-mcp",
+          "registry": "npm",
+          "version": "0.5.37"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:48+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Identity, memory, trust, and swarm primitives for AI agents. MIRC base always free.",
+        "id": "mcp/ai.lithtrix/lithtrix-mcp@0.20.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.lithtrix/lithtrix-mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.lithtrix",
+          "repository": "https://github.com/lithtrix/lithtrix-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "lithtrix-mcp",
+          "registry": "npm",
+          "version": "0.20.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:48+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Check whether an LLM model id is deprecated, retiring, or retired, and what to migrate to.",
+        "id": "mcp/ai.llmintel/model-lifecycle@0.2.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.llmintel/model-lifecycle",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.llmintel",
+          "repository": "https://github.com/hivemindunit/llmintel-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@llmintel/mcp",
+          "registry": "npm",
+          "version": "0.2.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:48+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Convert PDF bank statements to checked Excel, CSV or JSON with balance validation.",
+        "id": "mcp/ai.mainbook/bank-statement-converter@0.5.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.mainbook/bank-statement-converter",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.mainbook",
+          "repository": "https://github.com/human-beyond/mainbook-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "mainbook-mcp",
+          "registry": "pypi",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:48+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Runtime authority for AI agents: credential mediation, spend cap, approval gates, audit log.",
+        "id": "mcp/ai.marchward/mcp-server@0.2.4",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.marchward/mcp-server",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.marchward",
+          "repository": "https://github.com/marchward/marchward",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@marchward/mcp-server",
+          "registry": "npm",
+          "version": "0.2.4"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:48+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "AI analyst desk for stocks, options & crypto with sourced trade setups and a public accuracy record.",
+        "id": "mcp/ai.marketintell/marketintell@0.3.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.marketintell/marketintell",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.marketintell",
+          "repository": "https://github.com/ravidsrk/marketintell",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "marketintell",
+          "registry": "npm",
+          "version": "0.3.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:48+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "The grounded data layer for any LLM: governed SQL, metrics, lineage and catalog over your data.",
+        "id": "mcp/ai.matih/mcp@0.2.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.matih/mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.matih",
+          "repository": "https://github.com/matih-labs/matih-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@matihlabs/mcp",
+          "registry": "npm",
+          "version": "0.2.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:48+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "An MCP server for analyzing PCAP files.",
+        "id": "mcp/ai.mcpcap/mcpcap@0.9.6",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.mcpcap/mcpcap",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.mcpcap",
+          "repository": "https://github.com/mcpcap/mcpcap",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "mcpcap",
+          "registry": "pypi",
+          "version": "0.9.6"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:50+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Read-only repo navigation and progressive disclosure; BM25 locator with registered evidence.",
+        "id": "mcp/ai.mentu/navigator@1.0.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.mentu/navigator",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.mentu",
+          "repository": "https://github.com/mentu-ai/mentu-navigator",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "mentu-navigator",
+          "registry": "npm",
+          "version": "1.0.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:50+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Governed MCP server for DMTF Redfish BMCs. Read-only by default; writes are opt-in and dry-run.",
+        "id": "mcp/ai.mirastacklabs/mirastack-redfish-mcp@0.1.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.mirastacklabs/mirastack-redfish-mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.mirastacklabs",
+          "repository": "https://github.com/mirastacklabs-ai/mirastack-redfish-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "mirastack-redfish-mcp",
+          "registry": "pypi",
+          "version": "0.1.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:50+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Model Context Protocol server for Monnet \u2014 motions, plans, and approvals for MCP-compatible clients.",
+        "id": "mcp/ai.monnet/mcp@0.2.3",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.monnet/mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.monnet",
+          "repository": "https://github.com/GregoireCasoetto/monnet-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@monnet/mcp",
+          "registry": "npm",
+          "version": "0.2.3"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:50+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Search, extend, and act on your team's Naumu knowledge graph: notes, threads, and nodes.",
+        "id": "mcp/ai.naumu/mcp@0.12.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.naumu/mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.naumu",
+          "repository": "https://github.com/naumu-ai/mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@naumu/mcp",
+          "registry": "npm",
+          "version": "0.12.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:50+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Human-approved project judgment and current state for connected AI agents, surfaced before work.",
+        "id": "mcp/ai.nauro/nauro@1.14.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.nauro/nauro",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.nauro",
+          "repository": "https://github.com/Nauro-AI/nauro",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "nauro",
+          "registry": "pypi",
+          "version": "1.14.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:50+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Create/check agent tasks, discover capabilities, and run V2 Jobs on NexusToken.",
+        "id": "mcp/ai.nexustoken/nexustoken-sdk@0.6.5",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.nexustoken/nexustoken-sdk",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.nexustoken",
+          "repository": "https://github.com/bobuilds/nexustoken-sdk",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "nexustoken-sdk",
+          "registry": "pypi",
+          "version": "0.6.5"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:52+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Agent reasoning, memory, and token-optimized context for AI applications.",
+        "id": "mcp/ai.nocturnus/logic-server@0.3.11",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.nocturnus/logic-server",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.nocturnus",
+          "repository": "https://github.com/Auctalis/nocturnusai",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "nocturnusai-mcp",
+          "registry": "npm",
+          "version": "0.3.11"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:52+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Query your Nudg3 brand visibility across ChatGPT, Claude, Gemini, AI Overviews, and Perplexity.",
+        "id": "mcp/ai.nudg3/brand-intelligence@1.1.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.nudg3/brand-intelligence",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.nudg3",
+          "repository": "https://github.com/NUDG3-AI/nudg3-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "nudg3-mcp",
+          "registry": "pypi",
+          "version": "1.1.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:52+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Stop re-explaining yourself to AI. Save knowledge once, use it in every conversation.",
+        "id": "mcp/ai.obris/mcp@0.4.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.obris/mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.obris",
+          "repository": "https://github.com/obris-dev/obris-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "obris-mcp",
+          "registry": "pypi",
+          "version": "0.4.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:52+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Solana-native MCP gateway for SAP, DeFi tools, SNS identity, and x402 payments.",
+        "id": "mcp/ai.oobeprotocol.sap.mcp/sap-mcp@0.7.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.oobeprotocol.sap.mcp/sap-mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.oobeprotocol.sap.mcp",
+          "repository": "https://github.com/OOBE-PROTOCOL/sap-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@oobe-protocol-labs/sap-mcp-server",
+          "registry": "npm",
+          "version": "0.7.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:52+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Find test gaps, generate grounded tests, and dynamically prove behavior with mutation testing.",
+        "id": "mcp/ai.orangepro/mcp@0.2.24",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.orangepro/mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.orangepro",
+          "repository": "https://github.com/OrangeproAI/orangepro-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@orangepro/mcp-server",
+          "registry": "npm",
+          "version": "0.2.24"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:52+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Launch products and branded checkouts on Payments AI, the Merchant of Record for AI-built apps.",
+        "id": "mcp/ai.payments.managed/payments-ai-mcp@1.4.3",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.payments.managed/payments-ai-mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.payments.managed",
+          "repository": "https://github.com/paymentsai/pai-managed",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@payments-ai/mcp",
+          "registry": "npm",
+          "version": "1.4.3"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:54+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Family calendar, tasks, meals, lists & rewards hub for AI assistants.",
+        "id": "mcp/ai.ponlo/server@1.13.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.ponlo/server",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.ponlo",
+          "repository": "https://github.com/ClaudioGodoyB/ponlo-ai",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "ponlo-ai",
+          "registry": "npm",
+          "version": "1.13.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:54+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Rent verified subdomains by the hour, day, or month. Free 24h trials, x402 USDC on Base.",
+        "id": "mcp/ai.popdot/popdot-mcp@1.0.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.popdot/popdot-mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.popdot",
+          "repository": "https://github.com/popdot-ai/popdot-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "popdot-mcp",
+          "registry": "npm",
+          "version": "1.0.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:54+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "The agent switchboard: identity, policy, loop-guard, and an append-only audit ledger.",
+        "id": "mcp/ai.positif/positif@0.2.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.positif/positif",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.positif",
+          "repository": "https://gitlab.com/getpositif/positif",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "positif-ai",
+          "registry": "pypi",
+          "version": "0.2.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:54+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Schedule and publish social posts to 11 platforms with media, campaigns, analytics and AI captions",
+        "id": "mcp/ai.posteverywhere/mcp@1.5.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.posteverywhere/mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.posteverywhere",
+          "repository": "https://github.com/posteverywhere/mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@posteverywhere/mcp",
+          "registry": "npm",
+          "version": "1.5.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:54+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Video scene understanding for AI agents via the Primate Vision API.",
+        "id": "mcp/ai.primateintelligence/mcp@0.4.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.primateintelligence/mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.primateintelligence",
+          "repository": "https://github.com/Primate-Intelligence/primate-intelligence-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@primate-intelligence/mcp",
+          "registry": "npm",
+          "version": "0.4.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:54+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Receipt-based verification for AI agent workflows \u2014 create, verify, and poll ephemeral proof objects",
+        "id": "mcp/ai.proofslip/mcp-server@0.2.3",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.proofslip/mcp-server",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.proofslip",
+          "repository": "https://github.com/Johnny-Z13/proofslip",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@proofslip/mcp-server",
+          "registry": "npm",
+          "version": "0.2.3"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:54+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "OpenAI-compatible LLM gateway: models, savings math, key provisioning, autonomous email-OTP signup",
+        "id": "mcp/ai.proxyllm/proxyllm-mcp@1.0.2",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.proxyllm/proxyllm-mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.proxyllm",
+          "repository": "https://github.com/proxyllm-ai/proxyllm-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "proxyllm-mcp",
+          "registry": "npm",
+          "version": "1.0.2"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-17T18:16:54+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Connect any two APIs and keep them in sync \u2014 48 MCP tools with shadow previews and diagnostics.",
+        "id": "mcp/ai.pullpush/pullpush-mcp@2.2.1",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "ai.pullpush/pullpush-mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "ai.pullpush",
+          "repository": "https://github.com/Kaduno-systems/pullpush-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read",
+            "network:remote-endpoint"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "kaduno-pullpush-mcp",
+          "registry": "npm",
+          "version": "2.2.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    }
+  ],
+  "index_version": 1
+}
