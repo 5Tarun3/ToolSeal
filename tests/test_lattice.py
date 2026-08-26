@@ -128,3 +128,41 @@ def test_every_guard_names_the_property_it_replaces() -> None:
     for guard in plan.guards:
         assert guard.compensates in plan.compensated
     assert len(plan.guards) == len(plan.compensated)
+
+
+def test_destructive_false_is_annotated_not_gated() -> None:
+    """A tool that declared it is *not* destructive must not be approval-gated.
+
+    `destructiveHint: false` is still a declaration, so it is still lost when
+    the target cannot carry it - but the consequence to restore is a recorded
+    hint, not a human approval step.
+    """
+    plan = plan_translation(
+        frozenset({SecurityProperty.DESTRUCTIVE}),
+        source="mcp",
+        target="crewai",
+        values={SecurityProperty.DESTRUCTIVE: False},
+    )
+
+    assert plan.compensated == frozenset({SecurityProperty.DESTRUCTIVE})
+    assert [guard.kind for guard in plan.guards] == [GuardKind.ANNOTATE_SIDECAR]
+
+
+def test_destructive_true_is_still_gated() -> None:
+    plan = plan_translation(
+        frozenset({SecurityProperty.DESTRUCTIVE}),
+        source="mcp",
+        target="crewai",
+        values={SecurityProperty.DESTRUCTIVE: True},
+    )
+
+    assert [guard.kind for guard in plan.guards] == [GuardKind.REQUIRE_APPROVAL]
+
+
+def test_destructive_without_a_value_fails_closed() -> None:
+    """A caller that cannot supply the value gets the gate, not the sidecar."""
+    plan = plan_translation(
+        frozenset({SecurityProperty.DESTRUCTIVE}), source="mcp", target="crewai"
+    )
+
+    assert [guard.kind for guard in plan.guards] == [GuardKind.REQUIRE_APPROVAL]

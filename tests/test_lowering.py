@@ -174,3 +174,32 @@ def test_a_real_lowering_produces_no_uncompensated_loss(target: str) -> None:
     # with anything to report.
     record = lower(descriptor(), target).record
     assert not findings_for("G4", record)
+
+
+def test_a_tool_declared_not_destructive_is_not_approval_gated() -> None:
+    """P1: 69 of 92 captured production tools were gated for a hint of `false`.
+
+    `destructiveHint: false` is a declaration the target cannot carry, so it is
+    still compensated - but by recording the hint, not by gating the call. The
+    approval decorator asserts "declared destructive by its author", which of
+    this tool would be untrue.
+    """
+    read_only = descriptor(
+        name="get_issue",
+        description="Retrieve an issue by ID.",
+        annotations=SecurityAnnotations(destructive=False, read_only=True),
+    )
+
+    result = lower(read_only, "crewai")
+
+    kinds = {guard.kind for guard in result.plan.guards}
+    assert GuardKind.REQUIRE_APPROVAL not in kinds
+    assert GuardKind.ANNOTATE_SIDECAR in kinds
+    assert "require_approval" not in result.source
+
+
+def test_a_tool_declared_destructive_is_still_approval_gated() -> None:
+    result = lower(descriptor(), "crewai")
+
+    assert GuardKind.REQUIRE_APPROVAL in {guard.kind for guard in result.plan.guards}
+    assert "@require_approval" in result.source

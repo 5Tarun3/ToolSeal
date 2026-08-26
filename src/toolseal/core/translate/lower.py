@@ -296,7 +296,12 @@ def lower(
     and `.record` keep describing translation loss only.
     """
     plan = plan_translation(
-        descriptor.declared_properties(), source=descriptor.source.kind, target=target
+        descriptor.declared_properties(),
+        source=descriptor.source.kind,
+        target=target,
+        # Without these the lattice cannot tell `destructiveHint: false` from
+        # `true` and fails closed, gating a tool its author called harmless.
+        values=descriptor.annotation_values(),
     )
     translation_guards = guards_for(plan)
     policy_guards = _policy_guards(

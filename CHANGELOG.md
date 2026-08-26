@@ -8,6 +8,18 @@ would notice, not by the internal step numbers used to plan the work.
 
 ## [Unreleased]
 
+### Fixed
+
+- `add tool` no longer wraps a tool in an approval guard when its author
+  declared `destructiveHint: false`. Guard synthesis keyed on whether the hint
+  was *present* rather than what it *said*, so any tool that mentioned the hint
+  at all was gated - and the generated decorator claimed the tool was "declared
+  destructive by its author", which for those tools was untrue. Lowering a real
+  92-tool corpus produced 92 approval gates where only 23 tools declared
+  themselves destructive. Hints declared `false` are now recorded in the
+  compensation manifest instead of gating the call. Compensation for an
+  undeclared hint is unchanged: it still fails closed and gates.
+
 ## [0.1.0] - 2026-08-26
 
 The first public release. Everything below had landed on `main` over the

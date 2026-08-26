@@ -17,6 +17,7 @@ to run a probe, not conclusions.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 
@@ -72,6 +73,38 @@ _COMPENSATION: dict[SecurityProperty, GuardKind] = {
     SecurityProperty.ERROR_CHANNEL: GuardKind.MAP_ERROR_CHANNEL,
     SecurityProperty.DESCRIPTION_INTEGRITY: GuardKind.PRESERVE_DESCRIPTION,
 }
+
+
+# A few properties compensate differently depending on what the author actually
+# asserted, because the *consequence* to restore differs. `destructiveHint:
+# false` is still a declaration, and still lost when the target cannot carry it
+# - but restoring it means recording the hint, not gating the call on a human.
+# Approval on a tool the author called harmless states something untrue, and
+# gating most of a toolset is how approval prompts stop being read.
+#
+# `declared` alone cannot answer this: it is a set of properties, so `False` and
+# `True` reach `plan_translation` identically. Hence `values`.
+_VALUE_SENSITIVE_COMPENSATION: dict[SecurityProperty, tuple[GuardKind, GuardKind]] = {
+    # property: (guard when asserted True, guard when asserted False)
+    SecurityProperty.DESTRUCTIVE: (GuardKind.REQUIRE_APPROVAL, GuardKind.ANNOTATE_SIDECAR),
+}
+
+
+def _compensation_for(
+    prop: SecurityProperty, values: Mapping[SecurityProperty, bool | None] | None
+) -> GuardKind | None:
+    """The guard that restores *prop*, given what the author asserted.
+
+    Fails closed: a caller that supplies no value, or an explicit ``None``
+    (meaning *not declared*), keeps the stronger guard. Only an explicit
+    ``False`` downgrades one.
+    """
+    sensitive = _VALUE_SENSITIVE_COMPENSATION.get(prop)
+    if sensitive is None:
+        return _COMPENSATION.get(prop)
+    when_true, when_false = sensitive
+    value = None if values is None else values.get(prop)
+    return when_false if value is False else when_true
 
 
 @dataclass(frozen=True)
@@ -241,12 +274,21 @@ def plan_translation(
     declared: frozenset[SecurityProperty],
     source: str,
     target: str,
+    *,
+    values: Mapping[SecurityProperty, bool | None] | None = None,
 ) -> TranslationPlan:
     """Decide what survives lowering *declared* properties from *source* to *target*.
 
     A property the target expresses is preserved. One it cannot express is
     compensated when a guard exists for it, and reported as unsupported when
     none does. Nothing is silently dropped.
+
+    *values* carries what the author actually asserted, for the properties
+    whose compensation depends on it - see `_VALUE_SENSITIVE_COMPENSATION`.
+    It is optional and fails closed: omitting it keeps the stronger guard, so
+    a caller that does not have the values cannot accidentally weaken one.
+    Pass `SecurityAnnotations.to_dict()`-style values via
+    `UnifiedToolDescriptor.annotation_values()`.
     """
     profile(source)
     target_profile = profile(target)
@@ -260,7 +302,7 @@ def plan_translation(
         if target_profile.expresses(prop):
             preserved.add(prop)
             continue
-        guard_kind = _COMPENSATION.get(prop)
+        guard_kind = _compensation_for(prop, values)
         if guard_kind is None:
             unsupported.add(prop)
             continue

@@ -449,6 +449,22 @@ class UnifiedToolDescriptor:
             properties.add(SecurityProperty.ERROR_CHANNEL)
         return frozenset(properties)
 
+    def annotation_values(self) -> dict[SecurityProperty, bool | None]:
+        """What the author asserted, not merely which hints they set.
+
+        The companion to :meth:`declared_properties`, which is a *set* and so
+        cannot distinguish `destructiveHint: true` from `destructiveHint:
+        false`. Compensation sometimes turns on that difference, so the values
+        travel alongside the properties rather than being reconstructed from
+        them. `None` keeps its meaning here: not declared.
+        """
+        return {
+            SecurityProperty.READ_ONLY: self.annotations.read_only,
+            SecurityProperty.DESTRUCTIVE: self.annotations.destructive,
+            SecurityProperty.IDEMPOTENT: self.annotations.idempotent,
+            SecurityProperty.OPEN_WORLD: self.annotations.open_world,
+        }
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "schema_version": SCHEMA_VERSION,
