@@ -8,18 +8,6 @@ would notice, not by the internal step numbers used to plan the work.
 
 ## [Unreleased]
 
-### Fixed
-
-- `add tool` no longer wraps a tool in an approval guard when its author
-  declared `destructiveHint: false`. Guard synthesis keyed on whether the hint
-  was *present* rather than what it *said*, so any tool that mentioned the hint
-  at all was gated - and the generated decorator claimed the tool was "declared
-  destructive by its author", which for those tools was untrue. Lowering a real
-  92-tool corpus produced 92 approval gates where only 23 tools declared
-  themselves destructive. Hints declared `false` are now recorded in the
-  compensation manifest instead of gating the call. Compensation for an
-  undeclared hint is unchanged: it still fails closed and gates.
-
 ## [0.1.0] - 2026-08-26
 
 The first public release. Everything below had landed on `main` over the
@@ -104,6 +92,17 @@ keyless signing of the wheel, sdist, and SBOM.
 
 ### Fixed
 
+- Guard synthesis respects what an annotation *says*, not merely that it is
+  present. `add tool` keyed on the presence of `destructiveHint`, so a tool
+  whose author declared `destructiveHint: false` was still wrapped in an
+  approval guard — and the generated decorator read "declared destructive by
+  its author", which for those tools was untrue. Enumerating three production
+  MCP servers (probe `P1`) and lowering the resulting 92-tool corpus produced
+  92 approval gates against 23 tools that actually declared themselves
+  destructive; an approval prompt on nearly every call is one nobody reads.
+  A hint declared `false` is now recorded in the compensation manifest rather
+  than gating the call. An *undeclared* hint is unchanged and still gates:
+  compensation fails closed, so only an explicit `false` relaxes a guard.
 - Three Windows-specific rendering defects in the audit report.
 - CLI table cells now truncate in plain ASCII rather than rich's Unicode
   ellipsis, which did not render correctly in every terminal encoding.
