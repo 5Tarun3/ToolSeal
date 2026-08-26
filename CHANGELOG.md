@@ -3,21 +3,24 @@
 All notable changes to this project are documented in this file. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-This project has not made a numbered release yet. Everything below has landed
-on `main` but never been published to PyPI, so it sits under **Unreleased**;
-the section is renamed to a version and a date the day that changes.
-
 Entries are grouped by what someone installing or auditing with `toolseal`
 would notice, not by the internal step numbers used to plan the work.
 
 ## [Unreleased]
 
+## [0.1.0rc1] - 2026-08-26
+
+The first tagged release, published as a pre-release to TestPyPI to rehearse
+the publishing pipeline (Trusted Publishing, sigstore signing, PEP 740
+attestations) before any version is burned on the real index. Everything
+below was already on `main`; nothing in this section is new as of the tag.
+
 ### Added
 
 - `toolseal init` scaffolds a secure-by-default agent project for a chosen
-  provider and framework (providers: Anthropic, OpenAI, Ollama; frameworks:
-  LangGraph, CrewAI), with credentials provisioned through the OS keychain
-  instead of a file on disk.
+  provider and framework (providers: Anthropic, OpenAI, Gemini, Ollama;
+  frameworks: LangGraph, CrewAI, Claude Code), with credentials provisioned
+  through the OS keychain instead of a file on disk.
 - `toolseal audit` scores any project — toolseal-created or not — against a
   misconfiguration taxonomy of checks grouped into seven families: credential
   exposure, capability overprovisioning, supply-chain integrity, transport and
