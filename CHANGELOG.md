@@ -36,7 +36,11 @@ would notice, not by the internal step numbers used to plan the work.
 - `toolseal registry` command group over a curated index of open-source tools
   and MCP servers: `sync` (crawl and rebuild the local index), `search`
   (ranked by relevance, ties broken by name and then by assessment), and
-  `show` (full detail on one entry).
+  `show` (full detail on one entry). `search`/`show` work immediately after
+  install, before `sync` has ever run, against a 109-entry set selected by
+  fixed, published, score-blind criteria
+  (`research/registry-curation-criteria.md`) and shipped inside the package;
+  a local `sync` supersedes it with the user's own, larger crawl.
 - A cross-framework translation layer: a tool normalized into the registry's
   descriptor can be lowered into any supported framework's native tool-binding
   idiom. Wherever a target framework can't express a security property the
