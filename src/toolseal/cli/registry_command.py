@@ -58,7 +58,7 @@ def default_index_path() -> Path:
     return base / INDEX_FILENAME
 
 
-def _default_index() -> RegistryIndex:
+def default_index() -> RegistryIndex:
     """The index `search`/`show` fall back to when `--index` is not given.
 
     A user's own synced cache wins once it exists - it is current as of
@@ -82,6 +82,17 @@ def sync(
     max_pages: Annotated[
         int, typer.Option("--max-pages", help="Stop after this many registry pages.")
     ] = 20,
+    search: Annotated[
+        str | None,
+        typer.Option(
+            "--search",
+            help=(
+                "Narrow the crawl to names matching this text. Default pagination is "
+                "alphabetically biased, so a name known in advance is found reliably "
+                "by searching for it rather than by raising --max-pages."
+            ),
+        ),
+    ] = None,
     as_json: Annotated[bool, typer.Option("--json", help="Machine-readable output.")] = False,
 ) -> None:
     """Crawl the MCP registry and rebuild the local index."""
@@ -92,7 +103,7 @@ def sync(
     # into "fetching the index n/max_pages" on stderr, the same bridge
     # `audit` already uses for C2/C3.
     with progress_hook.observe(new_progress_observer()):
-        report = crawl_mcp_registry(max_pages=max_pages)
+        report = crawl_mcp_registry(max_pages=max_pages, search=search)
     index = build_index(report)
 
     path = output or default_index_path()
@@ -197,7 +208,7 @@ def search(
     as_json: Annotated[bool, typer.Option("--json", help="Machine-readable output.")] = False,
 ) -> None:
     """Search the index, best-assessed first."""
-    index = RegistryIndex.read(index_path) if index_path is not None else _default_index()
+    index = RegistryIndex.read(index_path) if index_path is not None else default_index()
     results = index.search(query, limit=limit)
 
     if as_json:
@@ -269,7 +280,7 @@ def show(
     as_json: Annotated[bool, typer.Option("--json", help="Machine-readable output.")] = False,
 ) -> None:
     """Show everything known about one registry entry."""
-    index = RegistryIndex.read(index_path) if index_path is not None else _default_index()
+    index = RegistryIndex.read(index_path) if index_path is not None else default_index()
     entry = index.get(entry_id)
     if entry is None:
         message = f"no entry {entry_id!r} in the index; try `toolseal registry search`"

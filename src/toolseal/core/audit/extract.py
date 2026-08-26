@@ -33,6 +33,7 @@ from toolseal.core.model import (
     ProviderBinding,
     RuntimeConfig,
 )
+from toolseal.core.translate.lower import load_translations
 from toolseal.errors import ConfigError
 
 SKIPPED_DIRECTORIES: Final = frozenset(
@@ -262,6 +263,11 @@ def extract(root: Path) -> ProjectModel:
         mcp_servers=discover_mcp(resolved),
         dependencies=_collect_dependencies(resolved),
         providers=providers,
+        # Same story as mcp_servers above, for family G: `add tool` is what
+        # writes compensation.json, and until this read it back, G1-G5 were
+        # implemented but could only fire in a test constructing
+        # ProjectModel(translations=...) directly, never on a real project.
+        translations=load_translations(resolved),
         runtime=RuntimeConfig(
             redacts_credentials=redacts,
             logs_tool_invocations=redacts,

@@ -1,6 +1,6 @@
 {
   "built_at": "2026-08-17T18:16:54+00:00",
-  "count": 109,
+  "count": 113,
   "entries": [
     {
       "audit": {
@@ -6164,6 +6164,230 @@
           "package": "kaduno-pullpush-mcp",
           "registry": "npm",
           "version": "2.2.1"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-26T14:17:24+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "A Model Context Protocol (MCP) server for Kubernetes and OpenShift",
+        "id": "mcp/io.github.containers/kubernetes-mcp-server@0.0.66",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "io.github.containers/kubernetes-mcp-server",
+        "provenance": {
+          "license": null,
+          "publisher": "io.github.containers",
+          "repository": "https://github.com/containers/kubernetes-mcp-server",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "kubernetes-mcp-server",
+          "registry": "npm",
+          "version": "0.0.66"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-26T14:17:35+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "MCP server for Sentry - error monitoring, issue tracking, and debugging for AI assistants",
+        "id": "mcp/io.github.getsentry/sentry-mcp@0.25.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "io.github.getsentry/sentry-mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "io.github.getsentry",
+          "repository": "https://github.com/getsentry/sentry-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@sentry/mcp-server",
+          "registry": "npm",
+          "version": "0.25.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-26T14:17:14+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Playwright Tools for MCP",
+        "id": "mcp/io.github.microsoft/playwright-mcp@0.0.79",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "io.github.microsoft/playwright-mcp",
+        "provenance": {
+          "license": null,
+          "publisher": "io.github.microsoft",
+          "repository": "https://github.com/microsoft/playwright-mcp",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@playwright/mcp",
+          "registry": "npm",
+          "version": "0.0.79"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-08-26T14:17:06+00:00",
+        "score": 90
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Up-to-date code docs for any prompt",
+        "id": "mcp/io.github.upstash/context7@1.0.31",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "io.github.upstash/context7",
+        "provenance": {
+          "license": null,
+          "publisher": "io.github.upstash",
+          "repository": "https://github.com/upstash/context7",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": [
+            "env:read"
+          ]
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "@upstash/context7-mcp",
+          "registry": "npm",
+          "version": "1.0.31"
         },
         "status": "active"
       },

@@ -34,11 +34,13 @@ would notice, not by the internal step numbers used to plan the work.
   time with `init --profile` or adopted afterward with `policy apply`, which
   narrow the baseline policy to what each regime specifies.
 - `toolseal registry` command group over a curated index of open-source tools
-  and MCP servers: `sync` (crawl and rebuild the local index), `search`
-  (ranked by relevance, ties broken by name and then by assessment), and
-  `show` (full detail on one entry). `search`/`show` work immediately after
-  install, before `sync` has ever run, against a 109-entry set selected by
-  fixed, published, score-blind criteria
+  and MCP servers: `sync` (crawl and rebuild the local index, optionally
+  narrowed with `--search` to a name known in advance — default pagination is
+  alphabetically biased, so this is how a specific server is found reliably
+  without raising `--max-pages`), `search` (ranked by relevance, ties broken
+  by name and then by assessment), and `show` (full detail on one entry).
+  `search`/`show` work immediately after install, before `sync` has ever run,
+  against a 113-entry set selected by fixed, published, score-blind criteria
   (`research/registry-curation-criteria.md`) and shipped inside the package;
   a local `sync` supersedes it with the user's own, larger crawl.
 - A cross-framework translation layer: a tool normalized into the registry's
@@ -47,6 +49,13 @@ would notice, not by the internal step numbers used to plan the work.
   source declared — for example a destructive-operation annotation — a
   compensating guard is generated instead of the property being silently
   dropped.
+- `toolseal add tool <id>` lowers one registry entry into the current
+  project: it looks the entry up in the index, generates a guarded binding
+  for the project's target framework, and writes a `compensation.json`
+  manifest recording what survived translation, what was compensated by a
+  generated guard, and what could not be. `toolseal audit` reads that
+  manifest back, so family G (translation integrity) now fires against a
+  real project instead of only against a test-constructed one.
 - `toolseal doctor` reports environment information (OS, keychain backend,
   Python and toolseal versions) for diagnosing a broken setup.
 - CycloneDX SBOM generation (check `C5`): every scaffolded project is given

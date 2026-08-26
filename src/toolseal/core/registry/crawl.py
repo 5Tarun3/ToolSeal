@@ -24,6 +24,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any, Final
+from urllib.parse import quote
 
 from toolseal.core.net import HttpError, get_json
 from toolseal.core.policy import progress
@@ -209,12 +210,24 @@ def crawl_mcp_registry(
     max_pages: int = DEFAULT_MAX_PAGES,
     page_size: int = DEFAULT_PAGE_SIZE,
     delay_seconds: float = DEFAULT_DELAY_SECONDS,
+    search: str | None = None,
     fetch: Any = get_json,
 ) -> CrawlReport:
     """Page through the official MCP registry, normalising as it goes.
 
     *fetch* is injected so the crawl can be tested without a network, and so a
     caller can substitute a cache.
+
+    *search* narrows every page to the registry's own `?search=` filter,
+    matched against a server's `name`. Without it, a walk that stops after
+    `max_pages` is **alphabetically biased**: the registry's default
+    pagination order means a `max_pages` short of the whole registry returns
+    whatever sorts first, not a representative sample - one crawl measured
+    1988 of 2000 entries under the `ai.*` prefix, with a single namespace
+    accounting for roughly a third of them. Searching for a name a caller
+    already knows to look for sidesteps that ordering entirely, at the cost of
+    only ever finding what was searched for; it is a targeted lookup, not a
+    substitute for a full, unbiased crawl.
 
     `max_pages` is always a known bound by the time this runs - `registry
     sync`'s CLI option always supplies one - so "fetching the index" (spec
@@ -233,6 +246,8 @@ def crawl_mcp_registry(
     try:
         for page in range(max_pages):
             url = f"{MCP_REGISTRY_URL}?limit={page_size}"
+            if search:
+                url = f"{url}&search={quote(search, safe='')}"
             if cursor:
                 url = f"{url}&cursor={cursor}"
 

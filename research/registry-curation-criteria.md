@@ -67,6 +67,35 @@ report rather than in this document, because this document fixes the *rule*,
 which must survive being re-run against a different, later snapshot; the
 report records what one particular run of the rule was applied to.
 
+### A second acquisition path: search, not only pagination
+
+The paginated crawl above has a bias worth stating plainly rather than
+discovering later: `crawl_mcp_registry`'s default walk returns whatever the
+registry's own pagination sorts first, and one full crawl measured 1988 of
+2000 entries under the `ai.*` prefix, a single namespace (`ai.bowmark`)
+accounting for roughly a third of the total by itself. A `max_pages`-bounded
+`sync` run over that ordering can complete having sampled almost nothing
+outside one heavily-populated namespace — genuinely registered, widely-used
+servers such as `@upstash/context7-mcp` or `@sentry/mcp-server` exist in the
+registry and simply never surface within any practical page budget.
+
+`bench/registry_seed_search.py` reaches entries via the registry's own
+`?search=` filter instead of pagination order, for a short, explicit list of
+names independently verified against npm before being searched for. This
+changes *how an entry is found*, not *whether it qualifies*: every candidate
+still passes through the exact same `included()` predicate defined in this
+document, reading only descriptor fields, blind to `EntryAudit` — the
+supplement does not get a looser rule to compensate for the smaller
+candidate pool a single search term returns. A term that turns up nothing
+`included()`-worthy is reported as excluded, the same as any candidate from
+the paginated crawl.
+
+This does not fix the underlying pagination bias — a full, unbiased crawl of
+the registry (or a search-term-driven crawl broad enough to be representative
+rather than a short hand-picked list) is future work. It is a documented,
+narrow workaround for specific names known in advance, not a claim that the
+curated set's *composition* is now representative of the ecosystem.
+
 ## Inclusion rules
 
 All of the following must hold. A descriptor is included only if every rule

@@ -118,6 +118,35 @@ def test_crawl_follows_the_cursor() -> None:
     assert len(report.entries) == 2
 
 
+def test_search_narrows_every_page_url() -> None:
+    # Default pagination is alphabetically biased (crawl_mcp_registry's own
+    # docstring: one crawl measured 1988/2000 entries under `ai.*`). `search`
+    # is the escape hatch - it has to actually reach the registry's own
+    # `?search=` filter, not just exist as a parameter nothing uses.
+    seen_urls: list[str] = []
+
+    def fetch(url: str) -> dict[str, Any]:
+        seen_urls.append(url)
+        return {"servers": [SERVER], "metadata": {}}
+
+    crawl_mcp_registry(fetch=fetch, search="context7", delay_seconds=0)
+
+    assert seen_urls
+    assert "search=context7" in seen_urls[0]
+
+
+def test_search_term_is_url_encoded() -> None:
+    seen_urls: list[str] = []
+
+    def fetch(url: str) -> dict[str, Any]:
+        seen_urls.append(url)
+        return {"servers": [], "metadata": {}}
+
+    crawl_mcp_registry(fetch=fetch, search="a b/c", delay_seconds=0)
+
+    assert "search=a%20b%2Fc" in seen_urls[0]
+
+
 def test_partial_crawl_keeps_what_it_collected() -> None:
     # Discarding nine good pages because the tenth timed out would make the job
     # fail exactly when the ecosystem is largest.

@@ -19,7 +19,9 @@ to live.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
+from pathlib import Path
 from string import Template
 from typing import Any, Final
 
@@ -34,6 +36,7 @@ from toolseal.core.translate.lattice import (
 )
 
 MANIFEST_NAME: Final = "compensation.json"
+MANIFEST_SCHEMA_VERSION: Final = 1
 
 
 @dataclass(frozen=True)
@@ -237,7 +240,13 @@ def record_for(descriptor: UnifiedToolDescriptor, plan: TranslationPlan) -> Tran
     )
 
 
-def _identifier(name: str) -> str:
+def identifier(name: str) -> str:
+    """A valid Python identifier for *name*, stable enough to reuse as a filename.
+
+    Public because the CLI names the file a binding is written into with the same
+    sanitiser that names the function inside it - one derivation, so a tool's
+    file and its function never disagree on what it is called.
+    """
     cleaned = "".join(char if char.isalnum() else "_" for char in name.strip().lower())
     cleaned = cleaned.strip("_") or "tool"
     return f"_{cleaned}" if cleaned[0].isdigit() else cleaned
@@ -305,7 +314,7 @@ def lower(
     source = _BINDING.substitute(
         tool_name=descriptor.name,
         tool_name_literal=repr(descriptor.name),
-        function_name=_identifier(descriptor.name),
+        function_name=identifier(descriptor.name),
         source=plan.source,
         target=plan.target,
         status=plan.status,
@@ -336,3 +345,69 @@ def ungeneratable_guard_kinds() -> frozenset[GuardKind]:
     loudly rather than quietly emit a binding with a missing guard.
     """
     return frozenset(GuardKind) - frozenset(_GUARD_CODE)
+
+
+def read_manifest(root: Path) -> tuple[dict[str, Any], ...]:
+    """Every row `add tool` has recorded in *root*'s compensation manifest.
+
+    Absent or malformed reads as empty rather than raising: a corrupt manifest
+    is a finding for whichever check reads it back as a translation, not a
+    reason to abort every other check the way `extract()` builds the rest of
+    the model (see `core/adapters/mcp_targets.discover`'s identical reasoning).
+    """
+    path = root / MANIFEST_NAME
+    if not path.is_file():
+        return ()
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return ()
+    if not isinstance(data, dict):
+        return ()
+    entries = data.get("tools")
+    if not isinstance(entries, list):
+        return ()
+    return tuple(entry for entry in entries if isinstance(entry, dict))
+
+
+def write_manifest(root: Path, entries: tuple[dict[str, Any], ...]) -> str:
+    """The full compensation-manifest content after adding *entries*.
+
+    Returned as text rather than written directly, matching
+    `adapters.mcp_targets.write`'s merge-then-hand-to-inject shape: the caller
+    still owns the write, through `inject()`, so it stays revertable the same
+    way every other file `add` touches does.
+    """
+    payload = {"schema_version": MANIFEST_SCHEMA_VERSION, "tools": list(entries)}
+    return json.dumps(payload, indent=2, sort_keys=True) + "\n"
+
+
+def record_from_manifest_entry(entry: dict[str, Any]) -> TranslationRecord:
+    """Rebuild the `TranslationRecord` family G reads from one manifest row.
+
+    The manifest is written for a human reviewer - property names, not guard
+    kinds, and no separate "preserved" bookkeeping for `validates_client_side`
+    - so this recomputes what family G needs from the same `compensated`/
+    `unsupported`/`preserved` lists `manifest_entry()` produced, rather than
+    re-running `plan_translation` against a target that may since have
+    changed what it expresses.
+    """
+    compensated = frozenset(str(item) for item in entry.get("compensated") or ())
+    unsupported = frozenset(str(item) for item in entry.get("unsupported") or ())
+    preserved = frozenset(str(item) for item in entry.get("preserved") or ())
+    client_validation = str(SecurityProperty.CLIENT_VALIDATION)
+    error_channel = str(SecurityProperty.ERROR_CHANNEL)
+    return TranslationRecord(
+        tool_name=str(entry.get("tool", "")),
+        source_abstraction=str(entry.get("source", "")),
+        target_abstraction=str(entry.get("target", "")),
+        dropped_properties=compensated | unsupported,
+        guards_emitted=compensated,
+        validates_client_side=client_validation in preserved | compensated,
+        maps_error_channel=error_channel in preserved | compensated,
+    )
+
+
+def load_translations(root: Path) -> tuple[TranslationRecord, ...]:
+    """Every translation `add tool` has recorded for *root*, as family G reads them."""
+    return tuple(record_from_manifest_entry(entry) for entry in read_manifest(root))
