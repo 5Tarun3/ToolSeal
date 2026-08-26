@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "toolseal"
-version = "0.1.0rc1"
+version = "0.1.0"
 description = "Secure-by-default scaffolding and cross-framework tool registry for agentic systems"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -12,9 +12,10 @@ license = "Apache-2.0"
 license-files = ["LICENSE"]
 keywords = ["agents", "mcp", "supply-chain", "security", "scaffolding", "sbom"]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",

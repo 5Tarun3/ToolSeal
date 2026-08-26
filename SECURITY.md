@@ -7,7 +7,13 @@ docs, template, or MCP server during its own research — see
 
 ## Supported versions
 
-toolseal is pre-alpha. Only the `main` branch receives fixes.
+Fixes land on `main` and are released from there. Only the latest released
+version is supported; there are no maintenance branches for older releases.
+
+| Version | Supported |
+| --- | --- |
+| 0.1.x | Yes |
+| < 0.1 | No (pre-release) |
 
 ## Reporting a vulnerability
 

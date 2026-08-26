@@ -8,12 +8,15 @@ would notice, not by the internal step numbers used to plan the work.
 
 ## [Unreleased]
 
-## [0.1.0rc1] - 2026-08-26
+## [0.1.0] - 2026-08-26
 
-The first tagged release, published as a pre-release to TestPyPI to rehearse
-the publishing pipeline (Trusted Publishing, sigstore signing, PEP 740
-attestations) before any version is burned on the real index. Everything
-below was already on `main`; nothing in this section is new as of the tag.
+The first public release. Everything below had landed on `main` over the
+course of development; this section is the initial feature set as published,
+not a list of changes since some earlier release.
+
+Released from the same pipeline rehearsed by `0.1.0rc1` on TestPyPI: PyPI
+Trusted Publishing (OIDC, no stored token), PEP 740 attestations, and sigstore
+keyless signing of the wheel, sdist, and SBOM.
 
 ### Added
 
@@ -104,4 +107,5 @@ below was already on `main`; nothing in this section is new as of the tag.
   implicit one, and the project's own SBOM — previously stale and missing it
   entirely — is regenerated from the environment actually installed.
 
-[Unreleased]: https://github.com/5Tarun3/ToolSeal/commits/main
+[Unreleased]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/5Tarun3/ToolSeal/releases/tag/v0.1.0
