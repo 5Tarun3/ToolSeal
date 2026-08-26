@@ -63,6 +63,28 @@ research = [
 [tool.hatch.build.targets.wheel]
 packages = ["src/toolseal"]
 
+# The sdist ships the tool and nothing else. Without this, hatchling defaults
+# to "everything git does not ignore", which swept in three things that have
+# no business on a package index:
+#
+#   1. `research/` - study results, probe findings, and the figures for a
+#      paper that is not published yet. Already public in the repository, but
+#      a package index is a different distribution channel with its own
+#      mirrors and archives, and this content is not part of the tool.
+#   2. `research/studies/*/*/snapshot/**` - materialised files from other
+#      people's repositories, captured as corpus. Redistributing third-party
+#      code under this project's own Apache-2.0 sdist is not ours to do.
+#   3. `reference/`, `REVIEW.md`, `.claude/`, `.github/` - repository
+#      furniture that a `pip download` should never receive.
+#
+# Tests are deliberately excluded rather than shipped: they read fixtures
+# from `research/` and `reference/` (see tests/test_control_mapping.py and
+# the bench suites), so an sdist carrying tests without that content would
+# ship a test suite that cannot pass. A broken test suite in a distribution
+# is worse than none.
+[tool.hatch.build.targets.sdist]
+only-include = ["src/toolseal", "LICENSE", "README.md", "CHANGELOG.md"]
+
 # ---------------------------------------------------------------------------
 # Lint / format
 # ---------------------------------------------------------------------------

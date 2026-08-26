@@ -5,7 +5,7 @@
 [![CI](https://github.com/5Tarun3/ToolSeal/actions/workflows/ci.yml/badge.svg)](https://github.com/5Tarun3/ToolSeal/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/toolseal.svg)](https://pypi.org/project/toolseal/)
 [![Python](https://img.shields.io/pypi/pyversions/toolseal.svg)](https://pypi.org/project/toolseal/)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/5Tarun3/ToolSeal/blob/main/LICENSE)
 
 Setting up an agent means reconciling a provider SDK, a framework's tool-binding
 idiom, and MCP server configuration. That reconciliation is usually done by
@@ -156,7 +156,7 @@ $ toolseal registry search context7
 
 A curated set ships inside the package, so `search` and `show` work immediately
 after install — before `registry sync` has ever run. Curation criteria are
-[fixed and published](research/registry-curation-criteria.md), applied by a
+[fixed and published](https://github.com/5Tarun3/ToolSeal/blob/main/research/registry-curation-criteria.md), applied by a
 script rather than a person, and deliberately **blind to the audit score**: a
 registry that selects entries because they scored well and then reports that its
 entries score well has measured nothing.
@@ -292,7 +292,7 @@ Or upload SARIF to GitHub code scanning:
 
 ## Contributing
 
-Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full
+Contributions are welcome. See [CONTRIBUTING.md](https://github.com/5Tarun3/ToolSeal/blob/main/CONTRIBUTING.md) for the full
 guide.
 
 ```bash
@@ -320,23 +320,23 @@ Two project-specific rules worth knowing before your first PR:
 
 ## Documentation
 
-- [`reference/taxonomy.md`](reference/taxonomy.md) — the normative
+- [`reference/taxonomy.md`](https://github.com/5Tarun3/ToolSeal/blob/main/reference/taxonomy.md) — the normative
   misconfiguration taxonomy: every check, its severity, and its mapping to
   published standards.
-- [`research/`](research/) — probes, measurement harnesses, and the evidence
+- [`research/`](https://github.com/5Tarun3/ToolSeal/tree/main/research) — probes, measurement harnesses, and the evidence
   behind the project's claims, including the
-  [registry curation criteria](research/registry-curation-criteria.md) and the
-  [evaluation protocol](research/evaluation-protocol.md).
-- [`CHANGELOG.md`](CHANGELOG.md) — release history.
+  [registry curation criteria](https://github.com/5Tarun3/ToolSeal/blob/main/research/registry-curation-criteria.md) and the
+  [evaluation protocol](https://github.com/5Tarun3/ToolSeal/blob/main/research/evaluation-protocol.md).
+- [`CHANGELOG.md`](https://github.com/5Tarun3/ToolSeal/blob/main/CHANGELOG.md) — release history.
 
 ## Security
 
-To report a vulnerability **in toolseal**, see [SECURITY.md](SECURITY.md).
+To report a vulnerability **in toolseal**, see [SECURITY.md](https://github.com/5Tarun3/ToolSeal/blob/main/SECURITY.md).
 
 For how this project handles vulnerabilities it finds in *other people's*
 quickstarts, templates, and MCP servers during its own research, see
-[DISCLOSURE.md](DISCLOSURE.md).
+[DISCLOSURE.md](https://github.com/5Tarun3/ToolSeal/blob/main/DISCLOSURE.md).
 
 ## License
 
-[Apache-2.0](LICENSE).
+[Apache-2.0](https://github.com/5Tarun3/ToolSeal/blob/main/LICENSE).
