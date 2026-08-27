@@ -32,6 +32,7 @@ from importlib import resources
 from pathlib import Path
 from typing import Any, Final
 
+from toolseal.core.registry.retrieval import Field, Ranker
 from toolseal.core.registry.utd import UnifiedToolDescriptor
 from toolseal.errors import RegistryError
 
@@ -161,27 +162,60 @@ class RegistryIndex:
         return next((entry for entry in self.entries if entry.id == entry_id), None)
 
     def search(self, query: str, *, limit: int = 20) -> tuple[IndexEntry, ...]:
-        """Matching entries, best-assessed first, most relevant among ties.
+        """Matching entries, most relevant first, with blocking entries floored.
 
-        Ordering by audit score rather than by popularity is a deliberate
-        editorial choice: a registry that surfaces the most-downloaded tool
-        first teaches people to install the most-downloaded tool. That
-        discipline is the outer sort key and does not change. Name relevance
-        only breaks ties *within* a given (blocking, score) bracket, so an
-        exact or prefix name match outranks a description-only match without
-        ever letting relevance override the security-first ordering.
+        **Relevance decides position; the assessment is reported, not ranked
+        on.** An earlier version made relevance a tiebreaker inside a
+        `(blocking, score)` bracket, on the reasoning that a registry
+        surfacing the most-downloaded tool first teaches people to install the
+        most-downloaded tool. That reasoning still holds against *popularity*
+        ranking, but score-first ordering answered "what is safest here" when
+        the user had asked "what does the thing I want", and it could bury an
+        exact match under an unrelated entry that merely scored better.
+
+        Posture now travels with each result instead of moving it: `audit`
+        carries the findings, and the CLI prints them beside the row. The one
+        exception is `blocking`, which is a floor rather than a weight - an
+        entry that failed a critical check sorts below every entry that did
+        not, however well it matches. It is still returned. Hiding a result the
+        user asked for would teach them the search is not answering them.
+
+        An empty query is a browse rather than a search: with no terms to rank
+        by, entries come back best-assessed first, which is the old ordering
+        and the only sensible one when relevance is undefined.
         """
-        needle = query.casefold().strip()
-        matched = [entry for entry in self.entries if entry.matches(query)]
-        matched.sort(
-            key=lambda entry: (
-                entry.audit.blocking,
-                -entry.audit.score,
-                entry.name_relevance(needle),
-                entry.id,
+        if not query.strip():
+            ordered = sorted(
+                self.entries,
+                key=lambda entry: (entry.audit.blocking, -entry.audit.score, entry.id),
             )
-        )
-        return tuple(matched[:limit])
+            return tuple(ordered[:limit])
+
+        ranker = Ranker([self._document(entry) for entry in self.entries])
+
+        def floor_then_relevance(pair: tuple[int, float]) -> tuple[bool, float, str]:
+            entry = self.entries[pair[0]]
+            return (entry.audit.blocking, -pair[1], entry.id)
+
+        ranked = sorted(ranker.rank(query), key=floor_then_relevance)
+        return tuple(self.entries[index] for index, _score in ranked[:limit])
+
+    def _document(self, entry: IndexEntry) -> dict[Field, str]:
+        """The searchable fields of one entry, for the ranker.
+
+        `SERVER` carries the package rather than the name so that a query
+        naming a package (`@playwright/mcp`) reaches the tool even when the
+        registry's display name shares none of its words - a real case in the
+        shipped set, where `io.github.microsoft/playwright-mcp` describes
+        itself only as "Playwright Tools for MCP".
+        """
+        descriptor = entry.descriptor
+        return {
+            Field.NAME: descriptor.name,
+            Field.DESCRIPTION: descriptor.description,
+            Field.SERVER: descriptor.source.package,
+            Field.PERMISSIONS: " ".join(sorted(descriptor.permissions)),
+        }
 
     def names(self) -> frozenset[str]:
         """Every indexed package name - the reference set for lookalike detection."""

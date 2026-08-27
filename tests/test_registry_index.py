@@ -297,13 +297,40 @@ def test_search_ranks_an_exact_name_match_above_a_description_only_match() -> No
     assert [r.descriptor.name for r in results] == ["postgresql", "unrelated-name"]
 
 
-def test_search_relevance_never_outranks_the_security_ordering() -> None:
-    # Relevance is a tiebreaker within a (blocking, score) bracket, not a
-    # replacement for it: a worse-assessed exact name match still sorts after
-    # a better-assessed entry that only matched on description.
+def test_relevance_ranks_ahead_of_a_better_assessed_weaker_match() -> None:
+    # Deliberate reversal of the earlier policy, which made relevance a
+    # tiebreaker *within* a (blocking, score) bracket. That ordering answered
+    # "what is safest" when the user asked "what does what I want", and it
+    # could bury an exact match under an unrelated entry that merely scored
+    # better. Search now ranks by relevance and reports posture alongside each
+    # result; the score decides nothing about position except through the
+    # blocking floor below.
     index = RegistryIndex(entries=(entry("postgresql", 20), entry("unrelated-name", 90)))
 
-    assert index.search("postgresql")[0].descriptor.name == "unrelated-name"
+    assert index.search("postgresql")[0].descriptor.name == "postgresql"
+
+
+def test_a_blocking_entry_still_sorts_below_every_non_blocking_match() -> None:
+    # The one place posture does override relevance. A blocking entry failed a
+    # critical check, so it is floored beneath everything that did not, however
+    # well it matches - but it is still returned, because silently hiding a
+    # result the user asked for teaches them the search is lying to them.
+    index = RegistryIndex(
+        entries=(entry("postgresql", 95, blocking=True), entry("unrelated-name", 20))
+    )
+
+    results = index.search("postgresql")
+
+    assert [r.descriptor.name for r in results] == ["unrelated-name", "postgresql"]
+
+
+def test_search_finds_terms_that_are_not_adjacent() -> None:
+    # The substring matcher required a contiguous, correctly ordered phrase, so
+    # this returned nothing at all.
+    index = RegistryIndex(entries=(entry("io.example/x", 90),))
+
+    assert index.search("postgresql server")
+    assert index.search("server postgresql")
 
 
 def test_names_provides_the_lookalike_reference_set() -> None:
