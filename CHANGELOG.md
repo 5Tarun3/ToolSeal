@@ -8,15 +8,69 @@ would notice, not by the internal step numbers used to plan the work.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-08-28
+
+### Changed
+
+- The shipped registry is no longer a slice of the alphabet. The previous 113
+  entries came from a bounded crawl of a listing ordered such that a bounded
+  walk returns an alphabetical prefix, which put 1988 of 2000 crawled entries
+  under one namespace prefix and left the set with no database tool at all -
+  `registry search database` returned nothing. It is replaced by one canonical
+  server per capability people use daily (filesystem, git, shell, Python,
+  fetch, time, memory, sequential thinking, PostgreSQL, MongoDB, SQLite,
+  Redis, Chroma, browser, docs, Docker, Kubernetes, Aseprite, Sentry, Notion,
+  Linear), each verified against npm or PyPI directly. Recorded as a coverage
+  set rather than a sample: no proportion computed over it describes the
+  ecosystem.
+- `registry search` ranks by relevance instead of testing whether the query is
+  a contiguous substring. The old matcher required the whole query to appear
+  verbatim and in order, so "postgres database" and "browser automation"
+  returned nothing at all. Replaced with BM25 over weighted fields, with
+  stopword removal and light stemming. Measured against twenty queries fixed
+  before the ranker was written: MRR 0.000 to 0.604, recall@5 0.042 to 0.717.
+- Search results report each entry's posture inline. The `tools` column, which
+  only ever said `1` or `-`, becomes `hints` and carries what a row declares
+  about itself - destructive, read-only, enumerated-but-undeclared, or not
+  enumerated - each with a spelled-out legend.
+- Relevance now decides result position and the assessment is reported beside
+  it rather than ranked on. A blocking entry remains floored below everything
+  that is not blocking, but is still returned: hiding a result someone asked
+  for teaches them the search is not answering them.
+
+### Added
+
+- The registry indexes **tools**, not only servers. 203 tool entries across 21
+  capabilities carry real input schemas and annotation hints, where every
+  previous entry reported `tools_enumerated: false` with both fields empty.
+- `toolseal registry ingest` adds a server's tools from a captured
+  `tools/list` response. `sync` still crawls metadata and still executes
+  nothing; this is the other half, reading a response an operator already
+  obtained from a server they chose to authenticate to.
+
+### Fixed
+
+- `add tool` no longer wraps a tool in an approval guard when its author
+  declared `destructiveHint: false`. Guard synthesis keyed on whether the hint
+  was present rather than what it said, so a real 92-tool corpus produced 92
+  approval gates where 23 tools declared themselves destructive - and each
+  generated decorator claimed the tool was "declared destructive by its
+  author", which for those tools was untrue. Compensation for an *undeclared*
+  hint is unchanged: it still fails closed and gates.
+
 ## [0.1.0] - 2026-08-26
 
-The first public release. Everything below had landed on `main` over the
-course of development; this section is the initial feature set as published,
-not a list of changes since some earlier release.
+The initial feature set, prepared for release: everything below had landed on
+`main` over the course of development, so this section is not a list of
+changes since some earlier version.
 
-Released from the same pipeline rehearsed by `0.1.0rc1` on TestPyPI: PyPI
-Trusted Publishing (OIDC, no stored token), PEP 740 attestations, and sigstore
-keyless signing of the wheel, sdist, and SBOM.
+**Prepared but never tagged.** The version was cut and the artefacts built,
+then the registry work that became `0.1.1` landed before a tag was pushed. The
+only version published from this line is `0.1.0rc1`, which went to TestPyPI as
+a rehearsal of the release pipeline - PyPI Trusted Publishing over OIDC with
+no stored token, PEP 740 attestations, and sigstore keyless signing of the
+wheel, sdist and SBOM. The section is kept rather than folded into `0.1.1`
+because the work in it is real and was reviewed as its own unit.
 
 ### Added
 
@@ -46,9 +100,9 @@ keyless signing of the wheel, sdist, and SBOM.
   without raising `--max-pages`), `search` (ranked by relevance, ties broken
   by name and then by assessment), and `show` (full detail on one entry).
   `search`/`show` work immediately after install, before `sync` has ever run,
-  against a 113-entry set selected by fixed, published, score-blind criteria
-  (`research/registry-curation-criteria.md`) and shipped inside the package;
-  a local `sync` supersedes it with the user's own, larger crawl.
+  against a curated set shipped inside the package; a local `sync`
+  supersedes it with the user's own crawl. (The set this version shipped was
+  replaced in `0.1.1`; see there for why.)
 - A cross-framework translation layer: a tool normalized into the registry's
   descriptor can be lowered into any supported framework's native tool-binding
   idiom. Wherever a target framework can't express a security property the
@@ -118,5 +172,6 @@ keyless signing of the wheel, sdist, and SBOM.
   implicit one, and the project's own SBOM — previously stale and missing it
   entirely — is regenerated from the environment actually installed.
 
-[Unreleased]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/5Tarun3/ToolSeal/releases/tag/v0.1.0
