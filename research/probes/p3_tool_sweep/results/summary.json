@@ -1,0 +1,289 @@
+{
+  "annotated": 95,
+  "attempted": 18,
+  "enumerated": 11,
+  "isolation": "host (no container isolation)",
+  "servers": [
+    {
+      "annotated": 2,
+      "attempts": 1,
+      "capability": "time",
+      "command": [
+        "uvx",
+        "mcp-server-time"
+      ],
+      "error": "",
+      "needs": "",
+      "ok": true,
+      "server_id": "mcp/io.modelcontextprotocol/server-time@2026.8.18",
+      "stderr_tail": "",
+      "tool_count": 2
+    },
+    {
+      "annotated": 0,
+      "attempts": 1,
+      "capability": "http-fetch",
+      "command": [
+        "uvx",
+        "mcp-server-fetch"
+      ],
+      "error": "",
+      "needs": "",
+      "ok": true,
+      "server_id": "mcp/io.modelcontextprotocol/server-fetch@2026.8.18",
+      "stderr_tail": "",
+      "tool_count": 1
+    },
+    {
+      "annotated": 9,
+      "attempts": 1,
+      "capability": "memory",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "error": "",
+      "needs": "",
+      "ok": true,
+      "server_id": "mcp/io.modelcontextprotocol/server-memory@2026.7.4",
+      "stderr_tail": "",
+      "tool_count": 9
+    },
+    {
+      "annotated": 1,
+      "attempts": 1,
+      "capability": "reasoning",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "error": "",
+      "needs": "",
+      "ok": true,
+      "server_id": "mcp/io.modelcontextprotocol/server-sequential-thinking@2026.7.4",
+      "stderr_tail": "",
+      "tool_count": 1
+    },
+    {
+      "annotated": 14,
+      "attempts": 1,
+      "capability": "filesystem",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem"
+      ],
+      "error": "",
+      "needs": "a directory to confine itself to",
+      "ok": true,
+      "server_id": "mcp/io.modelcontextprotocol/server-filesystem@2026.7.10",
+      "stderr_tail": "",
+      "tool_count": 14
+    },
+    {
+      "annotated": 12,
+      "attempts": 1,
+      "capability": "git",
+      "command": [
+        "uvx",
+        "mcp-server-git"
+      ],
+      "error": "",
+      "needs": "a repository path",
+      "ok": true,
+      "server_id": "mcp/io.modelcontextprotocol/server-git@2026.8.18",
+      "stderr_tail": "",
+      "tool_count": 12
+    },
+    {
+      "annotated": 2,
+      "attempts": 1,
+      "capability": "documentation",
+      "command": [
+        "npx",
+        "-y",
+        "@upstash/context7-mcp"
+      ],
+      "error": "",
+      "needs": "",
+      "ok": true,
+      "server_id": "mcp/io.github.upstash/context7@4.0.3",
+      "stderr_tail": "",
+      "tool_count": 2
+    },
+    {
+      "annotated": 24,
+      "attempts": 1,
+      "capability": "browser",
+      "command": [
+        "npx",
+        "-y",
+        "@playwright/mcp"
+      ],
+      "error": "",
+      "needs": "browser binaries installed",
+      "ok": true,
+      "server_id": "mcp/io.github.microsoft/playwright-mcp@0.0.79",
+      "stderr_tail": "",
+      "tool_count": 24
+    },
+    {
+      "annotated": 0,
+      "attempts": 2,
+      "capability": "sqlite",
+      "command": [
+        "uvx",
+        "mcp-server-sqlite"
+      ],
+      "error": "no response to initialize",
+      "needs": "a database path",
+      "ok": false,
+      "server_id": "mcp/io.modelcontextprotocol/server-sqlite@2025.4.25",
+      "stderr_tail": "    return future.result()\n           ~~~~~~~~~~~~~^^\n  File \"<HOME>\\AppData\\Local\\Temp\\tmpghyrqxcn\\AppData\\Local\\uv\\cache\\archive-v0\\j5bk3o6WWv3Sw_Cp1d5wi\\Lib\\site-packages\\mcp_server_sqlite\\server.py\", line 173, in main\n    @server.list_resources()\n     ^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'Server' object has no attribute 'list_resources'",
+      "tool_count": 0
+    },
+    {
+      "annotated": 0,
+      "attempts": 2,
+      "capability": "python-execution",
+      "command": [
+        "uvx",
+        "mcp-run-python",
+        "stdio"
+      ],
+      "error": "no response to initialize",
+      "needs": "a deno runtime for its sandbox",
+      "ok": false,
+      "server_id": "mcp/io.github.pydantic/mcp-run-python@0.0.22",
+      "stderr_tail": "    ...<4 lines>...\n                             cwd,\n                             ^^^^\n                             startupinfo)\n                             ^^^^^^^^^^^^\nFileNotFoundError: [WinError 2] The system cannot find the file specified",
+      "tool_count": 0
+    },
+    {
+      "annotated": 0,
+      "attempts": 2,
+      "capability": "shell",
+      "command": [
+        "uvx",
+        "mcp-shell-server"
+      ],
+      "error": "no response to initialize",
+      "needs": "an ALLOW_COMMANDS allowlist in the environment",
+      "ok": false,
+      "server_id": "mcp/io.github.tumf/mcp-shell-server@1.1.9",
+      "stderr_tail": "    from . import server\n  File \"<HOME>\\AppData\\Local\\Temp\\tmp_kzju5zu\\AppData\\Local\\uv\\cache\\archive-v0\\IPdt6Az41_TOfhkBufWfs\\Lib\\site-packages\\mcp_shell_server\\server.py\", line 13, in <module>\n    from .shell_executor import ShellExecutor\n  File \"<HOME>\\AppData\\Local\\Temp\\tmp_kzju5zu\\AppData\\Local\\uv\\cache\\archive-v0\\IPdt6Az41_TOfhkBufWfs\\Lib\\site-packages\\mcp_shell_server\\shell_executor.py\", line 7, in <module>\n    import pwd\nModuleNotFoundError: No module named 'pwd'",
+      "tool_count": 0
+    },
+    {
+      "annotated": 0,
+      "attempts": 2,
+      "capability": "postgresql",
+      "command": [
+        "uvx",
+        "postgres-mcp"
+      ],
+      "error": "no response to initialize",
+      "needs": "a database connection string",
+      "ok": false,
+      "server_id": "mcp/io.github.crystaldba/postgres-mcp@0.3.0",
+      "stderr_tail": "    from . import server\n  File \"<HOME>\\AppData\\Local\\Temp\\tmpbzi2pu9a\\AppData\\Local\\uv\\cache\\archive-v0\\tIxt7N-eO36dtViNiqny1\\Lib\\site-packages\\postgres_mcp\\server.py\", line 15, in <module>\n    from mcp.server.fastmcp import FastMCP\n  File \"<HOME>\\AppData\\Local\\Temp\\tmpbzi2pu9a\\AppData\\Local\\uv\\cache\\archive-v0\\tIxt7N-eO36dtViNiqny1\\Lib\\site-packages\\mcp\\server\\fastmcp.py\", line 16, in <module>\n    raise ModuleNotFoundError(_MESSAGE, name=__name__)\nModuleNotFoundError: No module named 'mcp.server.fastmcp'. This is mcp 2.x, where FastMCP was renamed to MCPServer (from mcp.server.mcpserver import MCPServer) and other APIs changed; see the migration guide at https://py.sdk.modelcontextprotocol.io/v2/migration/#fastmcp-renamed-to-mcpserver or pin 'mcp<2' to keep running v1 code.",
+      "tool_count": 0
+    },
+    {
+      "annotated": 31,
+      "attempts": 1,
+      "capability": "mongodb",
+      "command": [
+        "npx",
+        "-y",
+        "mongodb-mcp-server"
+      ],
+      "error": "",
+      "needs": "a connection string",
+      "ok": true,
+      "server_id": "mcp/io.github.mongodb-js/mongodb-mcp-server@2.1.0",
+      "stderr_tail": "",
+      "tool_count": 31
+    },
+    {
+      "annotated": 0,
+      "attempts": 1,
+      "capability": "redis",
+      "command": [
+        "npx",
+        "-y",
+        "@upstash/redis-mcp"
+      ],
+      "error": "",
+      "needs": "Upstash credentials",
+      "ok": true,
+      "server_id": "mcp/io.github.upstash/redis-mcp@0.1.1",
+      "stderr_tail": "",
+      "tool_count": 2
+    },
+    {
+      "annotated": 0,
+      "attempts": 1,
+      "capability": "vector-store",
+      "command": [
+        "uvx",
+        "chroma-mcp"
+      ],
+      "error": "",
+      "needs": "a Chroma client configuration",
+      "ok": true,
+      "server_id": "mcp/io.github.chroma-core/chroma-mcp@0.2.6",
+      "stderr_tail": "",
+      "tool_count": 13
+    },
+    {
+      "annotated": 0,
+      "attempts": 2,
+      "capability": "containers",
+      "command": [
+        "npx",
+        "-y",
+        "docker-mcp"
+      ],
+      "error": "no response to initialize",
+      "needs": "a running Docker daemon",
+      "ok": false,
+      "server_id": "mcp/io.github.quantgeekdev/docker-mcp@1.0.0",
+      "stderr_tail": "    at async main (file:///<HOME>/AppData/Local/Temp/tmp78obwb7a/npm-cache/_npx/3c265aed125de181/node_modules/docker-mcp/dist/index.js:27:9)\nnpm notice\nnpm notice New major version of npm available! 10.9.2 -> 12.0.2\nnpm notice Changelog: https://github.com/npm/cli/releases/tag/v12.0.2\nnpm notice To update run: npm install -g npm@12.0.2\nnpm notice",
+      "tool_count": 0
+    },
+    {
+      "annotated": 0,
+      "attempts": 2,
+      "capability": "orchestration",
+      "command": [
+        "npx",
+        "-y",
+        "kubernetes-mcp-server"
+      ],
+      "error": "no response to initialize",
+      "needs": "a reachable cluster",
+      "ok": false,
+      "server_id": "mcp/io.github.containers/kubernetes-mcp-server@0.0.66",
+      "stderr_tail": "npm notice\nnpm notice New major version of npm available! 10.9.2 -> 12.0.2\nnpm notice Changelog: https://github.com/npm/cli/releases/tag/v12.0.2\nnpm notice To update run: npm install -g npm@12.0.2\nnpm notice",
+      "tool_count": 0
+    },
+    {
+      "annotated": 0,
+      "attempts": 2,
+      "capability": "pixel-art",
+      "command": [
+        "uvx",
+        "aseprite-live-mcp"
+      ],
+      "error": "no response to initialize",
+      "needs": "a running Aseprite instance",
+      "ok": false,
+      "server_id": "mcp/io.github.oaktreegames/aseprite-live-mcp@0.2.0",
+      "stderr_tail": "    from .server import main\n  File \"<HOME>\\AppData\\Local\\Temp\\tmpgd5r62cn\\AppData\\Local\\uv\\cache\\archive-v0\\5_C7RD4w8fP0UkedBMa0W\\Lib\\site-packages\\aseprite_live_mcp\\server.py\", line 10, in <module>\n    from mcp.server.fastmcp import FastMCP\n  File \"<HOME>\\AppData\\Local\\Temp\\tmpgd5r62cn\\AppData\\Local\\uv\\cache\\archive-v0\\5_C7RD4w8fP0UkedBMa0W\\Lib\\site-packages\\mcp\\server\\fastmcp.py\", line 16, in <module>\n    raise ModuleNotFoundError(_MESSAGE, name=__name__)\nModuleNotFoundError: No module named 'mcp.server.fastmcp'. This is mcp 2.x, where FastMCP was renamed to MCPServer (from mcp.server.mcpserver import MCPServer) and other APIs changed; see the migration guide at https://py.sdk.modelcontextprotocol.io/v2/migration/#fastmcp-renamed-to-mcpserver or pin 'mcp<2' to keep running v1 code.",
+      "tool_count": 0
+    }
+  ],
+  "tools": 111
+}
