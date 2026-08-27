@@ -39,6 +39,7 @@ from toolseal.core.registry.utd import (
 
 ROOT = Path(__file__).resolve().parent.parent
 CAPTURES = ROOT / "research" / "probes" / "p1_remote_mcp_annotations" / "results"
+SWEEP = ROOT / "research" / "probes" / "p3_tool_sweep" / "results"
 CURATED = ROOT / "src" / "toolseal" / "data" / "registry" / "curated.json"
 
 
@@ -342,10 +343,20 @@ def build() -> RegistryIndex:
     for server in SERVERS:
         entry = _server_entry(server)
         entries.append(entry)
+
+        # Two capture sources, same shape. P1 holds the remote servers an
+        # operator authenticated to; P3 holds the stdio servers enumerated by
+        # `bench/sweep.py`. A server appears in at most one of them, and the
+        # P1 name wins where both exist, since an authenticated capture of a
+        # live service is the better evidence.
+        capture = None
         if server.capture:
-            payload = json.loads(
-                (CAPTURES / f"{server.capture}-tools.json").read_text(encoding="utf-8")
-            )
+            capture = CAPTURES / f"{server.capture}-tools.json"
+        elif (SWEEP / f"{server.capability}-tools.json").is_file():
+            capture = SWEEP / f"{server.capability}-tools.json"
+
+        if capture is not None and capture.is_file():
+            payload = json.loads(capture.read_text(encoding="utf-8"))
             entries.extend(
                 ingest_capture(
                     payload,

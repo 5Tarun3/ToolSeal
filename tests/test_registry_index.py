@@ -481,15 +481,41 @@ def test_a_packaged_entry_reports_enumeration_honestly_either_way() -> None:
     assert all(entry.tools_enumerated for entry in tools)
 
 
-def test_every_packaged_tool_entry_carries_what_its_author_declared() -> None:
+def test_most_packaged_tool_entries_carry_what_their_author_declared() -> None:
     # The reason tool entries were worth shipping at all: server metadata
     # carried no annotations and no schemas, so both fields sat empty on every
     # entry and neither family G nor guard synthesis had real input.
+    #
+    # This asserted *every* tool was annotated while the corpus was P1's three
+    # remote SaaS servers, where that happened to hold at 92/92. Probe P3 swept
+    # the stdio servers people install locally and found it does not: three
+    # servers annotate nothing at all, `mcp-server-fetch` - a protocol
+    # reference implementation - among them. The assertion was encoding a
+    # property of a small sample as a property of the ecosystem.
+    #
+    # A majority is asserted rather than a precise count, because the exact
+    # figure moves whenever the corpus grows and a test that has to be edited
+    # on every capture teaches people to edit it without reading it.
     index = RegistryIndex.read_packaged()
     tools = [entry for entry in index.entries if "#" in entry.id]
 
     annotated = [entry for entry in tools if entry.descriptor.annotations.declared()]
-    assert len(annotated) == len(tools), "every captured tool declared at least one hint"
+    assert len(annotated) > len(tools) // 2, "most captured tools should declare a hint"
+
+
+def test_an_unannotated_packaged_tool_is_undeclared_not_denied() -> None:
+    # The unannotated tools P3 found must not have been normalised into
+    # `False` on the way in. "The author said nothing" and "the author said no"
+    # are different claims, and only the first is true of these.
+    index = RegistryIndex.read_packaged()
+    tools = [entry for entry in index.entries if "#" in entry.id]
+    unannotated = [entry for entry in tools if not entry.descriptor.annotations.declared()]
+
+    assert unannotated, "P3 captured servers that annotate nothing; they should be here"
+    for entry in unannotated:
+        annotations = entry.descriptor.annotations
+        assert annotations.destructive is None
+        assert annotations.read_only is None
 
 
 def test_a_crawl_of_wrapped_records_skips_nothing() -> None:
