@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Final
 
 import typer
 from rich.panel import Panel
@@ -24,6 +24,8 @@ from toolseal.cli.errors import command as error_boundary
 from toolseal.core.policy import progress as progress_hook
 from toolseal.core.registry.crawl import build_index, crawl_mcp_registry
 from toolseal.core.registry.index import INDEX_FILENAME, IndexEntry, RegistryIndex
+from toolseal.core.registry.tools import ingest_capture
+from toolseal.core.registry.utd import Provenance, ToolSource
 from toolseal.errors import ExitCode, UsageError
 
 registry_app = typer.Typer(
@@ -137,6 +139,150 @@ def sync(
     raise typer.Exit(ExitCode.OK if report.complete else ExitCode.FINDINGS)
 
 
+# Severity drives weight identically everywhere (spec section 1): a declared
+# destructive tool takes the same `sev.high` treatment `audit` gives a high
+# finding. `?` is `caveat` rather than `muted` for the same reason
+# `verdict.unknown` is magenta rather than grey - "the author said nothing"
+# must not be rendered as though it read "fine".
+_POSTURE_STYLES: Final[dict[str, str]] = {
+    "D": "sev.high",
+    "R": "verdict.good",
+    "?": "caveat",
+    "-": "muted",
+}
+
+_POSTURE_LEGEND: Final[dict[str, str]] = {
+    "D": "the author declared this tool destructive",
+    "R": "the author declared this tool read-only",
+    "?": "tool known, but its author declared neither read-only nor destructive",
+    "-": "tools not enumerated (would require running the server)",
+}
+
+
+def ingest(
+    capture: Annotated[Path, typer.Argument(help="A captured tools/list response, as JSON.")],
+    server: Annotated[
+        str, typer.Option("--server", help="Entry id the tools belong to, e.g. mcp/acme/srv@1.0.")
+    ],
+    package: Annotated[
+        str | None,
+        typer.Option("--package", help="Package or URL the server is reached by."),
+    ] = None,
+    index_path: Annotated[
+        Path | None, typer.Option("--index", help="Index to merge into. Defaults to the cache.")
+    ] = None,
+    as_json: Annotated[bool, typer.Option("--json", help="Machine-readable output.")] = False,
+) -> None:
+    """Add a server's tools to the index from a captured tools/list response.
+
+    `sync` crawls registry *metadata* and never runs anything, which is why it
+    records `tools_enumerated: false`: enumerating a server's tools means
+    starting it. This command is the other half, and it does not run anything
+    either - it reads a response you already obtained from a server you chose
+    to authenticate to, as a file.
+
+    The rule the project holds is "toolseal does not execute untrusted servers
+    on your behalf", not "no tool listing may ever be indexed". Capturing the
+    response is your decision and happens outside this tool; see
+    `research/probes/p1_remote_mcp_annotations/README.md` for how the shipped
+    entries were captured.
+    """
+    target = index_path or default_index_path()
+    index = RegistryIndex.read(target) if target.exists() else RegistryIndex()
+
+    try:
+        payload = json.loads(capture.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        message = f"no capture at {capture}"
+        raise UsageError(message) from None
+    except json.JSONDecodeError as exc:
+        message = f"{capture} is not valid JSON: {exc}"
+        raise UsageError(message) from None
+
+    existing = index.get(server)
+    if existing is not None:
+        source = existing.descriptor.source
+        provenance = existing.descriptor.provenance
+    elif package:
+        # An unlisted server still gets an honest record: `unknown` for the
+        # registry rather than a guess, so `assess` penalises the absence
+        # instead of a fabricated provenance hiding it.
+        source = ToolSource(kind="mcp", registry="unknown", package=package, version="")
+        provenance = Provenance()
+    else:
+        message = (
+            f"{server!r} is not in the index, so --package is required to record "
+            "where its tools come from"
+        )
+        raise UsageError(message)
+
+    tools = ingest_capture(payload, server_id=server, source=source, provenance=provenance)
+
+    # Replacing rather than appending: re-ingesting a server must not leave a
+    # second copy of every tool behind, and a tool the server has since dropped
+    # should disappear rather than linger as a stale entry.
+    prefix = f"{server}#"
+    kept = tuple(entry for entry in index.entries if not entry.id.startswith(prefix))
+    merged = RegistryIndex(entries=kept + tools, built_at=index.built_at)
+    merged.write(target)
+
+    declared = sum(1 for entry in tools if entry.descriptor.annotations.declared())
+    destructive = sum(1 for entry in tools if entry.descriptor.annotations.destructive)
+
+    if as_json:
+        typer.echo(
+            json.dumps(
+                {
+                    "server": server,
+                    "tools": len(tools),
+                    "annotated": declared,
+                    "destructive": destructive,
+                    "index": str(target),
+                    "entries": len(merged),
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return
+
+    line = Text("Ingested ", style="verdict.good")
+    line.append_text(accent_text(str(len(tools))))
+    line.append(" tools from ", style="verdict.good")
+    line.append_text(accent_text(server))
+    print_text(console, line)
+    summary = f"  {declared} annotated, {destructive} declared destructive"
+    print_line(console, summary, style="muted")
+    written = Text("  wrote ")
+    written.append_text(accent_text(str(target)))
+    print_text(console, written)
+
+
+def _posture(entry: IndexEntry) -> str:
+    """The one-character posture marker for an entry's `declares` column.
+
+    Deliberately a single character with a spelled-out legend rather than a
+    word: the table is held to 80 columns (there is a test), and the spec
+    forbids colour as the only carrier of meaning, so the legend does the
+    explaining that the width cannot.
+
+    Order matters. `D` wins over `R` because a tool declaring itself
+    destructive is the fact a reader must not miss, and the two are not
+    mutually exclusive on the wire - a server may set both hints, and the
+    reassuring one must never mask the alarming one.
+    """
+    if not entry.tools_enumerated:
+        return "-"
+    annotations = entry.descriptor.annotations
+    if annotations.destructive:
+        return "D"
+    if annotations.read_only:
+        return "R"
+    # Enumerated, but the author declared neither. Not the same as "-", which
+    # means nobody looked at all.
+    return "?"
+
+
 def _search_row(entry: IndexEntry) -> tuple[str, str, str, str, str, str]:
     flag = "!" if entry.audit.blocking else ""
     score = str(entry.audit.score)
@@ -150,8 +296,7 @@ def _search_row(entry: IndexEntry) -> tuple[str, str, str, str, str, str]:
         _PACKAGE_WIDTH_MAX,
     )
     registry = entry.descriptor.source.registry
-    tools = "1" if entry.tools_enumerated else "-"
-    return flag, score, name, package_version, registry, tools
+    return flag, score, name, package_version, registry, _posture(entry)
 
 
 def _print_search_results(results: tuple[IndexEntry, ...]) -> None:
@@ -169,15 +314,19 @@ def _print_search_results(results: tuple[IndexEntry, ...]) -> None:
     table.add_column("name", max_width=_NAME_WIDTH_MAX, overflow="crop", no_wrap=True)
     table.add_column("package@version", max_width=_PACKAGE_WIDTH_MAX, overflow="crop", no_wrap=True)
     table.add_column("registry")
-    table.add_column("tools", justify="right")
-    for flag, score, name, package_version, registry, tools in rows:
+    # Was "tools" ("1" or "-" for whether the tool set was known). Once tools
+    # are entries in their own right that answer is implied by the row itself,
+    # so the column now carries what the row *declares* about its behaviour,
+    # which is the fact a reader picking a tool actually needs.
+    table.add_column("hints", justify="right")
+    for flag, score, name, package_version, registry, declares in rows:
         table.add_row(
             Text(flag, style="sev.critical") if flag else Text(""),
             Text(score, style=score_style(int(score))),
             accent_text(name),
             accent_text(package_version),
             registry,
-            Text(tools, style="muted" if tools == "-" else ""),
+            Text(declares, style=_POSTURE_STYLES[declares]),
         )
     # Framed like every other command's report (spec: audit's summary panel,
     # policy explain's panel), not a bare table with nothing marking where
@@ -186,17 +335,21 @@ def _print_search_results(results: tuple[IndexEntry, ...]) -> None:
     console.print(Panel(table, expand=False))
 
     blocking_seen = any(flag == "!" for flag, *_rest in rows)
-    unenumerated_seen = any(tools == "-" for *_rest, tools in rows)
-    if blocking_seen or unenumerated_seen:
+    seen_postures = {declares for *_rest, declares in rows}
+    if blocking_seen or seen_postures:
         console.print()
     if blocking_seen:
         legend = Text("!", style="sev.critical")
         legend.append("  blocking: a critical check failed")
         print_text(console, legend)
-    if unenumerated_seen:
-        legend = Text("-", style="muted")
-        legend.append("  tools not enumerated (would require running the server)")
-        print_text(console, legend)
+    # Only the markers actually present get a legend line - a key explaining
+    # symbols that are not on screen is noise, and the panel is already the
+    # densest thing this command prints.
+    for marker in ("D", "R", "?", "-"):
+        if marker in seen_postures:
+            legend = Text(marker, style=_POSTURE_STYLES[marker])
+            legend.append(f"  {_POSTURE_LEGEND[marker]}")
+            print_text(console, legend)
 
 
 def search(
@@ -300,5 +453,6 @@ def show(
 # `@registry_app.command(...)` decorator bypasses that boundary - this
 # repository has fixed that exact regression twice, at P10 and P24.
 registry_app.command("sync")(error_boundary(sync))
+registry_app.command("ingest")(error_boundary(ingest))
 registry_app.command("search")(error_boundary(search))
 registry_app.command("show")(error_boundary(show))

@@ -169,7 +169,7 @@ def test_sync_installs_an_observer_the_crawl_can_report_progress_through(
 
 # --- search ------------------------------------------------------------
 
-_SEARCH_HEADER = ["score", "name", "package@version", "registry", "tools"]
+_SEARCH_HEADER = ["score", "name", "package@version", "registry", "hints"]
 
 
 def _unbordered_tokens(line: str) -> list[str]:

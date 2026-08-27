@@ -445,21 +445,51 @@ def test_inactive_server_is_scored_down() -> None:
 # --- the packaged curated set (P16) -----------------------------------------
 
 
-def test_packaged_curated_index_loads_and_is_within_the_v1_cap() -> None:
+def test_packaged_curated_servers_are_within_the_v1_cap() -> None:
     # Reads through `importlib.resources`, so this exercises the same path an
     # installed wheel uses - no filesystem path relative to this module.
+    #
+    # The cap is restated against *servers* rather than raised. It was written
+    # when an entry could only be a server, and it bounds how large a set was
+    # curated by hand-fixed criteria - a question tools do not participate in,
+    # since they are not selected at all: a server's tools are taken wholesale
+    # or not at all. Relaxing the number to fit the new total would have been
+    # the easy edit and the wrong one.
     index = RegistryIndex.read_packaged()
+    servers = [entry for entry in index.entries if not entry.tools_enumerated]
 
-    assert 0 < len(index) <= 200
+    assert 0 < len(servers) <= 200
 
 
-def test_packaged_curated_entries_have_no_tools_enumerated() -> None:
-    # A real limitation of the registry as shipped: enumerating a server's
-    # tools means running it, which this project does not do. Every shipped
-    # entry, curated or not, says so rather than implying an empty tool set.
+def test_a_packaged_entry_reports_enumeration_honestly_either_way() -> None:
+    # Was: no entry may claim its tools are enumerated, because enumerating a
+    # server means running it and this project does not. That is still true of
+    # every *server* entry. It is not true of a tool entry, which exists only
+    # because someone captured a tools/list from a server they authenticated
+    # to themselves (see core/registry/tools.py).
+    #
+    # The invariant that actually matters survives intact: the flag never
+    # lies. A server entry says the tool set is unknown; a tool entry is the
+    # evidence that one is known.
     index = RegistryIndex.read_packaged()
+    servers = [entry for entry in index.entries if "#" not in entry.id]
+    tools = [entry for entry in index.entries if "#" in entry.id]
 
-    assert all(not entry.tools_enumerated for entry in index.entries)
+    assert servers, "the packaged index should still carry server entries"
+    assert tools, "the packaged index should now also carry tool entries"
+    assert all(not entry.tools_enumerated for entry in servers)
+    assert all(entry.tools_enumerated for entry in tools)
+
+
+def test_every_packaged_tool_entry_carries_what_its_author_declared() -> None:
+    # The reason tool entries were worth shipping at all: server metadata
+    # carried no annotations and no schemas, so both fields sat empty on every
+    # entry and neither family G nor guard synthesis had real input.
+    index = RegistryIndex.read_packaged()
+    tools = [entry for entry in index.entries if "#" in entry.id]
+
+    annotated = [entry for entry in tools if entry.descriptor.annotations.declared()]
+    assert len(annotated) == len(tools), "every captured tool declared at least one hint"
 
 
 def test_a_crawl_of_wrapped_records_skips_nothing() -> None:
