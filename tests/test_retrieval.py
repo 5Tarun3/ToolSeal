@@ -9,20 +9,23 @@ do at all.
 
 from __future__ import annotations
 
-from toolseal.core.registry.retrieval import Field, Ranker, tokenize
+from toolseal.core.registry.retrieval import Field, Ranker, stem, tokenize
 
 # --- tokenizing -------------------------------------------------------------
 
 
 def test_tokenize_lowercases_and_splits_on_non_alphanumerics() -> None:
-    assert tokenize("Find Organizations") == ["find", "organizations"]
+    # Stemmed on the way out, so "organizations" arrives as its singular -
+    # documents and queries must be reduced by identical rules or they can
+    # never meet.
+    assert tokenize("Find Organizations") == ["find", "organization"]
 
 
 def test_tokenize_splits_snake_case_and_kebab_case() -> None:
     # Real tool names from the P1 corpus. A tokenizer that keeps these whole
     # cannot match the word a user actually types.
     assert tokenize("save_diff_comment") == ["save", "diff", "comment"]
-    assert tokenize("notion-create-pages") == ["notion", "create", "pages"]
+    assert tokenize("notion-create-pages") == ["notion", "create", "page"]
 
 
 def test_tokenize_drops_empty_fragments() -> None:
@@ -159,3 +162,39 @@ def test_a_query_of_only_function_words_still_returns_something() -> None:
     ranker = _ranker(("a", "how do i"), ("b", "unrelated content"))
 
     assert [i for i, _ in ranker.rank("how do i")] == [0]
+
+
+# --- stemming ---------------------------------------------------------------
+
+
+def test_a_plural_in_the_document_matches_a_singular_query() -> None:
+    # "Read, write and search files" did not match the query "file", so the
+    # filesystem server was unreachable by the most obvious thing to ask for.
+    ranker = _ranker(("server filesystem", "Read, write and search files on disk."))
+
+    assert next(i for i, _ in ranker.rank("read a file")) == 0
+
+
+def test_a_singular_in_the_document_matches_a_plural_query() -> None:
+    ranker = _ranker(("a", "Draw and export a sprite."), ("b", "unrelated content"))
+
+    assert next(i for i, _ in ranker.rank("sprites")) == 0
+
+
+def test_verb_endings_are_folded_together() -> None:
+    ranker = _ranker(("a", "Manages running containers."), ("b", "unrelated content"))
+
+    assert next(i for i, _ in ranker.rank("manage container")) == 0
+
+
+def test_stemming_does_not_maul_short_words() -> None:
+    # Over-eager suffix stripping turns "as" into "a" and "is" into "i",
+    # collapsing distinct short words into noise.
+    assert stem("as") == "as"
+    assert stem("is") == "is"
+    assert stem("gas") == "gas"
+
+
+def test_a_y_plural_folds_to_its_singular() -> None:
+    assert stem("queries") == stem("query")
+    assert stem("repositories") == stem("repository")

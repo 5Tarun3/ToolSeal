@@ -119,15 +119,77 @@ FIELD_WEIGHTS: Final[Mapping[Field, float]] = {
 }
 
 
+def stem(token: str) -> str:
+    """*token* reduced to a crude stem, folding plurals and common verb endings.
+
+    **Added after the utility-coverage set replaced the alphabetical one**, on
+    the same post-hoc footing as the stopword list: the failure was that
+    "Read, write and search files" did not match the query "file", so the
+    filesystem server - the most obvious thing in the whole index - was
+    unreachable by the most obvious thing to ask it for. "sprites" against
+    "sprite" hid Aseprite the same way.
+
+    Deliberately crude, and only in the directions that actually failed:
+    plurals and `-ing`/`-ed`. A real Porter stemmer is a few hundred lines of
+    rules whose behaviour is hard to predict from a call site, and the extra
+    conflation it buys is not obviously wanted in a corpus of API verbs where
+    `list` and `listing` mean the same thing but `update` and `updated` may
+    not be worth merging any harder than this.
+
+    The four-character floor exists because suffix stripping is destructive on
+    short words: without it "as" becomes "a", "is" becomes "i", and "gas"
+    becomes "ga", which turns distinct words into collisions.
+    """
+    if len(token) < 4:
+        return token
+
+    # `-es` only after a sibilant, which is the environment English actually
+    # adds it in: "boxes", "dishes", "searches". Stripping it unconditionally
+    # turns "sprites" into "sprit" while "sprite" stays whole, so the plural
+    # and the singular stem to different things - the exact failure this
+    # function exists to remove, reintroduced one rule later.
+    if token.endswith("ies") and len(token) >= 5:
+        return token[:-3] + "y"
+    if token.endswith("es") and token[:-2].endswith(("s", "x", "z", "ch", "sh")):
+        return token[:-2]
+
+    for suffix in ("ing", "ed", "s"):
+        if token.endswith(suffix):
+            # "ss" is not a plural: "class" must not become "clas".
+            if suffix == "s" and token.endswith("ss"):
+                return token
+            stripped = token[: -len(suffix)]
+            # Undouble a consonant exposed by stripping, as Porter's step 1b
+            # does: without it "running" stems to "runn" while "run" stems to
+            # itself, so the two never meet. "ll" and "ss" are left alone,
+            # since English keeps them ("call", "class").
+            if (
+                suffix != "s"
+                and len(stripped) >= 4
+                and stripped[-1] == stripped[-2]
+                and stripped[-1] not in "lsz"
+            ):
+                stripped = stripped[:-1]
+            # Never strip past three characters: "used" -> "us" collides with
+            # an unrelated word, and so does "uses".
+            if len(stripped) >= 3:
+                return stripped
+    return token
+
+
 def tokenize(text: str) -> list[str]:
-    """Lowercase alphanumeric terms, split on everything else.
+    """Lowercase alphanumeric terms, split on everything else, stemmed.
 
     Splitting on non-alphanumerics is what makes `save_diff_comment` and
     `notion-create-pages` reachable by the words a person actually types. A
     tokenizer that kept those whole would make most tool names unsearchable,
     since almost no tool in the corpus is named as a single word.
+
+    Stemming is applied here rather than at the call sites so that documents
+    and queries can never be tokenized by different rules - a mismatch that
+    would silently retrieve nothing and look like an empty index.
     """
-    return [token for token in _SPLIT.split(text.lower()) if token]
+    return [stem(token) for token in _SPLIT.split(text.lower()) if token]
 
 
 class Ranker:

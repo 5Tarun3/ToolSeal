@@ -17,7 +17,8 @@ uv run python bench/retrieval_eval.py
 | --- | --- | --- |
 | substring (shipped before this work) | **0.000** | 0.042 |
 | BM25, as pre-registered | 0.575 | 0.633 |
-| BM25 + stopwords (post-hoc, see below) | **0.579** | **0.696** |
+| BM25 + stopwords (post-hoc) | 0.579 | 0.696 |
+| BM25 + stopwords + stemming (post-hoc) | **0.604** | **0.717** |
 
 The baseline scores exactly zero on MRR. That is not a rounding artefact: the
 substring matcher tests the whole query as one contiguous, correctly-ordered
@@ -49,6 +50,24 @@ That asymmetry is the honest summary: removing function words stops the
 ranker producing obviously-wrong *top* hits, but it does not make it find the
 *right* one. Anyone reading this as "stopwords fixed retrieval" is reading it
 wrong.
+
+## Stemming, also post-hoc
+
+Added later still, and prompted by the utility-coverage set rather than by
+these queries: "Read, write and search files" did not match the query "file",
+so the filesystem server was unreachable by the most obvious thing anyone
+would ask it for, and "sprites" against "sprite" hid Aseprite the same way.
+
+The rules are crude on purpose - plurals, `-ing`, `-ed`, with a four-character
+floor so short words are not mauled into collisions. They fold `files`/`file`,
+`sprites`/`sprite`, `queries`/`query` and `running`/`run`. They do not fold
+`managed`/`manage`, which a full Porter stemmer also fails to fold, since its
+step 1b restores a trailing `e` only after `at`, `bl` or `iz`.
+
+It moved this pre-registered set as well as the corpus that prompted it -
+MRR 0.579 to 0.604, recall@5 0.696 to 0.717. That the improvement shows up on
+queries written before any of this existed is the only reason it is reported
+as an improvement rather than as fitting.
 
 ## Where it still fails, and why
 
