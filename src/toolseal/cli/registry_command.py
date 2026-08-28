@@ -23,7 +23,12 @@ from toolseal.cli._ui import (
 from toolseal.cli.errors import command as error_boundary
 from toolseal.core.policy import progress as progress_hook
 from toolseal.core.registry.crawl import build_index, crawl_mcp_registry
-from toolseal.core.registry.index import INDEX_FILENAME, IndexEntry, RegistryIndex
+from toolseal.core.registry.index import (
+    INDEX_FILENAME,
+    IndexEntry,
+    RegistryIndex,
+    merge_indexes,
+)
 from toolseal.core.registry.tools import ingest_capture
 from toolseal.core.registry.utd import Provenance, ToolSource
 from toolseal.errors import ExitCode, UsageError
@@ -61,20 +66,28 @@ def default_index_path() -> Path:
 
 
 def default_index() -> RegistryIndex:
-    """The index `search`/`show` fall back to when `--index` is not given.
+    """Everything `search`/`show` can see when `--index` is not given.
 
-    A user's own synced cache wins once it exists - it is current as of
-    their last `registry sync` and reflects their choice to crawl. Only when
-    that cache is absent (a fresh install, before anyone has run `sync`) does
-    this fall back to the curated set shipped inside the package (P16), so
-    `registry search` returns something useful immediately after `pip
-    install` rather than telling every new user to crawl the whole registry
-    first.
+    The union of the curated set shipped in the package and whatever the
+    user's own `registry sync` produced, rather than one or the other.
+
+    An earlier version preferred the cache and read the packaged set only when
+    no cache existed. That was reasonable while the packaged set was a subset
+    of the same crawl, and wrong as soon as it carried tools: a crawl reads
+    registry metadata and can never enumerate a server's tools, since that
+    means running the server. The two indexes differ in kind, not in freshness.
+
+    The bug it caused was plain once seen. A user who had run `sync` had a
+    2000-entry cache of bare server metadata, and `registry search aseprite`
+    told them "nothing matching 'aseprite' in 2000 entries" while the shipped
+    index contained exactly that server and its tools. Preferring the larger
+    index made the better one invisible.
     """
     cached = default_index_path()
-    if cached.exists():
-        return RegistryIndex.read(cached)
-    return RegistryIndex.read_packaged()
+    packaged = RegistryIndex.read_packaged()
+    if not cached.exists():
+        return packaged
+    return merge_indexes(RegistryIndex.read(cached), packaged)
 
 
 def sync(
@@ -352,17 +365,49 @@ def _print_search_results(results: tuple[IndexEntry, ...]) -> None:
             print_text(console, legend)
 
 
+def _paging_is_useful() -> bool:
+    """Whether sending output to a pager would help rather than corrupt it.
+
+    A pager writes control sequences and waits for a keypress, so it is right
+    for a person at a terminal and wrong for everything else. Redirected, piped
+    or in CI, this returns False and the caller prints plainly - the spec's
+    "degrade without apology" rule, which exists because a log file has to stay
+    readable.
+
+    Kept as a named function rather than an inline `console.is_terminal` so a
+    test can state which of the two situations it is exercising.
+    """
+    return console.is_terminal
+
+
+# What `--page` raises the row cap to. The default of 20 exists because roughly
+# that many rows fit a screen; paging is precisely what removes that
+# constraint, so leaving the cap in place would make the flag do half its job.
+# A number rather than "unbounded" so a pathological index cannot fill memory.
+_PAGED_LIMIT = 1000
+
+
 def search(
     query: Annotated[str, typer.Argument(help="Text to look for.")] = "",
     index_path: Annotated[
         Path | None, typer.Option("--index", help="Index file to search.")
     ] = None,
-    limit: Annotated[int, typer.Option("--limit", "-n", help="Maximum results.")] = 20,
+    limit: Annotated[int | None, typer.Option("--limit", "-n", help="Maximum results.")] = None,
+    page: Annotated[
+        bool,
+        typer.Option(
+            "--page",
+            "-p",
+            help="Scroll results in a pager. Raises the row limit; ignored when not a terminal.",
+        ),
+    ] = False,
     as_json: Annotated[bool, typer.Option("--json", help="Machine-readable output.")] = False,
 ) -> None:
-    """Search the index, best-assessed first."""
+    """Search the index for a tool or server, most relevant first."""
     index = RegistryIndex.read(index_path) if index_path is not None else default_index()
-    results = index.search(query, limit=limit)
+    # An explicit --limit always wins; --page only changes the *default*.
+    effective_limit = limit if limit is not None else (_PAGED_LIMIT if page else 20)
+    results = index.search(query, limit=effective_limit)
 
     if as_json:
         typer.echo(json.dumps([entry.to_dict() for entry in results], indent=2, sort_keys=True))
@@ -373,6 +418,17 @@ def search(
         line.append(repr(query), style="accent")
         line.append(f" in {len(index)} entries")
         print_text(console, line)
+        return
+
+    # `--json` is checked above and has already returned: a machine contract
+    # cannot be wrapped in a pager, which would add control sequences and block
+    # on a keypress that a parsing caller will never send.
+    if page and _paging_is_useful():
+        # `styles=True` keeps the severity colours the spec assigns meaning to;
+        # without it the `D` posture marker and a blocking `!` arrive as plain
+        # text, which is exactly the information a reader is scrolling for.
+        with console.pager(styles=True):
+            _print_search_results(results)
         return
 
     _print_search_results(results)

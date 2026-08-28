@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from toolseal.cli import app, registry_command
+from toolseal.cli import _ui, app, registry_command
 from toolseal.core.policy import progress as progress_hook
 from toolseal.core.registry.crawl import CrawlReport
 from toolseal.core.registry.index import EntryAudit, IndexEntry, RegistryIndex
@@ -340,23 +340,31 @@ def test_search_falls_back_to_the_packaged_curated_set(
     assert "curated-only-tool" in result.stdout
 
 
-def test_search_prefers_the_synced_cache_over_the_packaged_set(
+def test_search_covers_the_synced_cache_and_the_packaged_set_together(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    # This asserted the opposite - that a cache suppressed the packaged set
+    # entirely, with a `read_packaged` stub that failed the test if called.
+    # That was right while the packaged set was a subset of the same crawl and
+    # the cache was strictly newer and larger.
+    #
+    # It became wrong when the packaged set started carrying tools. A crawl
+    # reads registry metadata and can never enumerate a server's tools, so the
+    # two indexes differ in kind rather than freshness, and preferring the
+    # larger one hid the better one: a user with a 2000-entry cache was told
+    # "nothing matching 'aseprite' in 2000 entries" while the shipped index
+    # held that server and its tools.
     cache_path = tmp_path / "index.json"
     RegistryIndex(entries=(_entry("mcp/synced@1.0.0", "synced-tool"),)).write(cache_path)
     monkeypatch.setattr(registry_command, "default_index_path", lambda: cache_path)
-
-    def _fail_if_read() -> RegistryIndex:
-        message = "should not fall back to the packaged set when a cache exists"
-        raise AssertionError(message)
-
-    monkeypatch.setattr(RegistryIndex, "read_packaged", classmethod(lambda cls: _fail_if_read()))
+    packaged = RegistryIndex(entries=(_entry("mcp/curated@1.0.0", "curated-only-tool"),))
+    monkeypatch.setattr(RegistryIndex, "read_packaged", classmethod(lambda cls: packaged))
 
     result = runner.invoke(app, ["registry", "search", ""])
 
     assert result.exit_code == 0
-    assert "synced-tool" in result.stdout
+    assert "synced-tool" in result.stdout, "the user's own crawl must still be searchable"
+    assert "curated-only-tool" in result.stdout, "the packaged set must not be suppressed"
 
 
 def test_show_falls_back_to_the_packaged_curated_set(
@@ -435,3 +443,88 @@ def test_show_json_matches_the_entry(index_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert payload["descriptor"]["id"] == "mcp/postgres@1.0.0"
     assert payload["descriptor"]["provenance"]["repository"] == "https://example.test/repo"
+
+
+# --- paging ----------------------------------------------------------------
+
+
+def test_page_renders_results_through_a_pager(
+    index_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    used: list[bool] = []
+
+    class _Recording:
+        def __enter__(self) -> None:
+            used.append(True)
+
+        def __exit__(self, *_: object) -> None:
+            return None
+
+    monkeypatch.setattr(_ui.console, "pager", lambda **_: _Recording())
+    monkeypatch.setattr(registry_command, "_paging_is_useful", lambda: True)
+
+    result = runner.invoke(app, ["registry", "search", "", "--index", str(index_path), "--page"])
+
+    assert result.exit_code == ExitCode.OK
+    assert used, "--page should render inside the pager"
+
+
+def test_json_output_is_never_paged(index_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # A machine contract: a pager would corrupt piped output, and --json is
+    # parsed by the study harness.
+    def _fail(**_: object) -> None:
+        message = "--json must not be paged"
+        raise AssertionError(message)
+
+    monkeypatch.setattr(_ui.console, "pager", _fail)
+    monkeypatch.setattr(registry_command, "_paging_is_useful", lambda: True)
+
+    result = runner.invoke(
+        app, ["registry", "search", "", "--index", str(index_path), "--page", "--json"]
+    )
+
+    assert result.exit_code == ExitCode.OK
+    json.loads(result.stdout)
+
+
+def test_page_is_ignored_when_output_is_not_a_terminal(
+    index_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Redirected or in CI: plain text, no pager, same information (spec:
+    # degrade without apology).
+    def _fail(**_: object) -> None:
+        message = "must not page a non-terminal"
+        raise AssertionError(message)
+
+    monkeypatch.setattr(_ui.console, "pager", _fail)
+    monkeypatch.setattr(registry_command, "_paging_is_useful", lambda: False)
+
+    result = runner.invoke(app, ["registry", "search", "", "--index", str(index_path), "--page"])
+
+    assert result.exit_code == ExitCode.OK
+    assert "postgres-server" in result.stdout
+
+
+def test_page_lifts_the_default_row_limit(
+    index_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The default limit of 20 exists because 20 rows is roughly a screen.
+    # Paging is what removes that constraint, so keeping the cap would defeat
+    # the flag. An explicit --limit still wins.
+    seen: list[int] = []
+    original = RegistryIndex.search
+
+    def record(self: RegistryIndex, query: str, *, limit: int = 20) -> tuple[IndexEntry, ...]:
+        seen.append(limit)
+        return original(self, query, limit=limit)
+
+    monkeypatch.setattr(RegistryIndex, "search", record)
+    monkeypatch.setattr(registry_command, "_paging_is_useful", lambda: False)
+
+    runner.invoke(app, ["registry", "search", "", "--index", str(index_path), "--page"])
+    runner.invoke(
+        app, ["registry", "search", "", "--index", str(index_path), "--page", "--limit", "5"]
+    )
+
+    assert seen[0] > 20, "--page should not stay capped at one screen"
+    assert seen[1] == 5, "an explicit --limit must still win"
