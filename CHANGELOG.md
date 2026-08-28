@@ -60,17 +60,13 @@ would notice, not by the internal step numbers used to plan the work.
 
 ## [0.1.0] - 2026-08-26
 
-The initial feature set, prepared for release: everything below had landed on
-`main` over the course of development, so this section is not a list of
-changes since some earlier version.
+The first public release. Everything below had landed on `main` over the
+course of development; this section is the initial feature set as published,
+not a list of changes since some earlier release.
 
-**Prepared but never tagged.** The version was cut and the artefacts built,
-then the registry work that became `0.1.1` landed before a tag was pushed. The
-only version published from this line is `0.1.0rc1`, which went to TestPyPI as
-a rehearsal of the release pipeline - PyPI Trusted Publishing over OIDC with
-no stored token, PEP 740 attestations, and sigstore keyless signing of the
-wheel, sdist and SBOM. The section is kept rather than folded into `0.1.1`
-because the work in it is real and was reviewed as its own unit.
+Released from the same pipeline rehearsed by `0.1.0rc1` on TestPyPI: PyPI
+Trusted Publishing (OIDC, no stored token), PEP 740 attestations, and sigstore
+keyless signing of the wheel, sdist, and SBOM.
 
 ### Added
 
@@ -100,9 +96,9 @@ because the work in it is real and was reviewed as its own unit.
   without raising `--max-pages`), `search` (ranked by relevance, ties broken
   by name and then by assessment), and `show` (full detail on one entry).
   `search`/`show` work immediately after install, before `sync` has ever run,
-  against a curated set shipped inside the package; a local `sync`
-  supersedes it with the user's own crawl. (The set this version shipped was
-  replaced in `0.1.1`; see there for why.)
+  against a 113-entry set selected by fixed, published, score-blind criteria
+  (`research/registry-curation-criteria.md`) and shipped inside the package;
+  a local `sync` supersedes it with the user's own, larger crawl.
 - A cross-framework translation layer: a tool normalized into the registry's
   descriptor can be lowered into any supported framework's native tool-binding
   idiom. Wherever a target framework can't express a security property the
