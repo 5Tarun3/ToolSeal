@@ -268,6 +268,15 @@ class RegistryIndex:
             raise RegistryError(message) from None
         return cls.from_dict(data)
 
+    def merged_with(self, other: RegistryIndex) -> RegistryIndex:
+        """This index plus *other*, with *other* winning on a shared id."""
+        by_id = {entry.id: entry for entry in self.entries}
+        by_id.update({entry.id: entry for entry in other.entries})
+        return RegistryIndex(
+            entries=tuple(sorted(by_id.values(), key=lambda entry: entry.id)),
+            built_at=self.built_at or other.built_at,
+        )
+
     @classmethod
     def read_packaged(cls) -> RegistryIndex:
         """The curated set shipped with the package (P16): 100-200 entries
@@ -287,3 +296,27 @@ class RegistryIndex:
             message = f"the packaged curated index is missing: {exc}"
             raise RegistryError(message) from None
         return cls.from_dict(json.loads(text))
+
+
+def merge_indexes(cached: RegistryIndex, packaged: RegistryIndex) -> RegistryIndex:
+    """A user's crawled cache combined with the curated set shipped in the package.
+
+    Not a fallback, which is what this used to be: `search` read the cache if
+    one existed and the packaged set only if none did. That was defensible
+    while the packaged set was a hand-picked subset of the same crawl - the
+    cache was strictly newer and strictly larger, so preferring it lost
+    nothing.
+
+    It stopped being true once the packaged set carried **tools**. A crawl
+    reads registry metadata and can never enumerate a server's tools, because
+    doing that means running the server. So the two indexes now differ in kind
+    rather than in freshness, and letting a cache replace the packaged set made
+    every shipped tool entry invisible to anyone who had ever run `sync` -
+    including `registry search aseprite` returning nothing while the shipped
+    index contained it.
+
+    The packaged entry wins a shared id. It is the curated record: verified by
+    hand, and possibly carrying enumerated tools that a crawled row for the
+    same server cannot have.
+    """
+    return cached.merged_with(packaged)

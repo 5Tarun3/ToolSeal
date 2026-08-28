@@ -28,6 +28,7 @@ from toolseal.core.registry.index import (
     EntryAudit,
     IndexEntry,
     RegistryIndex,
+    merge_indexes,
 )
 from toolseal.errors import RegistryError
 
@@ -525,3 +526,38 @@ def test_a_crawl_of_wrapped_records_skips_nothing() -> None:
 
     assert report.skipped == []
     assert len(report.entries) == 2
+
+
+def test_a_local_crawl_does_not_hide_the_packaged_tool_entries(tmp_path: Path) -> None:
+    # `registry sync` produces server metadata and can never produce tools -
+    # enumerating those means running a server. So a synced cache and the
+    # packaged set are different in kind, and letting the cache replace the
+    # packaged set wholesale made every shipped tool entry invisible to
+    # anyone who had ever run `sync`.
+    crawled = RegistryIndex(entries=(entry("io.example/crawled", 90),))
+    cache = tmp_path / "index.json"
+    crawled.write(cache)
+
+    merged = merge_indexes(RegistryIndex.read(cache), RegistryIndex.read_packaged())
+
+    names = {item.descriptor.name for item in merged.entries}
+    assert "io.example/crawled" in names, "the user's own crawl must survive"
+    assert any("#" in item.id for item in merged.entries), "packaged tools must survive"
+
+
+def test_the_packaged_entry_wins_when_both_carry_the_same_id(tmp_path: Path) -> None:
+    # A curated entry is the richer record: it has been verified by hand and
+    # may carry enumerated tools. A crawled row for the same id is bare
+    # metadata, and should not displace it.
+    packaged = RegistryIndex.read_packaged()
+    first = packaged.entries[0]
+    stale = IndexEntry(
+        descriptor=first.descriptor,
+        audit=EntryAudit(score=1, blocking=True, findings=("stale",)),
+    )
+
+    merged = merge_indexes(RegistryIndex(entries=(stale,)), packaged)
+
+    kept = merged.get(first.id)
+    assert kept is not None
+    assert kept.audit.score == first.audit.score
