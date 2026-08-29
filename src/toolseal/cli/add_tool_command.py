@@ -23,7 +23,7 @@ from typing import Annotated, Final
 import typer
 from rich.text import Text
 
-from toolseal.cli._ui import accent_text, console, print_line, print_text
+from toolseal.cli._ui import accent_text, choices_help, console, print_line, print_text
 from toolseal.cli.registry_command import default_index
 from toolseal.core.adapters.base import RenderedFile
 from toolseal.core.injection import inject
@@ -71,7 +71,10 @@ def add_tool(
         typer.Option(
             "--framework",
             "-f",
-            help="Target to lower into. Read from the manifest if omitted.",
+            help=choices_help(
+                "Target to lower into. Read from the manifest if omitted.",
+                _LATTICE_TARGET_BY_FRAMEWORK,
+            ),
         ),
     ] = None,
     directory: Annotated[

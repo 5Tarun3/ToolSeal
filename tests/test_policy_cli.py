@@ -1168,3 +1168,41 @@ def test_relax_works_again_after_enforce_release(tmp_path: Path) -> None:
     )
 
     assert result.exit_code == ExitCode.OK, result.output
+
+
+# --- profile discoverability ------------------------------------------------
+
+
+def test_init_profile_help_names_every_shipped_regime() -> None:
+    from toolseal.core.policy.profile import load_profiles
+
+    # The help used to say "e.g. hipaa", naming one of three and leaving the
+    # rest to be discovered by running `policy list` - which a user does not
+    # know to do while reading `init --help`.
+    result = runner.invoke(app, ["init", "--help"])
+    text = " ".join(result.stdout.split())
+
+    for profile_id in load_profiles():
+        assert profile_id in text, f"{profile_id} missing from `init --help`"
+
+
+def test_policy_apply_help_names_every_shipped_regime() -> None:
+    from toolseal.core.policy.profile import load_profiles
+
+    result = runner.invoke(app, ["policy", "apply", "--help"])
+    text = " ".join(result.stdout.split())
+
+    for profile_id in load_profiles():
+        assert profile_id in text, f"{profile_id} missing from `policy apply --help`"
+
+
+def test_profile_help_is_generated_rather_than_restated() -> None:
+    from toolseal.core.policy.profile import load_profiles, profile_help, profile_ids
+
+    # The drift guard. Two hardcoded lists would eventually disagree and the
+    # one a user reads before typing would be the stale one, so the help text
+    # is built from the same loader that validates the id.
+    assert profile_ids() == tuple(sorted(load_profiles()))
+    assert "One of:" in profile_help("Prefix.")
+    for profile_id in profile_ids():
+        assert profile_id in profile_help("Prefix.")

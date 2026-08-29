@@ -9,9 +9,9 @@ from typing import Annotated, Any
 import typer
 from rich.text import Text
 
-from toolseal.cli._ui import accent_text, console, print_line, print_text
+from toolseal.cli._ui import accent_text, choices_help, console, print_line, print_text
 from toolseal.core.adapters import ScaffoldSpec, framework_registry, provider_registry
-from toolseal.core.policy.profile import load_profile
+from toolseal.core.policy.profile import load_profile, profile_ids
 from toolseal.core.scaffold import apply_plan, build_plan
 from toolseal.errors import ConfigError, ExitCode, UsageError
 
@@ -51,10 +51,20 @@ def _resolve_profile_or_usage_error(profile_id: str) -> None:
 def init(
     name: Annotated[str, typer.Argument(help="Project name; also the directory created.")],
     provider: Annotated[
-        str, typer.Option("--provider", "-p", help="LLM provider to wire in.")
+        str,
+        typer.Option(
+            "--provider",
+            "-p",
+            help=choices_help("LLM provider to wire in.", provider_registry.names()),
+        ),
     ] = DEFAULT_PROVIDER,
     framework: Annotated[
-        str, typer.Option("--framework", "-f", help="Agent framework to scaffold.")
+        str,
+        typer.Option(
+            "--framework",
+            "-f",
+            help=choices_help("Agent framework to scaffold.", framework_registry.names()),
+        ),
     ] = DEFAULT_FRAMEWORK,
     model: Annotated[
         str | None, typer.Option("--model", "-m", help="Override the provider's default model.")
@@ -71,7 +81,7 @@ def init(
         str | None,
         typer.Option(
             "--profile",
-            help="Scaffold under a regime/standard from the start, e.g. hipaa.",
+            help=choices_help("Scaffold under a regulatory regime from the start.", profile_ids()),
         ),
     ] = None,
     force: Annotated[bool, typer.Option("--force", help="Overwrite existing files.")] = False,

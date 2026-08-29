@@ -7,6 +7,7 @@ evaluation harness depend on, and nothing else.
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
 from pathlib import Path
 
 import pytest
@@ -203,3 +204,51 @@ def test_main_reports_an_unexpected_exception_with_a_verbose_hint(
     assert "internal error: RuntimeError: boom" in captured.err
     assert "(exit 3: internal)" in captured.err
     assert "--verbose" in captured.err
+
+
+# --- discoverability: every registry-backed option names its values ----------
+
+
+def test_every_registry_backed_option_lists_what_it_accepts() -> None:
+    """A sweep, not a spot check.
+
+    Typer renders the choices of an `Enum` option by itself, which is why
+    `--min-severity` always showed `<critical|high|medium|low>`. Options backed
+    by a runtime registry are plain strings, so Typer has nothing to render and
+    the help said "LLM provider to wire in" while naming none of them. Each
+    entry below pairs a command with the values its option must advertise, and
+    every list is read from the registry that validates the input, so adding an
+    adapter cannot leave the help behind.
+    """
+    from toolseal.core.adapters import framework_registry, provider_registry
+    from toolseal.core.adapters.mcp_targets import TARGETS_BY_FRAMEWORK
+    from toolseal.core.policy.profile import profile_ids
+
+    cases: list[tuple[list[str], Iterable[str]]] = [
+        (["init", "--help"], provider_registry.names()),
+        (["init", "--help"], framework_registry.names()),
+        (["init", "--help"], profile_ids()),
+        (["add", "framework", "--help"], provider_registry.names()),
+        (["add", "mcp", "--help"], TARGETS_BY_FRAMEWORK),
+        (["policy", "apply", "--help"], profile_ids()),
+        (["policy", "check", "--help"], profile_ids()),
+    ]
+
+    for argv, expected in cases:
+        rendered = " ".join(runner.invoke(app, argv).stdout.split())
+        for value in expected:
+            assert value in rendered, f"{value!r} missing from `toolseal {' '.join(argv)}`"
+
+
+def test_add_framework_advertises_only_what_it_will_accept() -> None:
+    # crewai and langgraph scaffold a whole project rather than configure an
+    # existing one, and this command refuses them. Listing them would send a
+    # reader straight into that refusal.
+    from toolseal.cli.configure_command import in_place_frameworks
+
+    rendered = " ".join(runner.invoke(app, ["add", "framework", "--help"]).stdout.split())
+
+    accepted = in_place_frameworks()
+    assert accepted, "at least one framework should configure in place"
+    for value in accepted:
+        assert value in rendered

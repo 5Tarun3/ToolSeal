@@ -16,20 +16,49 @@ import typer
 from rich.text import Text
 
 from toolseal.cli import add_tool_command, mcp_command
-from toolseal.cli._ui import accent_text, console, print_line, print_text
+from toolseal.cli._ui import accent_text, choices_help, console, print_line, print_text
 from toolseal.cli.errors import command as error_boundary
 from toolseal.core.adapters import ScaffoldSpec, framework_registry, provider_registry
 from toolseal.core.injection import inject, load, plan_revert
 from toolseal.core.injection import revert as revert_injection
 from toolseal.errors import ExitCode, UsageError
 
+
+def in_place_frameworks() -> tuple[str, ...]:
+    """Frameworks `add framework` can actually apply to an existing project.
+
+    `crewai` and `langgraph` create a project rather than configure one, so
+    passing either is a usage error. Read from the adapters themselves so a
+    new one is advertised as soon as it declares the capability.
+    """
+    return tuple(
+        name
+        for name in framework_registry.names()
+        if getattr(framework_registry.get(name), "configures_in_place", False)
+    )
+
+
 add_app = typer.Typer(name="add", help="Configure an existing project.", no_args_is_help=True)
 
 
 def add_framework(
-    framework: Annotated[str, typer.Argument(help="Framework to configure for.")],
+    framework: Annotated[
+        str,
+        typer.Argument(
+            # Only adapters that configure an existing directory are listed.
+            # The others scaffold a whole project and this command refuses
+            # them at runtime, so advertising them here would send a reader
+            # straight into that refusal.
+            help=choices_help("Framework to configure for.", in_place_frameworks())
+        ),
+    ],
     provider: Annotated[
-        str, typer.Option("--provider", "-p", help="Provider to reference.")
+        str,
+        typer.Option(
+            "--provider",
+            "-p",
+            help=choices_help("Provider to reference.", provider_registry.names()),
+        ),
     ] = "ollama",
     directory: Annotated[
         Path | None, typer.Option("--directory", "-d", help="Project to configure.")

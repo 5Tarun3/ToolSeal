@@ -410,3 +410,29 @@ def derive_residency(
         evidence=ComplianceEvidence.DERIVED,
         derivation="egress_hosts",
     )
+
+
+def profile_ids() -> tuple[str, ...]:
+    """Every profile id `--profile` and `policy apply` accept, sorted.
+
+    Read from the shipped profile files rather than restated as a literal, so
+    adding a regime updates the help text that advertises it. Two hardcoded
+    lists would eventually disagree, and the one that disagreed would be the
+    one a user read before typing an id that does not work.
+
+    Returns empty on a load failure rather than raising: this is called while
+    Typer builds its help strings, at import time, and a malformed profile
+    should degrade one option's help rather than prevent the CLI from starting
+    at all. The same failure is reported properly by `load_profile` when an id
+    is actually used.
+    """
+    try:
+        return tuple(sorted(load_profiles()))
+    except (ConfigError, OSError):
+        return ()
+
+
+def profile_help(prefix: str) -> str:
+    """*prefix* followed by the ids actually available, for an option's help."""
+    ids = profile_ids()
+    return f"{prefix} One of: {', '.join(ids)}." if ids else prefix

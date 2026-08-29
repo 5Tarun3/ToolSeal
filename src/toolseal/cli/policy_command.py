@@ -23,6 +23,7 @@ from rich.text import Text
 
 from toolseal.cli._ui import (
     accent_text,
+    choices_help,
     console,
     count_style,
     new_grid,
@@ -46,6 +47,9 @@ from toolseal.core.policy.profile import (
     apply_resolution,
     load_profile,
     load_profiles,
+)
+from toolseal.core.policy.profile import (
+    profile_ids as available_profile_ids,
 )
 from toolseal.core.policy.profile import (
     resolve as resolve_profiles,
@@ -577,7 +581,9 @@ def _print_relaxations_table(relaxations: Sequence[Relaxation]) -> None:
 
 
 def apply_regime(
-    regime: Annotated[str, typer.Argument(help="Regime or standard id to adopt, e.g. hipaa.")],
+    regime: Annotated[
+        str, typer.Argument(help=choices_help("Regime to adopt.", available_profile_ids()))
+    ],
     directory: Annotated[
         Path | None, typer.Option("--directory", "-d", help="Project to change.")
     ] = None,
@@ -687,7 +693,10 @@ def _print_apply_diff(
 def check(
     profile: Annotated[
         str | None,
-        typer.Option("--profile", help="Regime or standard to check against."),
+        typer.Option(
+            "--profile",
+            help=choices_help("Regime to check against.", available_profile_ids()),
+        ),
     ] = None,
     directory: Annotated[
         Path | None, typer.Option("--directory", "-d", help="Project to check.")

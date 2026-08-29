@@ -17,8 +17,8 @@ from typing import Annotated
 import typer
 from rich.text import Text
 
-from toolseal.cli._ui import accent_text, console, print_line, print_text
-from toolseal.core.adapters.mcp_targets import target_for
+from toolseal.cli._ui import accent_text, choices_help, console, print_line, print_text
+from toolseal.core.adapters.mcp_targets import TARGETS_BY_FRAMEWORK, target_for
 from toolseal.core.injection import inject
 from toolseal.core.manifest import Manifest
 from toolseal.core.model import MCPServerBinding, Transport
@@ -39,7 +39,10 @@ def add_mcp(
         typer.Option(
             "--framework",
             "-f",
-            help="Which config file to write. Read from the manifest if omitted.",
+            help=choices_help(
+                "Which config file to write. Read from the manifest if omitted.",
+                (*TARGETS_BY_FRAMEWORK, "generic"),
+            ),
         ),
     ] = None,
     directory: Annotated[

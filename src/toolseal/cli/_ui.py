@@ -17,7 +17,7 @@ on a `typer` minor release that changes what it pulls in.
 from __future__ import annotations
 
 import sys
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager
 from typing import Any
 
@@ -441,3 +441,26 @@ def print_wrapped(out: Console, body: str, *, indent: int, style: str, label: st
         text = "".join(segment.text for segment in line).rstrip()
         prefix = first_prefix if index == 0 else continuation_prefix
         out.print(Text(prefix + text, style=style))
+
+
+def choices_help(prefix: str, values: Iterable[str]) -> str:
+    """*prefix* followed by the values an option actually accepts.
+
+    Typer renders the choices of an `Enum`-typed option automatically, which is
+    why `--min-severity` has always shown `<critical|high|medium|low>`. Options
+    backed by a *runtime registry* - providers, frameworks, regime profiles -
+    are plain strings, so Typer has nothing to render and the help said things
+    like "LLM provider to wire in" while never naming one.
+
+    The values are passed in by the caller rather than imported here, so this
+    module stays a presentation helper with no opinion about adapters, and so
+    every list is generated from the registry that validates the input. A
+    hardcoded list would drift, and the copy a user read before typing would be
+    the stale one.
+
+    Sorted for a stable help string: a set's iteration order is not stable
+    across runs, and help text that reshuffles between invocations looks like
+    the tool changed under the reader.
+    """
+    listed = sorted(values)
+    return f"{prefix} One of: {', '.join(listed)}." if listed else prefix
