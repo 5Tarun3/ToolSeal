@@ -528,3 +528,82 @@ def test_page_lifts_the_default_row_limit(
 
     assert seen[0] > 20, "--page should not stay capped at one screen"
     assert seen[1] == 5, "an explicit --limit must still win"
+
+
+# --- show: resolving what a person can actually see -------------------------
+
+
+@pytest.fixture
+def resolvable_index(tmp_path: Path) -> Path:
+    index = RegistryIndex(
+        entries=(
+            _entry("mcp/io.github.upstash/context7@4.0.3", "upstash/context7"),
+            _entry("mcp/io.github.upstash/context7@4.0.3#query-docs", "query-docs"),
+            _entry("mcp/io.github.upstash/context7@4.0.3#resolve-library-id", "resolve-library-id"),
+            _entry("mcp/io.example/git@1.0.0#git_log", "git_log"),
+            _entry("mcp/io.example/git@1.0.0#git_reset", "git_reset"),
+        ),
+        built_at="fixed",
+    )
+    path = tmp_path / "resolvable.json"
+    index.write(path)
+    return path
+
+
+def test_show_still_accepts_an_exact_id(resolvable_index: Path) -> None:
+    # Unchanged, so anything already scripting against ids keeps working.
+    result = runner.invoke(
+        app,
+        ["registry", "show", "mcp/io.example/git@1.0.0#git_log", "--index", str(resolvable_index)],
+    )
+
+    assert result.exit_code == ExitCode.OK
+    assert "git_log" in result.stdout
+
+
+def test_show_accepts_the_name_the_search_table_printed(resolvable_index: Path) -> None:
+    # The whole point: `search` prints names, never ids, so a name is the only
+    # string a person has actually seen.
+    result = runner.invoke(
+        app, ["registry", "show", "query-docs", "--index", str(resolvable_index)]
+    )
+
+    assert result.exit_code == ExitCode.OK
+    assert "query-docs" in result.stdout
+
+
+def test_show_accepts_an_unambiguous_substring(resolvable_index: Path) -> None:
+    result = runner.invoke(app, ["registry", "show", "reset", "--index", str(resolvable_index)])
+
+    assert result.exit_code == ExitCode.OK
+    assert "git_reset" in result.stdout
+
+
+def test_an_ambiguous_term_lists_the_candidates_with_their_ids(resolvable_index: Path) -> None:
+    # The ambiguous case is where someone learns what the ids are, so it must
+    # print them in full rather than only refusing.
+    result = runner.invoke(app, ["registry", "show", "git_", "--index", str(resolvable_index)])
+
+    assert result.exit_code == ExitCode.USAGE
+    assert "mcp/io.example/git@1.0.0#git_log" in result.output
+    assert "mcp/io.example/git@1.0.0#git_reset" in result.output
+
+
+def test_an_exact_name_wins_over_being_a_substring_of_others(resolvable_index: Path) -> None:
+    # "context7" is an exact name of nothing but a substring of three ids. An
+    # exact *name* match must not be drowned by the substring pass.
+    result = runner.invoke(
+        app, ["registry", "show", "upstash/context7", "--index", str(resolvable_index)]
+    )
+
+    assert result.exit_code == ExitCode.OK
+    assert "upstash/context7" in result.stdout
+
+
+def test_an_unknown_term_still_points_at_search(resolvable_index: Path) -> None:
+    result = runner.invoke(
+        app, ["registry", "show", "no-such-thing", "--index", str(resolvable_index)]
+    )
+
+    assert result.exit_code == ExitCode.USAGE
+    assert "registry search" in result.output

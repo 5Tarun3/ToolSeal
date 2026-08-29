@@ -483,17 +483,76 @@ def _print_entry(entry: IndexEntry) -> None:
         )
 
 
+def _resolve(index: RegistryIndex, term: str) -> IndexEntry:
+    """The one entry *term* names, or a `UsageError` explaining the choice.
+
+    `show` used to take an exact id and its help said "as printed by `registry
+    search`", which was simply untrue: the search table prints a name, a
+    package and a score, and never an id. Ids are long enough that showing them
+    would either dominate an 80-column table or be clipped to uselessness -
+    `mcp/io.github.upstash/context7@4.0.3#query-docs` is 46 characters - so the
+    fix is for `show` to accept what a reader can actually see instead.
+
+    Resolution order, most specific first:
+
+    1. **Exact id**, so anything already scripted against ids is unaffected.
+    2. **Exact name**, which is the column `search` actually prints.
+    3. **Unique substring** of either.
+
+    An exact name is tried before any substring pass because a short name is
+    frequently a substring of longer ids - "upstash/context7" names one server
+    and appears inside all three of its rows - and a name match is the more
+    specific claim.
+    """
+    exact_id = index.get(term)
+    if exact_id is not None:
+        return exact_id
+
+    by_name = [entry for entry in index.entries if entry.descriptor.name == term]
+    if len(by_name) == 1:
+        return by_name[0]
+
+    needle = term.casefold()
+    partial = by_name or [
+        entry
+        for entry in index.entries
+        if needle in entry.id.casefold() or needle in entry.descriptor.name.casefold()
+    ]
+    if len(partial) == 1:
+        return partial[0]
+
+    if not partial:
+        message = f"no entry matching {term!r}; try `toolseal registry search {term}`"
+        raise UsageError(message)
+
+    # The ambiguous case is where someone learns what the ids are, so it prints
+    # them in full. Refusing without showing them would leave the reader in the
+    # same position that made `show` unusable in the first place.
+    shown = sorted(entry.id for entry in partial)[:10]
+    listing = "\n  ".join(shown)
+    more = f"\n  ... and {len(partial) - len(shown)} more" if len(partial) > len(shown) else ""
+    message = f"{term!r} matches {len(partial)} entries:\n  {listing}{more}"
+    raise UsageError(message)
+
+
 def show(
-    entry_id: Annotated[str, typer.Argument(help="Entry id, as printed by `registry search`.")],
+    entry_id: Annotated[
+        str,
+        typer.Argument(
+            help="Entry id, tool name, or a unique part of either, from `registry search`."
+        ),
+    ],
     index_path: Annotated[Path | None, typer.Option("--index", help="Index file to read.")] = None,
     as_json: Annotated[bool, typer.Option("--json", help="Machine-readable output.")] = False,
 ) -> None:
-    """Show everything known about one registry entry."""
+    """Show everything known about one registry entry.
+
+    Accepts an entry id, a tool or server name, or a unique part of either -
+    see `_resolve`. The name is what `registry search` prints, so it is the
+    string a reader has actually seen.
+    """
     index = RegistryIndex.read(index_path) if index_path is not None else default_index()
-    entry = index.get(entry_id)
-    if entry is None:
-        message = f"no entry {entry_id!r} in the index; try `toolseal registry search`"
-        raise UsageError(message)
+    entry = _resolve(index, entry_id)
 
     if as_json:
         typer.echo(json.dumps(entry.to_dict(), indent=2, sort_keys=True))
