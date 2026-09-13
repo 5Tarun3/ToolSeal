@@ -40,7 +40,7 @@ from typing import Any
 
 from toolseal.core.manifest import MANIFEST_NAME
 from toolseal.core.policy.model import AuditReport, CheckResult, Verdict, all_checks
-from toolseal.errors import ConfigError
+from toolseal.errors import ProjectConfigError
 
 
 @dataclass(frozen=True)
@@ -84,18 +84,18 @@ def _parse_expires(value: Any, *, check_id: str) -> date:
     if not isinstance(value, str):
         found = type(value).__name__
         message = f"relaxation for {check_id} field 'expires' must be a date string, found {found}"
-        raise ConfigError(message)
+        raise ProjectConfigError(message)
     try:
         return date.fromisoformat(value)
     except ValueError:
         message = f"relaxation for {check_id} field 'expires' is not a valid date: {value!r}"
-        raise ConfigError(message) from None
+        raise ProjectConfigError(message) from None
 
 
 def _parse_tools(value: Any, *, check_id: str) -> tuple[str, ...]:
     if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
         message = f"relaxation for {check_id} field 'tools' must be a list of strings"
-        raise ConfigError(message)
+        raise ProjectConfigError(message)
     return tuple(value)
 
 
@@ -116,36 +116,36 @@ def parse_relaxations(
         data: dict[str, Any] = tomllib.loads(text)
     except tomllib.TOMLDecodeError as exc:
         message = f"{MANIFEST_NAME} is not valid TOML: {exc}"
-        raise ConfigError(message) from None
+        raise ProjectConfigError(message) from None
 
     known = known_check_ids if known_check_ids is not None else _known_check_ids()
 
     policy = data.get("policy") or {}
     if not isinstance(policy, dict):
         message = "[policy] must be a table"
-        raise ConfigError(message)
+        raise ProjectConfigError(message)
     raw_relax = policy.get("relax") or {}
     if not isinstance(raw_relax, dict):
         message = "[policy.relax] must be a table of check ids"
-        raise ConfigError(message)
+        raise ProjectConfigError(message)
 
     relaxations: list[Relaxation] = []
     for check_id, block in raw_relax.items():
         if check_id not in known:
             message = f"relaxation names unknown check {check_id!r}"
-            raise ConfigError(message)
+            raise ProjectConfigError(message)
         if not isinstance(block, dict):
             message = f"[policy.relax.{check_id}] must be a table"
-            raise ConfigError(message)
+            raise ProjectConfigError(message)
 
         reason = block.get("reason")
         if not isinstance(reason, str) or not reason.strip():
             message = f"relaxation for {check_id} is missing required field 'reason'"
-            raise ConfigError(message)
+            raise ProjectConfigError(message)
 
         if "expires" not in block:
             message = f"relaxation for {check_id} is missing required field 'expires'"
-            raise ConfigError(message)
+            raise ProjectConfigError(message)
         expires = _parse_expires(block["expires"], check_id=check_id)
 
         tools = _parse_tools(block.get("tools", []), check_id=check_id)

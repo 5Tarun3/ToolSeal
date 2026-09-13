@@ -8,12 +8,36 @@ would notice, not by the internal step numbers used to plan the work.
 
 ## [Unreleased]
 
+### Fixed
+
+- A mistake the user made is no longer reported as a bug in this tool. A typo
+  in your own `toolseal.toml`, or an `audit` pointed at a path that is not a
+  directory, exited `3` - documented as "an unexpected failure, always a bug
+  worth reporting" - and now exits `2` (usage). A malformed catalogue or
+  profile *shipped with* toolseal still exits `3`, because that genuinely is a
+  fault worth reporting. Scripts branching on exit codes for these cases will
+  see `2` where they previously saw `3`.
+- `-p` no longer means two things. It was `--provider` in `init` and
+  `add framework` but `--page` in `registry search`, so the habit learned in
+  one command silently did something else in the other. `--page` keeps its long
+  form and loses the alias.
+- `revert` in a scaffolded project no longer claims "toolseal has not written
+  to" a directory that `toolseal init` created. It now says no `add` has been
+  recorded there, and names what `revert` does and does not undo.
+
 ### Added
 
 - `toolseal init` with no project name, or with `-i`, now runs a guided prompt
   flow covering provider, framework and regime profile, each listed with its
   security trade-off, and prints the equivalent non-interactive command when
   it finishes.
+- `toolseal policy check --json`, for the one command in the policy group that
+  is explicitly a machine-readable evidence report. The payload carries
+  `not_assessed` and the "this is not a verdict" disclaimer alongside the
+  counts, so a consumer cannot serialise the numbers free of the qualifier
+  that governs them.
+- `toolseal registry` help now points at the order the commands are actually
+  used in: `search`, then `show`, then `add tool`.
 
 ## [0.1.1] - 2026-08-28
 

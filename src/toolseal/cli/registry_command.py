@@ -36,6 +36,11 @@ from toolseal.errors import ExitCode, UsageError
 registry_app = typer.Typer(
     name="registry",
     help="Index of open-source tools and MCP servers.",
+    epilog=(
+        "Start with `toolseal registry search <term>` to find a server, then "
+        "`toolseal registry show <id>` for what it declares about itself. "
+        "`toolseal add tool` lowers one into your project."
+    ),
     no_args_is_help=True,
 )
 
@@ -396,8 +401,11 @@ def search(
     page: Annotated[
         bool,
         typer.Option(
+            # No `-p` alias: `-p` is `--provider` in `init` and `add framework`,
+            # and one letter meaning two things is worse than one option having
+            # no short form. Paging is typed once in a session; `--provider` is
+            # typed constantly.
             "--page",
-            "-p",
             help="Scroll results in a pager. Raises the row limit; ignored when not a terminal.",
         ),
     ] = False,

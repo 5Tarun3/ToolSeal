@@ -34,7 +34,7 @@ from toolseal.core.model import (
     RuntimeConfig,
 )
 from toolseal.core.translate.lower import load_translations
-from toolseal.errors import ConfigError
+from toolseal.errors import ProjectConfigError
 
 SKIPPED_DIRECTORIES: Final = frozenset(
     {
@@ -241,7 +241,7 @@ def extract(root: Path) -> ProjectModel:
     resolved = root.resolve()
     if not resolved.is_dir():
         message = f"not a directory: {root}"
-        raise ConfigError(message)
+        raise ProjectConfigError(message)
 
     manifest = Manifest.load(resolved)
     providers: tuple[ProviderBinding, ...] = ()

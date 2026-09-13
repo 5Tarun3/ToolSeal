@@ -151,7 +151,16 @@ def revert(
 
     injection = load(root)
     if injection is None:
-        message = f"nothing to revert: toolseal has not written to {root}"
+        # Deliberately not "toolseal has not written here": in a scaffolded
+        # project that sentence is false, and a user looking at a tree `init`
+        # created reads it as the tool having lost track of its own work.
+        # `revert` undoes `add`, which records an injection; `init` owns the
+        # whole directory and is undone by deleting it.
+        message = (
+            f"nothing to revert: no `toolseal add` has been recorded in {root}. "
+            "`revert` undoes `add framework`, `add mcp` and `add tool`; "
+            "a project created by `toolseal init` is undone by removing its directory"
+        )
         raise UsageError(message)
 
     if dry_run:

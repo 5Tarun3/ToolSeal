@@ -43,7 +43,27 @@ class UsageError(ToolsealError):
 
 
 class ConfigError(ToolsealError):
-    """A project or tool configuration file is missing, malformed or inconsistent."""
+    """A configuration file shipped with this tool is malformed or inconsistent.
+
+    Stays on `INTERNAL`: a broken catalogue, profile or known-package list is a
+    packaging fault in this tool, and telling the user to report it is the
+    correct advice. A file the *user* wrote is a different fact entirely - see
+    `ProjectConfigError`.
+    """
+
+
+class ProjectConfigError(ConfigError):
+    """A file the user wrote, or a path the user typed, is malformed or absent.
+
+    Exits `USAGE`, not `INTERNAL`. A typo in someone's own `toolseal.toml`, or
+    an `audit` pointed at a path that is not a directory, is a mistake the user
+    can fix and not a bug in this tool - and `INTERNAL` is documented above as
+    "always a bug worth reporting", so raising it here asks for a bug report
+    that nobody should file. Subclasses `ConfigError` so existing `except
+    ConfigError` handlers keep catching it; only the exit code differs.
+    """
+
+    exit_code = ExitCode.USAGE
 
 
 class ResolutionError(ToolsealError):

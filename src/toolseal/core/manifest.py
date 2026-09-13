@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final
 
-from toolseal.errors import ConfigError
+from toolseal.errors import ProjectConfigError
 
 MANIFEST_NAME: Final = "toolseal.toml"
 
@@ -52,7 +52,7 @@ def _parse_tool_policies(raw: Any) -> dict[str, ToolPolicy]:
     for name, block in raw.items():
         if not isinstance(block, dict):
             message = f"[policy.tool.{name}] must be a table"
-            raise ConfigError(message)
+            raise ProjectConfigError(message)
 
         approval = block.get("approval")
         if approval is not None and (
@@ -60,7 +60,7 @@ def _parse_tool_policies(raw: Any) -> dict[str, ToolPolicy]:
         ):
             valid = ", ".join(sorted(_VALID_APPROVAL_VALUES))
             message = f"[policy.tool.{name}] approval must be one of {valid}, found {approval!r}"
-            raise ConfigError(message)
+            raise ProjectConfigError(message)
 
         timeout = block.get("timeout_seconds")
         if timeout is not None and (
@@ -69,7 +69,7 @@ def _parse_tool_policies(raw: Any) -> dict[str, ToolPolicy]:
             message = (
                 f"[policy.tool.{name}] timeout_seconds must be a positive number, found {timeout!r}"
             )
-            raise ConfigError(message)
+            raise ProjectConfigError(message)
 
         raw_egress = block.get("egress_allow")
         egress_allow: tuple[str, ...] | None = None
@@ -78,7 +78,7 @@ def _parse_tool_policies(raw: Any) -> dict[str, ToolPolicy]:
                 isinstance(item, str) for item in raw_egress
             ):
                 message = f"[policy.tool.{name}] egress_allow must be a list of strings"
-                raise ConfigError(message)
+                raise ProjectConfigError(message)
             egress_allow = tuple(raw_egress)
 
         policies[str(name)] = ToolPolicy(
@@ -234,7 +234,7 @@ class Manifest:
             data: dict[str, Any] = tomllib.loads(text)
         except tomllib.TOMLDecodeError as exc:
             message = f"{MANIFEST_NAME} is not valid TOML: {exc}"
-            raise ConfigError(message) from None
+            raise ProjectConfigError(message) from None
 
         project = data.get("project") or {}
         stack = data.get("stack") or {}
@@ -247,7 +247,7 @@ class Manifest:
         ]
         if missing:
             message = f"{MANIFEST_NAME} is missing required keys: {', '.join(missing)}"
-            raise ConfigError(message)
+            raise ProjectConfigError(message)
 
         raw_scopes = data.get("scopes") or {}
         scopes = {
@@ -296,5 +296,5 @@ class Manifest:
             text = path.read_text(encoding="utf-8")
         except OSError as exc:
             message = f"cannot read {MANIFEST_NAME}: {exc.strerror}"
-            raise ConfigError(message) from None
+            raise ProjectConfigError(message) from None
         return cls.from_toml(text)

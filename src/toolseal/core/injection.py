@@ -62,7 +62,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Final
 
 from toolseal.core.adapters.base import RenderedFile
-from toolseal.errors import ConfigError
+from toolseal.errors import ConfigError, ProjectConfigError
 
 MANIFEST_DIR: Final = ".toolseal"
 MANIFEST_NAME: Final = "injection.json"
@@ -312,7 +312,7 @@ def inject(root: Path, files: tuple[RenderedFile, ...], *, label: str) -> Inject
     """
     if not root.is_dir():
         message = f"not a directory: {root}"
-        raise ConfigError(message)
+        raise ProjectConfigError(message)
 
     recorded: list[InjectedFile] = []
     for item in files:

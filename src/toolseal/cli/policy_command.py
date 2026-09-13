@@ -8,11 +8,12 @@ coverage figures it also produces are a by-product.
 
 from __future__ import annotations
 
+import json
 from collections.abc import Sequence
 from dataclasses import replace as dataclass_replace
 from datetime import date
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import typer
 from rich.console import Group, RenderableType
@@ -701,6 +702,9 @@ def check(
     directory: Annotated[
         Path | None, typer.Option("--directory", "-d", help="Project to check.")
     ] = None,
+    as_json: Annotated[
+        bool, typer.Option("--json", help="Emit machine-readable output on stdout.")
+    ] = False,
 ) -> None:
     """The configuration-evidence report. Coverage of what is checkable - never a verdict."""
     root = (directory or Path.cwd()).resolve()
@@ -715,10 +719,67 @@ def check(
     relaxations = parse_relaxations(text) if text is not None else ()
     outcome = apply_relaxations(report, relaxations)
 
-    _print_check_report(root, profile_ids, resolution, outcome)
+    if as_json:
+        typer.echo(
+            json.dumps(
+                _check_payload(root, profile_ids, resolution, outcome), indent=2, sort_keys=True
+            )
+        )
+    else:
+        _print_check_report(root, profile_ids, resolution, outcome)
 
     has_fail = any(result.verdict is Verdict.FAIL for result in outcome.report.results)
     raise typer.Exit(ExitCode.FINDINGS if has_fail else ExitCode.OK)
+
+
+def _check_payload(
+    root: Path,
+    profile_ids: tuple[str, ...],
+    resolution: Resolution,
+    outcome: RelaxationOutcome,
+) -> dict[str, Any]:
+    """`policy check` as data, carrying every qualifier the printed report does.
+
+    `not_assessed` and `disclaimer` are in the payload rather than dropped as
+    decoration: this report is coverage of what is checkable and explicitly not
+    a verdict, and a consumer that serialises only the counts would be free to
+    present it as one. The caveat travels with the numbers it qualifies.
+    """
+    report = outcome.report
+    return {
+        "root": str(root),
+        "profiles": list(profile_ids),
+        "counts": {
+            verdict.value: sum(1 for r in report.results if r.verdict is verdict)
+            for verdict in Verdict
+        },
+        "failing": [
+            {
+                "check": result.check.id,
+                "severity": str(result.check.severity),
+                "title": result.check.title,
+            }
+            for result in sorted(
+                (r for r in report.results if r.verdict is Verdict.FAIL),
+                key=lambda r: r.check.id,
+            )
+        ],
+        "relaxed": [
+            {
+                "check": relaxation.check_id,
+                "expires": str(relaxation.expires),
+                "reason": relaxation.reason,
+            }
+            for relaxation in outcome.applied
+        ],
+        "expired_relaxations": [
+            {"check": relaxation.check_id, "expires": str(relaxation.expires)}
+            for relaxation in outcome.expired
+        ],
+        "relaxed_critical": report.relaxed_critical,
+        "not_assessed": list(resolution.not_assessed),
+        "disclaimer": DISCLAIMER,
+    }
 
 
 def _print_check_report(

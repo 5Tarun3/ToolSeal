@@ -57,6 +57,13 @@ jobs:
       - name: Tests
         run: uv run pytest
 
+      - name: Acceptance
+        # The user journey end to end against the installed console script.
+        # Unit tests cannot fail the way a product fails: a flag that means two
+        # things, an error that blames the tool for a typo, a report no script
+        # can parse. Exit 1 means an acceptance step regressed.
+        run: uv run python scripts/uat.py
+
       - name: Self-audit
         if: inputs.with-audit
         # Exit 1 means findings, which is exactly what should stop a release.
