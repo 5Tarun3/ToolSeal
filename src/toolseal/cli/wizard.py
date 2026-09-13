@@ -21,6 +21,14 @@ from rich.text import Text
 
 from toolseal.cli._ui import accent_text, print_text
 from toolseal.cli._ui import console as default_console
+from toolseal.core.adapters import framework_registry, provider_registry
+from toolseal.core.policy.profile import load_profiles
+from toolseal.errors import UsageError
+
+NO_PROFILE = "none"
+"""The explicit "no regime" answer. Offered as a listed option rather than as
+an empty reply, so declining a regime is a decision the user made rather than
+one they skipped past."""
 
 
 @dataclass(frozen=True)
@@ -75,3 +83,130 @@ def choose(
         if chosen is not None:
             return chosen
         print_text(target, Text(f"  {reply!r} is not one of the options", style="verdict.warn"))
+
+
+@dataclass(frozen=True)
+class WizardAnswers:
+    """What the flow collected. Exactly the subset of `init`'s flags it asks about."""
+
+    name: str
+    provider: str
+    framework: str
+    profile: str | None
+
+
+def _provider_options() -> tuple[Option, ...]:
+    return tuple(
+        Option(name, adapter.display_name, adapter.summary)
+        for name, adapter in ((n, provider_registry.get(n)) for n in provider_registry.names())
+    )
+
+
+def _framework_options() -> tuple[Option, ...]:
+    return tuple(
+        Option(name, adapter.display_name, adapter.summary)
+        for name, adapter in ((n, framework_registry.get(n)) for n in framework_registry.names())
+    )
+
+
+def _profile_options() -> tuple[Option, ...]:
+    listed = [Option(NO_PROFILE, "No regime", "Baseline severities only. You can add one later.")]
+    for profile_id, profile in sorted(load_profiles().items()):
+        listed.append(Option(profile_id, profile.name, f"Raises severities under {profile.name}."))
+    return tuple(listed)
+
+
+def _ask_name(out: Console, answers: Iterator[str] | None) -> str:
+    """Prompt until the reply is a name `init` would accept.
+
+    Validated here with the same rule `init` enforces, imported rather than
+    restated: a wizard that happily collects a name the command then refuses
+    would have wasted every question after it.
+    """
+    from toolseal.cli.init_command import _validate_project_name
+
+    out.print()
+    print_text(out, Text("Project name", style="heading"))
+    print_text(out, Text("  A single directory name; it is created here.", style="muted"))
+    while True:
+        reply = _read(out, answers).strip()
+        try:
+            return _validate_project_name(reply)
+        except UsageError as exc:
+            print_text(out, Text(f"  {exc}", style="verdict.warn"))
+
+
+def run_wizard(
+    *,
+    name: str | None,
+    provider: str | None,
+    framework: str | None,
+    profile: str | None,
+    out: Console | None = None,
+    answers: Iterator[str] | None = None,
+) -> WizardAnswers:
+    """Collect what was not already supplied. A given flag is never prompted for."""
+    target = out if out is not None else default_console
+
+    resolved_name = name if name is not None else _ask_name(target, answers)
+    resolved_provider = (
+        provider
+        if provider is not None
+        else choose(
+            "Which provider should the agent talk to?",
+            _provider_options(),
+            default="ollama",
+            out=target,
+            answers=answers,
+        )
+    )
+    resolved_framework = (
+        framework
+        if framework is not None
+        else choose(
+            "Which agent framework should be scaffolded?",
+            _framework_options(),
+            default="langgraph",
+            out=target,
+            answers=answers,
+        )
+    )
+    resolved_profile = (
+        profile
+        if profile is not None
+        else choose(
+            "Scaffold under a regulatory regime?",
+            _profile_options(),
+            default=NO_PROFILE,
+            out=target,
+            answers=answers,
+        )
+    )
+
+    return WizardAnswers(
+        name=resolved_name,
+        provider=resolved_provider,
+        framework=resolved_framework,
+        profile=None if resolved_profile == NO_PROFILE else resolved_profile,
+    )
+
+
+def equivalent_command(chosen: WizardAnswers) -> str:
+    """The non-interactive invocation that produces the same project.
+
+    Printed after the flow finishes. This is the discoverability payoff: the
+    wizard exists because the flags are invisible, so it ends by showing them.
+    Every answer is spelled out, including ones that match a default - the line
+    has to keep working if a default changes.
+    """
+    parts = [
+        "toolseal init",
+        chosen.name,
+        "--provider",
+        chosen.provider,
+        "--framework",
+        chosen.framework,
+    ]
+    if chosen.profile is not None:
+        parts += ["--profile", chosen.profile]
+    return " ".join(parts)
