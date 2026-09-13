@@ -196,3 +196,67 @@ def test_second_init_refuses_without_force(tmp_path: Path) -> None:
 
     assert second.exit_code != ExitCode.OK
     assert "--force" in second.output
+
+
+# --- the guided flow -------------------------------------------------------
+
+
+def test_interactive_scaffolds_from_the_answers(tmp_path: Path) -> None:
+    result = runner.invoke(
+        app,
+        ["init", "--interactive", "--directory", str(tmp_path / "demo")],
+        input="demo\n1\n1\n1\n",
+    )
+    assert result.exit_code == ExitCode.OK, result.output
+    assert (tmp_path / "demo" / MANIFEST_NAME).exists()
+
+
+def test_interactive_prints_the_equivalent_command(tmp_path: Path) -> None:
+    result = runner.invoke(
+        app,
+        ["init", "--interactive", "--directory", str(tmp_path / "demo")],
+        input="demo\n1\n1\n1\n",
+    )
+    assert "toolseal init demo --provider" in result.output
+
+
+def test_a_missing_name_without_a_tty_is_a_usage_error(tmp_path: Path) -> None:
+    result = runner.invoke(app, ["init", "--directory", str(tmp_path / "demo")])
+    assert result.exit_code == ExitCode.USAGE
+    assert "project name is required" in result.output
+
+
+def test_json_and_interactive_cannot_share_stdout(tmp_path: Path) -> None:
+    result = runner.invoke(
+        app, ["init", "--interactive", "--json", "--directory", str(tmp_path / "demo")]
+    )
+    assert result.exit_code == ExitCode.USAGE
+
+
+def test_a_named_init_is_still_non_interactive(tmp_path: Path) -> None:
+    result = runner.invoke(app, ["init", "demo", "--directory", str(tmp_path / "demo")])
+    assert result.exit_code == ExitCode.OK, result.output
+    manifest = Manifest.load(tmp_path / "demo")
+    assert manifest is not None
+    assert manifest.provider_id == "ollama"
+    assert manifest.framework_id == "langgraph"
+
+
+def test_a_missing_name_on_a_tty_runs_the_wizard(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The auto-trigger branch, which neither `CliRunner` nor a pipe reaches.
+
+    `is_tty` is the only thing separating "prompt me" from "you forgot the
+    argument", and every other test in this file runs without a terminal - so
+    without this one, the condition that decides between a guided flow and a
+    usage error is never executed.
+    """
+    monkeypatch.setattr("toolseal.cli.init_command.is_tty", lambda: True)
+    result = runner.invoke(
+        app,
+        ["init", "--directory", str(tmp_path / "demo")],
+        input="demo\n1\n1\n1\n",
+    )
+    assert result.exit_code == ExitCode.OK, result.output
+    assert (tmp_path / "demo" / MANIFEST_NAME).exists()

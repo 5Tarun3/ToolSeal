@@ -9,7 +9,15 @@ from typing import Annotated, Any
 import typer
 from rich.text import Text
 
-from toolseal.cli._ui import accent_text, choices_help, console, print_line, print_text
+from toolseal.cli._ui import (
+    accent_text,
+    choices_help,
+    console,
+    is_tty,
+    print_line,
+    print_text,
+)
+from toolseal.cli.wizard import equivalent_command, run_wizard
 from toolseal.core.adapters import ScaffoldSpec, framework_registry, provider_registry
 from toolseal.core.policy.profile import load_profile, profile_ids
 from toolseal.core.scaffold import apply_plan, build_plan
@@ -49,23 +57,26 @@ def _resolve_profile_or_usage_error(profile_id: str) -> None:
 
 
 def init(
-    name: Annotated[str, typer.Argument(help="Project name; also the directory created.")],
+    name: Annotated[
+        str | None,
+        typer.Argument(help="Project name; also the directory created. Omit to be prompted."),
+    ] = None,
     provider: Annotated[
-        str,
+        str | None,
         typer.Option(
             "--provider",
             "-p",
             help=choices_help("LLM provider to wire in.", provider_registry.names()),
         ),
-    ] = DEFAULT_PROVIDER,
+    ] = None,
     framework: Annotated[
-        str,
+        str | None,
         typer.Option(
             "--framework",
             "-f",
             help=choices_help("Agent framework to scaffold.", framework_registry.names()),
         ),
-    ] = DEFAULT_FRAMEWORK,
+    ] = None,
     model: Annotated[
         str | None, typer.Option("--model", "-m", help="Override the provider's default model.")
     ] = None,
@@ -84,6 +95,14 @@ def init(
             help=choices_help("Scaffold under a regulatory regime from the start.", profile_ids()),
         ),
     ] = None,
+    interactive: Annotated[
+        bool,
+        typer.Option(
+            "--interactive",
+            "-i",
+            help="Choose provider, framework and regime from a guided prompt.",
+        ),
+    ] = False,
     force: Annotated[bool, typer.Option("--force", help="Overwrite existing files.")] = False,
     dry_run: Annotated[
         bool, typer.Option("--dry-run", help="Show what would be written, and write nothing.")
@@ -93,7 +112,50 @@ def init(
     ] = False,
 ) -> None:
     """Create a new agent project with secure defaults."""
-    project_name = _validate_project_name(name)
+    # A missing name means "prompt me", but only where prompting can work. Off
+    # a TTY it is a forgotten argument, and a CI job that hangs on a prompt
+    # nobody can see is strictly worse than one that fails on the next line.
+    wants_wizard = interactive or (name is None and is_tty())
+
+    if wants_wizard and as_json:
+        message = (
+            "--json cannot be combined with --interactive; machine output and prompts share stdout"
+        )
+        raise UsageError(message)
+
+    chosen = None
+    if wants_wizard:
+        # Validated before the flow rather than after, so an unknown value
+        # passed alongside -i fails at the flag that carried it instead of
+        # part-way through a sequence of questions.
+        if provider is not None:
+            provider_registry.get(provider)
+        if framework is not None:
+            framework_registry.get(framework)
+        if profile is not None:
+            _resolve_profile_or_usage_error(profile)
+
+        chosen = run_wizard(
+            name=None if name is None else _validate_project_name(name),
+            provider=provider,
+            framework=framework,
+            profile=profile,
+        )
+        project_name = chosen.name
+        provider = chosen.provider
+        framework = chosen.framework
+        profile = chosen.profile
+    elif name is None:
+        message = (
+            "a project name is required when not running interactively; "
+            "try `toolseal init <name>` or `toolseal init -i`"
+        )
+        raise UsageError(message)
+    else:
+        project_name = _validate_project_name(name)
+        provider = provider if provider is not None else DEFAULT_PROVIDER
+        framework = framework if framework is not None else DEFAULT_FRAMEWORK
+
     root = (directory or Path.cwd() / project_name).resolve()
 
     # Resolved before rendering so an unknown id fails with the list of valid
@@ -112,6 +174,12 @@ def init(
         base_url=base_url,
         profile_id=profile,
     )
+
+    if chosen is not None:
+        console.print()
+        replay = Text("  Next time: ")
+        replay.append_text(accent_text(equivalent_command(chosen)))
+        print_text(console, replay)
 
     plan = build_plan(spec, force=force)
     paths = [str(item.path) for item in plan.files]
