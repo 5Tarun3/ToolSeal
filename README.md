@@ -76,6 +76,27 @@ toolseal init myagent --profile hipaa      # or gdpr, dora
 toolseal policy apply gdpr                 # or adopt one later
 ```
 
+### Guided setup
+
+```bash
+toolseal init
+```
+
+With no project name, `init` asks: which provider, which framework, and
+whether to scaffold under a regulatory regime — each option listed with what
+choosing it costs you. It finishes by printing the equivalent one-line
+command, so the second project does not need the questions.
+
+Pass `-i` to get the prompts even when you already know the name. Any flag you
+supply is taken as decided rather than asked about:
+
+```bash
+toolseal init myagent -i --provider ollama
+```
+
+`--json` and `-i` cannot be combined, and a missing name outside a terminal is
+an error rather than a prompt nobody can answer.
+
 ## What it does
 
 ### Scaffold — secure defaults, not a blank page

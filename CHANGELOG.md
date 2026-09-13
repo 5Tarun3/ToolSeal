@@ -8,6 +8,13 @@ would notice, not by the internal step numbers used to plan the work.
 
 ## [Unreleased]
 
+### Added
+
+- `toolseal init` with no project name, or with `-i`, now runs a guided prompt
+  flow covering provider, framework and regime profile, each listed with its
+  security trade-off, and prints the equivalent non-interactive command when
+  it finishes.
+
 ## [0.1.1] - 2026-08-28
 
 ### Changed
