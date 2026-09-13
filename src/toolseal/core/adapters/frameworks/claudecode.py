@@ -180,6 +180,7 @@ class ClaudeCodeFramework:
 
     id: Final = "claude-code"
     display_name: Final = "Claude Code"
+    summary: Final = "Widest native coverage. Permissions live in settings, not in code."
 
     #: Unlike every other framework, this one configures rather than creates.
     #: `init` would imply a new project; the CLI routes it through `add`.

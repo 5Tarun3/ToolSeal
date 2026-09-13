@@ -58,6 +58,7 @@ class CrewAIFramework:
 
     id: Final = "crewai"
     display_name: Final = "CrewAI"
+    summary: Final = "Role-based crews. Only input constraints survive; guards cover the rest."
 
     def _integration(self, provider: ProviderProtocol) -> _Integration:
         try:

@@ -12,14 +12,24 @@ from pathlib import Path, PurePosixPath
 
 import pytest
 
-from toolseal.core.adapters import Framework, Provider, RenderedFile, ScaffoldSpec
+from toolseal.core.adapters import (
+    Framework,
+    Provider,
+    RenderedFile,
+    ScaffoldSpec,
+    framework_registry,
+    provider_registry,
+)
 from toolseal.core.adapters.base import _Registry
 from toolseal.errors import ExitCode, UsageError
+
+SUMMARY_MAX = 78
 
 
 class FakeProvider:
     id = "fake"
     display_name = "Fake"
+    summary = "A fake provider. Exists to be type-checked, never to be called."
     default_model = "fake-1"
     default_base_url = "https://api.fake.test"
     credential_env_var = "FAKE_API_KEY"
@@ -34,6 +44,7 @@ class FakeProvider:
 class FakeFramework:
     id = "fakeframework"
     display_name = "Fake Framework"
+    summary = "A fake framework. Exists to be type-checked, never to be called."
 
     def packages(self, provider: Provider) -> tuple[str, ...]:
         return provider.packages()
@@ -126,3 +137,22 @@ def test_registry_names_are_sorted() -> None:
         registry.register(name, object())
 
     assert registry.names() == ("anthropic", "ollama", "openai")
+
+
+# --- self-description ------------------------------------------------------
+
+
+@pytest.mark.parametrize("name", provider_registry.names())
+def test_every_provider_summarises_itself(name: str) -> None:
+    summary = provider_registry.get(name).summary
+    assert summary.strip(), f"provider {name} has an empty summary"
+    assert len(summary) <= SUMMARY_MAX
+    assert summary.isascii(), f"provider {name} summary is not ASCII"
+
+
+@pytest.mark.parametrize("name", framework_registry.names())
+def test_every_framework_summarises_itself(name: str) -> None:
+    summary = framework_registry.get(name).summary
+    assert summary.strip(), f"framework {name} has an empty summary"
+    assert len(summary) <= SUMMARY_MAX
+    assert summary.isascii(), f"framework {name} summary is not ASCII"

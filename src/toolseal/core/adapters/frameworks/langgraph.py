@@ -81,6 +81,7 @@ class LangGraphFramework:
 
     id: Final = "langgraph"
     display_name: Final = "LangGraph"
+    summary: Final = "Graph-structured agents. MCP annotations survive; validation is lowered."
 
     def _integration(self, provider: ProviderProtocol) -> _Integration:
         try:

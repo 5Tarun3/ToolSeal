@@ -40,6 +40,7 @@ class OpenAIProvider:
 
     id: Final = "openai"
     display_name: Final = "OpenAI"
+    summary: Final = "Hosted API. Needs a credential; prompts and tool output leave the host."
 
     default_model: Final = "gpt-4o-mini"
     default_base_url: Final = "https://api.openai.com/v1"
@@ -65,6 +66,7 @@ class AnthropicProvider:
 
     id: Final = "anthropic"
     display_name: Final = "Anthropic"
+    summary: Final = "Hosted API. Needs a credential; prompts and tool output leave the host."
 
     default_model: Final = "claude-sonnet-5"
     default_base_url: Final = "https://api.anthropic.com"
@@ -86,6 +88,7 @@ class GeminiProvider:
 
     id: Final = "gemini"
     display_name: Final = "Google Gemini"
+    summary: Final = "Hosted API. Needs a credential; prompts and tool output leave the host."
 
     default_model: Final = "gemini-2.5-flash"
     default_base_url: Final = "https://generativelanguage.googleapis.com/v1beta"

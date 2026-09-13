@@ -109,6 +109,17 @@ class Provider(Protocol):
     def display_name(self) -> str: ...
 
     @property
+    def summary(self) -> str:
+        """One ASCII sentence naming this provider's security trade-off.
+
+        Read by the interactive `init` wizard so a menu entry explains what
+        picking it costs, and generated from the same registry that validates
+        the flag - a second, hardcoded list in the CLI would drift, and the
+        copy a user read before choosing would be the stale one.
+        """
+        ...
+
+    @property
     def default_model(self) -> str: ...
 
     @property
@@ -148,6 +159,17 @@ class Framework(Protocol):
 
     @property
     def display_name(self) -> str: ...
+
+    @property
+    def summary(self) -> str:
+        """One ASCII sentence naming this framework's security trade-off.
+
+        Read by the interactive `init` wizard so a menu entry explains what
+        picking it costs, and generated from the same registry that validates
+        the flag - a second, hardcoded list in the CLI would drift, and the
+        copy a user read before choosing would be the stale one.
+        """
+        ...
 
     def packages(self, provider: Provider) -> tuple[str, ...]:
         """Requirements for this framework combined with *provider*."""

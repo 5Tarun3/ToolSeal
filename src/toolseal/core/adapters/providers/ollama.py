@@ -37,6 +37,7 @@ class OllamaProvider:
 
     id: Final = "ollama"
     display_name: Final = "Ollama"
+    summary: Final = "Local runtime. No credential and no prompt text leaves the machine."
 
     # A small tool-capable model, so a scaffolded project runs on a laptop
     # without a large download. Tool calling is the requirement: an agent whose

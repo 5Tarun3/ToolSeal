@@ -99,6 +99,7 @@ def test_unknown_provider_is_a_usage_error(tmp_path: Path) -> None:
     class Unknown:
         id = "cohere"
         display_name = "Cohere"
+        summary = "A provider no framework integrates, used to prove the refusal."
         default_model = "command-r"
         default_base_url = "https://example.test"
         credential_env_var = "COHERE_API_KEY"
