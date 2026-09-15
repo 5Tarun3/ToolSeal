@@ -16,11 +16,10 @@ bolted on; the security assessment *is* the entry, and a tool that has not been
 assessed is visibly unassessed rather than quietly listed.
 
 Two on-disk instances of this class exist, read the same way but for different
-purposes. `read(path)` loads whatever a user's own `registry sync` produced -
-current as of their last crawl, and absent until they run it once.
-`read_packaged()` loads the curated 100-200 entry seed (P16) shipped inside the
-package itself, so `registry search` returns something before anyone has
-crawled anything.
+purposes. `read_packaged()` loads the curated seed (P16) shipped inside the
+package itself, and is what `registry search` answers from. `read(path)` loads
+a local file: either one `registry ingest` has written, or one named explicitly
+with `--index`.
 """
 
 from __future__ import annotations
@@ -261,7 +260,7 @@ class RegistryIndex:
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
         except FileNotFoundError:
-            message = f"no index at {path}; run `toolseal registry sync` first"
+            message = f"no index at {path}"
             raise RegistryError(message) from None
         except json.JSONDecodeError as exc:
             message = f"index at {path} is not valid JSON: {exc}"
@@ -286,8 +285,9 @@ class RegistryIndex:
         Read through `importlib.resources` rather than a filesystem path
         relative to this module, mirroring `policy.controls.load_catalogues()`
         - so this works from an installed wheel, not only from a checkout.
-        A user who has never run `registry sync` still gets a usable
-        `registry search` right after install; this is what backs that.
+        This is the whole of what `registry search` answers from on a fresh
+        install, and since `registry sync` was withdrawn it is the only index
+        anyone gets without ingesting a capture themselves.
         """
         resource = resources.files(CURATED_DATA_PACKAGE) / CURATED_FILENAME
         try:

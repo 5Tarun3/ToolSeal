@@ -1,4 +1,4 @@
-"""`toolseal registry` - sync the index, search it, and inspect one entry."""
+"""`toolseal registry` - search the curated index, and inspect one entry."""
 
 from __future__ import annotations
 
@@ -14,15 +14,12 @@ from toolseal.cli._ui import (
     accent_text,
     clip_ascii,
     console,
-    new_progress_observer,
     new_table,
     print_line,
     print_text,
     score_style,
 )
 from toolseal.cli.errors import command as error_boundary
-from toolseal.core.policy import progress as progress_hook
-from toolseal.core.registry.crawl import build_index, crawl_mcp_registry
 from toolseal.core.registry.index import (
     INDEX_FILENAME,
     IndexEntry,
@@ -31,7 +28,7 @@ from toolseal.core.registry.index import (
 )
 from toolseal.core.registry.tools import ingest_capture
 from toolseal.core.registry.utd import Provenance, ToolSource
-from toolseal.errors import ExitCode, UsageError
+from toolseal.errors import UsageError
 
 registry_app = typer.Typer(
     name="registry",
@@ -61,10 +58,14 @@ _PACKAGE_WIDTH_MAX = 19
 
 
 def default_index_path() -> Path:
-    """Where the local index cache lives.
+    """Where locally ingested entries live.
 
-    Under the user's data directory rather than the project, so one crawl
-    serves every project on the machine.
+    Under the user's data directory rather than the project, so one `registry
+    ingest` serves every project on the machine.
+
+    Formerly this was a *crawl* cache, written by `registry sync`. That command
+    is gone (see below), so the only thing that writes here now is `ingest`:
+    tools captured from a server the operator chose to run.
     """
     base = Path.home() / ".cache" / "toolseal"
     return base / INDEX_FILENAME
@@ -73,88 +74,33 @@ def default_index_path() -> Path:
 def default_index() -> RegistryIndex:
     """Everything `search`/`show` can see when `--index` is not given.
 
-    The union of the curated set shipped in the package and whatever the
-    user's own `registry sync` produced, rather than one or the other.
+    The curated set shipped in the package, plus anything `registry ingest`
+    has added locally. The packaged entry wins a shared id, since it is the
+    reviewed record.
 
-    An earlier version preferred the cache and read the packaged set only when
-    no cache existed. That was reasonable while the packaged set was a subset
-    of the same crawl, and wrong as soon as it carried tools: a crawl reads
-    registry metadata and can never enumerate a server's tools, since that
-    means running the server. The two indexes differ in kind, not in freshness.
+    **Why there is no crawl here any more.** `registry sync` used to fill this
+    cache by paging the public MCP registry, and it was withdrawn rather than
+    fixed. Its pagination was alphabetical, so a bounded crawl returned the
+    front of the alphabet and called it an index: a real 2000-entry cache on a
+    developer machine began at `ac.inference.sh` and never reached `s`, which
+    is why `registry search slack` answered with `ai.linkdeal.www` and
+    `ai.backengine`. Those rows also carried no tools - a crawl reads registry
+    metadata and cannot enumerate a server's tools without running it - so
+    2000 of them diluted every query against the 224 curated entries that had
+    been verified by hand.
 
-    The bug it caused was plain once seen. A user who had run `sync` had a
-    2000-entry cache of bare server metadata, and `registry search aseprite`
-    told them "nothing matching 'aseprite' in 2000 entries" while the shipped
-    index contained exactly that server and its tools. Preferring the larger
-    index made the better one invisible.
+    Ranking could have been tuned around that. The reason it was not is that
+    an alphabetically truncated sample of a registry is not a worse index, it
+    is not an index: no amount of weighting recovers the servers the crawl
+    never fetched. A curated set that says what it covers is honest about the
+    same limitation, and the tools it carries are evidence a crawl cannot
+    produce at all.
     """
     cached = default_index_path()
     packaged = RegistryIndex.read_packaged()
     if not cached.exists():
         return packaged
     return merge_indexes(RegistryIndex.read(cached), packaged)
-
-
-def sync(
-    output: Annotated[
-        Path | None, typer.Option("--output", "-o", help="Where to write the index.")
-    ] = None,
-    max_pages: Annotated[
-        int, typer.Option("--max-pages", help="Stop after this many registry pages.")
-    ] = 20,
-    search: Annotated[
-        str | None,
-        typer.Option(
-            "--search",
-            help=(
-                "Narrow the crawl to names matching this text. Default pagination is "
-                "alphabetically biased, so a name known in advance is found reliably "
-                "by searching for it rather than by raising --max-pages."
-            ),
-        ),
-    ] = None,
-    as_json: Annotated[bool, typer.Option("--json", help="Machine-readable output.")] = False,
-) -> None:
-    """Crawl the MCP registry and rebuild the local index."""
-    # A several-page crawl against a live registry can run long enough to
-    # look like a hang (spec S4/S1): `--max-pages` is always a known bound
-    # by the time this runs, so `crawl_mcp_registry` reports it as a
-    # determinate phase - the observer installed here is what turns that
-    # into "fetching the index n/max_pages" on stderr, the same bridge
-    # `audit` already uses for C2/C3.
-    with progress_hook.observe(new_progress_observer()):
-        report = crawl_mcp_registry(max_pages=max_pages, search=search)
-    index = build_index(report)
-
-    path = output or default_index_path()
-    index.write(path)
-
-    if as_json:
-        typer.echo(
-            json.dumps(
-                {
-                    "path": str(path),
-                    "entries": len(index),
-                    "pages": report.pages_fetched,
-                    "complete": report.complete,
-                    "skipped": len(report.skipped),
-                    "errors": report.errors,
-                },
-                indent=2,
-                sort_keys=True,
-            )
-        )
-    else:
-        typer.echo(report.summary)
-        line = Text("wrote ")
-        line.append_text(accent_text(str(path)))
-        print_text(console, line)
-        for error in report.errors:
-            print_line(console, f"  {error}", style="verdict.warn")
-
-    # A partial crawl is reported as findings, not success: the index is usable
-    # but incomplete, and a scheduled job should be able to notice.
-    raise typer.Exit(ExitCode.OK if report.complete else ExitCode.FINDINGS)
 
 
 # Severity drives weight identically everywhere (spec section 1): a declared
@@ -193,11 +139,10 @@ def ingest(
 ) -> None:
     """Add a server's tools to the index from a captured tools/list response.
 
-    `sync` crawls registry *metadata* and never runs anything, which is why it
-    records `tools_enumerated: false`: enumerating a server's tools means
-    starting it. This command is the other half, and it does not run anything
-    either - it reads a response you already obtained from a server you chose
-    to authenticate to, as a file.
+    Registry *metadata* never carries a server's tools, because enumerating
+    them means starting the server. This command is how they get in, and it
+    does not run anything either - it reads a response you already obtained
+    from a server you chose to start, as a file.
 
     The rule the project holds is "toolseal does not execute untrusted servers
     on your behalf", not "no tool listing may ever be indexed". Capturing the
@@ -575,7 +520,6 @@ def show(
 # or anything else that does not go through `main()`). A bare
 # `@registry_app.command(...)` decorator bypasses that boundary - this
 # repository has fixed that exact regression twice, at P10 and P24.
-registry_app.command("sync")(error_boundary(sync))
 registry_app.command("ingest")(error_boundary(ingest))
 registry_app.command("search")(error_boundary(search))
 registry_app.command("show")(error_boundary(show))

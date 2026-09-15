@@ -348,8 +348,11 @@ def test_unknown_index_version_is_refused(tmp_path: Path) -> None:
         RegistryIndex.read(path)
 
 
-def test_missing_index_tells_you_how_to_make_one(tmp_path: Path) -> None:
-    with pytest.raises(RegistryError, match="registry sync"):
+def test_missing_index_names_the_path_it_looked_for(tmp_path: Path) -> None:
+    # No longer "run `registry sync` first": that command was withdrawn, and
+    # an error advising a command the CLI does not have is worse than one
+    # that only says what it could not find.
+    with pytest.raises(RegistryError, match="no index at"):
         RegistryIndex.read(tmp_path / "absent.json")
 
 
