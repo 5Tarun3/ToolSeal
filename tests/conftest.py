@@ -18,7 +18,32 @@ installed, never a leftover from some earlier module.
 
 from __future__ import annotations
 
+import os
+
 import pytest
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    """Pin a terminal size for the whole session (spec: this fixes CI, not a
+    style preference).
+
+    `shutil.get_terminal_size()` - what both Click's help formatter and Rich
+    read width from - checks the `COLUMNS`/`LINES` environment variables
+    first and only falls back to `(80, 24)` if an OS lookup then *raises*.
+    Several `--help` tests in `test_usability_heuristics.py` assert on
+    substrings of rendered help text (`--force`, `--dry-run`, `--yes`); on a
+    CI runner with no controlling terminal, that OS lookup can come back
+    `(0, 0)` instead of raising, which skips the fallback entirely and
+    collapses every column to near-zero width - each word wraps onto its own
+    line, breaking any substring assertion that spans a wrap point. Setting
+    both variables up front makes the width deterministic everywhere this
+    suite runs, rather than only wherever the OS call happens to raise.
+
+    `setdefault` rather than an unconditional set: a developer who exported a
+    real width to see wrapping as they will in production keeps seeing it.
+    """
+    os.environ.setdefault("COLUMNS", "80")
+    os.environ.setdefault("LINES", "24")
 
 
 @pytest.fixture(autouse=True)
