@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "toolseal"
-version = "0.1.1"
+version = "0.1.2"
 description = "Secure-by-default scaffolding and cross-framework tool registry for agentic systems"
 readme = "README.md"
 requires-python = ">=3.11"

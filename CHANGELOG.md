@@ -8,6 +8,8 @@ would notice, not by the internal step numbers used to plan the work.
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-09-15
+
 ### Fixed
 
 - A mistake the user made is no longer reported as a bug in this tool. A typo
@@ -24,6 +26,11 @@ would notice, not by the internal step numbers used to plan the work.
 - `revert` in a scaffolded project no longer claims "toolseal has not written
   to" a directory that `toolseal init` created. It now says no `add` has been
   recorded there, and names what `revert` does and does not undo.
+- `mcp add` resolved a package name against npm/PyPI and stopped looking the
+  moment it found a hit, so a registered typosquat - which resolves
+  successfully by definition - was reported as verified rather than flagged.
+  Resemblance to a known package is now checked on that path too, not only
+  when the name is missing entirely.
 
 ### Changed
 
@@ -47,6 +54,12 @@ would notice, not by the internal step numbers used to plan the work.
   that governs them.
 - `toolseal registry` help now points at the order the commands are actually
   used in: `search`, then `show`, then `add tool`.
+- `toolseal init --api-key` stores a hosted provider's credential in the OS
+  keychain (check A1) at scaffold time, via the same `KeyringStore` `doctor`
+  already reports on. A credential-free provider (Ollama) reports nothing; a
+  keychain that refuses the write is reported rather than raised, so the
+  project is still created. The guided flow prompts for it too, hidden, as
+  its last question, rather than adding a second place credentials enter.
 
 ## [0.1.1] - 2026-08-28
 
@@ -208,6 +221,7 @@ keyless signing of the wheel, sdist, and SBOM.
   implicit one, and the project's own SBOM — previously stale and missing it
   entirely — is regenerated from the environment actually installed.
 
-[Unreleased]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/5Tarun3/ToolSeal/releases/tag/v0.1.0
