@@ -206,7 +206,10 @@ def run(journey: Journey, root: Path) -> None:
         "the wizard teaches the non-interactive form",
         ["init", "-i"],
         cwd=root,
-        stdin="wiz\n1\n1\n1\n",
+        # name, provider(1=anthropic), framework(1), regime(1), then a blank
+        # line for the credential question the wizard asks last - anthropic
+        # needs one, and a real terminal would get it as a fifth prompt.
+        stdin="wiz\n1\n1\n1\n\n",
     )
     ts.exits(
         2, "--json and --interactive are refused together", ["init", "w2", "-i", "--json"], cwd=root
