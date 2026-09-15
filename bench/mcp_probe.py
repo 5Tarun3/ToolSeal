@@ -36,6 +36,7 @@ import os
 import subprocess
 import sys
 import threading
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -96,11 +97,27 @@ def child_environment(home: Path | None = None) -> dict[str, str]:
     return environment
 
 
-def _message(identifier: int | None, method: str, params: dict[str, Any]) -> str:
+def _message(identifier: int | None, method: str, params: dict[str, Any]) -> bytes:
+    """One JSON-RPC message, framed the way the stdio transport specifies.
+
+    Encoded here rather than written as `str` through a text-mode pipe, and
+    that is not a style preference. Python's text mode applies the platform's
+    newline translation on write, so on Windows every `"\\n"` this function
+    appends left the process as `"\\r\\n"`. MCP's stdio transport frames
+    messages on a *newline*, and a strict server reads the stray `"\\r"` as
+    trailing garbage after a complete JSON value.
+
+    `pixel-mcp` is the server that surfaced it, rejecting every message with
+    "invalid trailing data at the end of" and so being recorded as answering
+    nothing - the harness manufacturing the failure it then reported, exactly
+    as the missing `HOME` did to `chroma-mcp`. Most servers tolerate the `\\r`,
+    which is what let this survive a whole sweep: the defect only shows up
+    against servers strict enough to be right about it.
+    """
     payload: dict[str, Any] = {"jsonrpc": "2.0", "method": method, "params": params}
     if identifier is not None:
         payload["id"] = identifier
-    return json.dumps(payload) + "\n"
+    return (json.dumps(payload) + "\n").encode("utf-8")
 
 
 def list_tools(
@@ -109,6 +126,7 @@ def list_tools(
     server_id: str,
     cwd: Path,
     timeout: float = 60.0,
+    extra_env: Mapping[str, str] | None = None,
 ) -> ProbeResult:
     """Start *command*, ask it for its tools, and stop it.
 
@@ -116,6 +134,13 @@ def list_tools(
     initialise, or never answers is recorded with the reason rather than
     raising: the sweep's whole point is to count how many of them do that, so
     a failure is data, not an exception.
+
+    *extra_env* adds non-secret startup configuration the server needs in order
+    to reach `tools/list` at all - a path to a helper binary, a mode switch.
+    **Never a credential.** A server that needs a secret to enumerate its tools
+    is a finding the sweep exists to record, and handing it one would erase the
+    measurement; the environment is otherwise an allowlist for exactly that
+    reason (see `child_environment`).
     """
     try:
         process = subprocess.Popen(  # noqa: S603 - list form, shell=False, see module docstring
@@ -124,11 +149,10 @@ def list_tools(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             cwd=str(cwd),
-            env=child_environment(home=cwd),
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            bufsize=1,
+            env={**child_environment(home=cwd), **(extra_env or {})},
+            # Binary pipes, not `text=True`: text mode would newline-translate
+            # every message on write, and MCP frames on a bare newline. See
+            # `_message`. Decoding is done per line on the read side instead.
         )
     except (OSError, ValueError) as exc:
         return ProbeResult(server_id=server_id, ok=False, error=f"could not start: {exc}")
@@ -181,7 +205,7 @@ def list_tools(
 
 
 def _read_response(
-    process: subprocess.Popen[str], *, wanted_id: int, timeout: float
+    process: subprocess.Popen[bytes], *, wanted_id: int, timeout: float
 ) -> dict[str, Any] | None:
     """The next JSON-RPC response carrying *wanted_id*.
 
@@ -195,8 +219,8 @@ def _read_response(
     def reader() -> None:
         if process.stdout is None:  # pragma: no cover
             return
-        for line in process.stdout:
-            line = line.strip()
+        for raw in process.stdout:
+            line = raw.decode("utf-8", "replace").strip()
             if not line or not line.startswith("{"):
                 continue
             try:
@@ -213,7 +237,7 @@ def _read_response(
     return result[0]
 
 
-def _drain_stderr(process: subprocess.Popen[str], sink: list[str]) -> threading.Thread:
+def _drain_stderr(process: subprocess.Popen[bytes], sink: list[str]) -> threading.Thread:
     """Collect the child's stderr in the background.
 
     Started before the first write, for two reasons. A server that fails on
@@ -227,8 +251,8 @@ def _drain_stderr(process: subprocess.Popen[str], sink: list[str]) -> threading.
         if process.stderr is None:
             return
         try:
-            for line in process.stderr:
-                sink.append(line.rstrip())
+            for raw in process.stderr:
+                sink.append(raw.decode("utf-8", "replace").rstrip())
         except (OSError, ValueError):
             pass
 
@@ -257,7 +281,7 @@ def _fail(server_id: str, error: str, stderr_lines: list[str]) -> ProbeResult:
     return ProbeResult(server_id=server_id, ok=False, error=error, stderr_tail=tail)
 
 
-def _terminate(process: subprocess.Popen[str]) -> None:
+def _terminate(process: subprocess.Popen[bytes]) -> None:
     """Stop the child, escalating if it ignores the first request."""
     if process.poll() is not None:
         return
