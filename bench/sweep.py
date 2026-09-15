@@ -31,11 +31,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
 import sys
 import tempfile
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
@@ -66,6 +68,65 @@ class Launch:
 
     workspace_arg: bool = False
     """Append the throwaway workspace path as the final argument."""
+
+    executable_env: str = ""
+    """Environment variable naming this server's executable, for one not on PATH.
+
+    Every other entry here is fetched by `npx` or `uvx` from a public package
+    registry, which is what makes it reproducible: a reader can run the same
+    command and get the same server. `pixel-mcp` is published only as a
+    GitHub release binary, so there is no such command - and hardcoding the
+    path it happens to occupy on one developer's machine would be worse than
+    skipping it, because the sweep would then silently measure nothing on
+    every other machine while looking like it ran.
+
+    Naming the variable instead keeps the run reproducible in the only sense
+    available: anyone with the binary can point at it, and anyone without gets
+    a skip that says so.
+    """
+
+    config: Callable[[Path], None] | None = None
+    """Write whatever non-secret startup configuration the server needs into
+    the synthetic home, before launch.
+
+    **Never a credential.** A server that needs a secret to answer
+    `tools/list` is a finding this sweep exists to count, and supplying one
+    would erase the measurement. This is for the other case: configuration
+    that is merely a local path, which a server refuses to start without and
+    which reveals nothing. `pixel-mcp` exits with "Please create config file
+    with aseprite_path configured" and never reaches the protocol at all; the
+    resulting "no response to initialize" is the harness's own doing, the same
+    class of self-inflicted failure as the missing `HOME` that made
+    `chroma-mcp` look broken.
+    """
+
+
+def _pixel_mcp_config(home: Path) -> None:
+    """Write the config `pixel-mcp` refuses to start without.
+
+    It reads `~/.config/pixel-mcp/config.json` and exits before speaking any
+    protocol if the file is absent, so without this the harness records "no
+    response to initialize" for a server that was never given the chance to
+    answer.
+
+    `aseprite_path` comes from `TOOLSEAL_ASEPRITE` and is written verbatim. It
+    is a local executable path, not a secret - but it is host-identifying, so
+    nothing here reaches `results/`: the config lives in the throwaway home,
+    and `redact()` covers anything that leaks back through a tool description.
+    """
+    target = home / ".config" / "pixel-mcp"
+    target.mkdir(parents=True, exist_ok=True)
+    (target / "config.json").write_text(
+        json.dumps(
+            {
+                "aseprite_path": os.environ.get("TOOLSEAL_ASEPRITE", ""),
+                "temp_dir": str(home / "tmp"),
+                "timeout": 30,
+                "log_level": "info",
+            }
+        ),
+        encoding="utf-8",
+    )
 
 
 LAUNCHES: tuple[Launch, ...] = (
@@ -173,6 +234,14 @@ LAUNCHES: tuple[Launch, ...] = (
         ("uvx", "aseprite-live-mcp"),
         needs="a running Aseprite instance",
     ),
+    Launch(
+        "pixel-art-local",
+        "mcp/io.github.willibrandon/pixel-mcp@0.5.0",
+        ("pixel-mcp",),
+        needs="an Aseprite executable, named by TOOLSEAL_ASEPRITE",
+        executable_env="TOOLSEAL_PIXEL_MCP",
+        config=_pixel_mcp_config,
+    ),
 )
 
 
@@ -184,9 +253,9 @@ def _redactions() -> tuple[tuple[str, str], ...]:
     imagined:
 
     * **Tool descriptions.** `mcp-server-time` reads the machine's timezone and
-      writes it into the text a model sees - "Use 'Asia/Calcutta' as local
-      timezone if no timezone provided". That is the operator's approximate
-      location, embedded in what looks like static metadata. It is also a small
+      writes it into the text a model sees - "Use '<the host's IANA zone>' as
+      local timezone if no timezone provided". That is the operator's
+      approximate location, embedded in what looks like static metadata. It is also a small
       finding in its own right: a description that varies by machine is not
       reproducible, and `descriptionIntegrity` is a property this project
       tracks.
@@ -214,8 +283,8 @@ def _redactions() -> tuple[tuple[str, str], ...]:
 
 # The timezone leak is matched by *shape* rather than by value. Python cannot
 # portably report the host's IANA zone - `time.tzname` gives Windows' display
-# name ("India Standard Time") while the server writes the IANA form
-# ("Asia/Calcutta"), so a literal comparison finds nothing. Matching the
+# name ("Pacific Standard Time") while the server writes the IANA form
+# ("America/Los_Angeles"), so a literal comparison finds nothing. Matching the
 # sentence the server generates catches it on any host, which is what a
 # redaction rule has to do to be worth trusting.
 _LOCAL_TZ_SENTENCE: Final = re.compile(r"Use '[^']+' as local timezone")
@@ -227,6 +296,18 @@ def redact(text: str) -> str:
     Applied to everything written to `results/`, because those files are
     committed to a public repository and whatever the host leaked into them
     would be published with them.
+
+    That sentence was false from the day it was written until 2026-09-16: this
+    function was defined, carefully documented, and **never called** by either
+    write path, with no test covering it either. The committed captures looked
+    redacted because someone had scrubbed them by hand, so nothing ever looked
+    wrong. It surfaced only when a single-server re-run wrote the host's own
+    IANA zone - the operator's approximate location - back into
+    `time-tools.json`, over the `<LOCAL_TZ>` sitting in the committed copy.
+
+    A documented-but-unwired control is worse than an absent one, because the
+    absent one gets noticed. `tests/test_bench_sweep.py` now asserts that the
+    written file is redacted, rather than only that this function can redact.
     """
     for needle, replacement in _redactions():
         if needle:
@@ -260,7 +341,35 @@ def _attempt(launch: Launch, executable: str, *, timeout: float) -> ProbeResult:
         command = [executable, *launch.command[1:]]
         if launch.workspace_arg:
             command.append(workspace)
+        # The workspace doubles as the child's synthetic HOME (see
+        # `mcp_probe.child_environment`), so config written here is what the
+        # server finds under `~`.
+        if launch.config is not None:
+            launch.config(Path(workspace))
         return list_tools(command, server_id=launch.entry_id, cwd=Path(workspace), timeout=timeout)
+
+
+def _executable(launch: Launch) -> tuple[str | None, str]:
+    """Resolve *launch*'s executable, or say why it could not be.
+
+    Two ways a server can be unreachable, and they are not the same finding.
+    One published to npm or PyPI but missing its runner means `npx`/`uvx` is
+    not installed - the operator's environment is incomplete. One named by
+    `executable_env` is simply not present on this machine, which is expected
+    rather than wrong, and the message says how to supply it.
+    """
+    if launch.executable_env:
+        configured = os.environ.get(launch.executable_env, "").strip()
+        if not configured:
+            return None, f"set {launch.executable_env} to this server's executable to include it"
+        if not Path(configured).is_file():
+            return None, f"{launch.executable_env} points at no file"
+        return configured, ""
+
+    found = shutil.which(launch.command[0])
+    if found is None:
+        return None, f"{launch.command[0]} is not on PATH"
+    return found, ""
 
 
 def run(launch: Launch, *, timeout: float, attempts: int = 3) -> tuple[ProbeResult, int]:
@@ -277,16 +386,9 @@ def run(launch: Launch, *, timeout: float, attempts: int = 3) -> tuple[ProbeResu
     slow to start; one failing all three is reported as failing, and the
     distinction is visible rather than averaged away.
     """
-    executable = shutil.which(launch.command[0])
+    executable, why_not = _executable(launch)
     if executable is None:
-        return (
-            ProbeResult(
-                server_id=launch.entry_id,
-                ok=False,
-                error=f"{launch.command[0]} is not on PATH",
-            ),
-            0,
-        )
+        return ProbeResult(server_id=launch.entry_id, ok=False, error=why_not), 0
 
     outcome = ProbeResult(server_id=launch.entry_id, ok=False, error="not attempted")
     for attempt in range(1, attempts + 1):
@@ -337,7 +439,7 @@ def main() -> int:
             print(f"ok  {len(outcome.tools):3d} tools, {annotated} annotated{slow}")
             path = RESULTS / f"{launch.capability}-tools.json"
             path.write_text(
-                json.dumps({"tools": outcome.tools}, indent=2) + "\n",
+                redact(json.dumps({"tools": outcome.tools}, indent=2)) + "\n",
                 encoding="utf-8",
                 newline="\n",
             )
@@ -374,7 +476,9 @@ def main() -> int:
         print("(--only: summary.json left untouched)")
     else:
         (RESULTS / "summary.json").write_text(
-            json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
+            redact(json.dumps(report, indent=2, sort_keys=True)) + "\n",
+            encoding="utf-8",
+            newline="\n",
         )
 
     print()
