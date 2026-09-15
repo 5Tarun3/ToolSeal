@@ -243,7 +243,9 @@ def test_json_and_interactive_cannot_share_stdout(tmp_path: Path) -> None:
     assert result.exit_code == ExitCode.USAGE
 
 
-def test_a_named_init_is_still_non_interactive(tmp_path: Path) -> None:
+def test_a_named_init_off_a_tty_is_still_non_interactive(tmp_path: Path) -> None:
+    # CliRunner never attaches a terminal, so this is the off-TTY default:
+    # a name given with no --interactive still just applies flag defaults.
     result = runner.invoke(app, ["init", "demo", "--directory", str(tmp_path / "demo")])
     assert result.exit_code == ExitCode.OK, result.output
     manifest = Manifest.load(tmp_path / "demo")
@@ -270,6 +272,66 @@ def test_a_missing_name_on_a_tty_runs_the_wizard(
     )
     assert result.exit_code == ExitCode.OK, result.output
     assert (tmp_path / "demo" / MANIFEST_NAME).exists()
+
+
+def test_a_named_init_on_a_tty_runs_the_wizard_too(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The actual behaviour change: a name no longer opts out of the guided
+    # flow by itself. On a TTY, init always prompts unless told not to.
+    monkeypatch.setattr("toolseal.cli.init_command.is_tty", lambda: True)
+    result = runner.invoke(
+        app,
+        ["init", "demo", "--directory", str(tmp_path / "demo")],
+        input="1\n1\n1\n\n",
+    )
+    assert result.exit_code == ExitCode.OK, result.output
+    assert "toolseal init demo --provider" in result.output
+
+
+def test_no_interactive_skips_the_wizard_even_on_a_tty(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("toolseal.cli.init_command.is_tty", lambda: True)
+    result = runner.invoke(
+        app,
+        ["init", "demo", "--no-interactive", "--directory", str(tmp_path / "demo")],
+    )
+    assert result.exit_code == ExitCode.OK, result.output
+    manifest = Manifest.load(tmp_path / "demo")
+    assert manifest is not None
+    assert manifest.provider_id == "ollama"
+    assert manifest.framework_id == "langgraph"
+
+
+def test_interactive_and_no_interactive_cannot_combine(tmp_path: Path) -> None:
+    result = runner.invoke(
+        app,
+        [
+            "init",
+            "demo",
+            "--interactive",
+            "--no-interactive",
+            "--directory",
+            str(tmp_path / "demo"),
+        ],
+    )
+    assert result.exit_code == ExitCode.USAGE
+
+
+def test_json_on_a_tty_skips_the_wizard_without_erroring(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # --json alone (no --interactive) is not a request for prompts even on a
+    # TTY - it wins silently, so a script run by hand still gets machine output.
+    monkeypatch.setattr("toolseal.cli.init_command.is_tty", lambda: True)
+    result = runner.invoke(
+        app,
+        ["init", "demo", "--json", "--directory", str(tmp_path / "demo")],
+    )
+    assert result.exit_code == ExitCode.OK, result.output
+    payload = json.loads(result.stdout)
+    assert payload["action"] == "created"
 
 
 # --- credential provisioning (check A1) -------------------------------------
@@ -313,10 +375,9 @@ def test_api_key_flag_stores_into_the_keychain(
 
 
 def test_no_api_key_and_not_interactive_never_prompts(tmp_path: Path) -> None:
-    # Regression: `isatty()` was tried as the gate for an automatic prompt and
-    # dropped - it can report a terminal present with nobody there to answer,
-    # which hung `init` inside an unattended harness. Without --interactive,
-    # a credentialed provider must be handled without ever blocking on input.
+    # Off a TTY (CliRunner's default), a credentialed provider must be
+    # handled without ever blocking on input - the wizard's automatic
+    # TTY-trigger has no way to fire here, and no flag asked for it either.
     result = runner.invoke(
         app,
         ["init", "demo", "--provider", "openai", "--directory", str(tmp_path / "demo")],

@@ -25,12 +25,21 @@ would notice, not by the internal step numbers used to plan the work.
   to" a directory that `toolseal init` created. It now says no `add` has been
   recorded there, and names what `revert` does and does not undo.
 
+### Changed
+
+- `toolseal init` now runs its guided prompt flow by default on any
+  interactive terminal, not only when the project name is omitted - a name
+  given on the command line no longer opts out of being asked about provider,
+  framework, regime and credential. `--no-interactive` (new) restores the old
+  flag-only behaviour even on a TTY, for a CI runner or agent harness that
+  attaches one without a human present to answer; `--json` alone has the same
+  effect. `-i`/`--interactive` still forces the flow off a TTY.
+
 ### Added
 
-- `toolseal init` with no project name, or with `-i`, now runs a guided prompt
-  flow covering provider, framework and regime profile, each listed with its
-  security trade-off, and prints the equivalent non-interactive command when
-  it finishes.
+- `toolseal init`'s guided prompt flow covers provider, framework and regime
+  profile, each listed with its security trade-off, and prints the equivalent
+  non-interactive command when it finishes.
 - `toolseal policy check --json`, for the one command in the policy group that
   is explicitly a machine-readable evidence report. The payload carries
   `not_assessed` and the "this is not a verdict" disclaimer alongside the

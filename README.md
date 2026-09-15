@@ -82,20 +82,26 @@ toolseal policy apply gdpr                 # or adopt one later
 toolseal init
 ```
 
-With no project name, `init` asks: which provider, which framework, and
-whether to scaffold under a regulatory regime — each option listed with what
-choosing it costs you. It finishes by printing the equivalent one-line
-command, so the second project does not need the questions.
-
-Pass `-i` to get the prompts even when you already know the name. Any flag you
-supply is taken as decided rather than asked about:
+On an interactive terminal, `init` asks: the project name if you did not give
+one, then which provider, which framework, and whether to scaffold under a
+regulatory regime — each option listed with what choosing it costs you. It
+finishes by printing the equivalent one-line command, so the second project
+does not need the questions. Any flag you already supplied is taken as decided
+rather than asked about:
 
 ```bash
-toolseal init myagent -i --provider ollama
+toolseal init myagent --provider ollama
 ```
 
-`--json` and `-i` cannot be combined, and a missing name outside a terminal is
-an error rather than a prompt nobody can answer.
+Scripting `init`? Pass `--no-interactive` to always take flag defaults
+(`ollama`/`langgraph`, no regime, no credential) even when stdout happens to
+be a terminal — a CI runner or agent harness can attach one without a human
+present to answer. `--json` implies the same on its own. `-i`/`--interactive`
+forces the guided flow the other way, off a TTY, e.g. when answers are piped
+in from a script; combined with `--json` that is a usage error, since machine
+output and prompts cannot share stdout. A missing name outside a terminal,
+with neither flag given, is also an error rather than a prompt nobody can
+answer.
 
 ## What it does
 

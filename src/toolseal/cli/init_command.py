@@ -103,11 +103,22 @@ def init(
             "-i",
             help=(
                 "Choose provider, framework, regime and credential from a guided "
-                "prompt. Off by default even when a name is given: `isatty()` is not "
-                "a reliable signal that a human is actually present to answer - some "
-                "CI runners and agent harnesses attach a pty to an otherwise "
-                "unattended process, and prompting there would hang the run rather "
-                "than skip it."
+                "prompt. Runs automatically already on an interactive terminal, "
+                "named project or not; this flag forces the same flow when stdout "
+                "is not a TTY, e.g. answers piped in from a script."
+            ),
+        ),
+    ] = False,
+    no_interactive: Annotated[
+        bool,
+        typer.Option(
+            "--no-interactive",
+            help=(
+                "Skip every prompt even on an interactive terminal and fall back "
+                "to flag defaults (ollama/langgraph, no regime, no credential). "
+                "For a CI runner or agent harness that attaches a terminal with "
+                "no human present to answer - `isatty()` alone cannot tell that "
+                "case apart from a real one."
             ),
         ),
     ] = False,
@@ -131,16 +142,28 @@ def init(
     ] = False,
 ) -> None:
     """Create a new agent project with secure defaults."""
-    # A missing name means "prompt me", but only where prompting can work. Off
-    # a TTY it is a forgotten argument, and a CI job that hangs on a prompt
-    # nobody can see is strictly worse than one that fails on the next line.
-    wants_wizard = interactive or (name is None and is_tty())
+    if interactive and no_interactive:
+        message = "--interactive and --no-interactive cannot be combined"
+        raise UsageError(message)
+
+    # The guided flow is the default whenever a human could plausibly answer
+    # it - any invocation attached to an interactive terminal, a name given or
+    # not - and --no-interactive is the escape hatch for a harness that
+    # attaches a tty with nobody there to answer. --interactive still forces
+    # the same flow off a TTY, e.g. answers piped in from a script.
+    wants_wizard = not no_interactive and (interactive or is_tty())
 
     if wants_wizard and as_json:
-        message = (
-            "--json cannot be combined with --interactive; machine output and prompts share stdout"
-        )
-        raise UsageError(message)
+        if interactive:
+            message = (
+                "--json cannot be combined with --interactive; "
+                "machine output and prompts share stdout"
+            )
+            raise UsageError(message)
+        # Reaching a TTY was not itself a request for prompts once machine
+        # output was asked for - --json wins silently, so `init demo --json`
+        # run by hand from a real terminal still behaves like a script.
+        wants_wizard = False
 
     chosen = None
     if wants_wizard:
@@ -242,12 +265,11 @@ def _provision_credential(provider: Any, api_key: str | None) -> str | None:
     just has to provide the credential another way.
 
     Never prompts itself: prompting only happens inside the guided flow
-    (`wizard._ask_credential`, reached through `--interactive`), which is an
-    explicit opt-in. `isatty()` was tried as an automatic gate here and
-    dropped - it reported a terminal present, and `init` hung waiting for a
-    human, inside a non-interactive harness that had attached a pty to an
-    otherwise unattended process. A flag the caller must opt into cannot make
-    that mistake regardless of what the platform reports.
+    (`wizard._ask_credential`), reached through `wants_wizard` in `init` -
+    automatically on a TTY, forced by `--interactive` off one, and skippable
+    on a TTY via `--no-interactive` for a harness that attaches a terminal
+    with no human present. This function has no opinion of its own about any
+    of that; it only ever acts on the value it is handed.
     """
     env_var = provider.credential_env_var
     if env_var is None:
