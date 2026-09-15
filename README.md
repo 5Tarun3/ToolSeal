@@ -83,11 +83,13 @@ toolseal init
 ```
 
 On an interactive terminal, `init` asks: the project name if you did not give
-one, then which provider, which framework, and whether to scaffold under a
-regulatory regime — each option listed with what choosing it costs you. It
-finishes by printing the equivalent one-line command, so the second project
-does not need the questions. Any flag you already supplied is taken as decided
-rather than asked about:
+one, then which provider, which framework, whether to scaffold under a
+regulatory regime, and — if the chosen provider needs one — the credential for
+it, hidden as you type and never echoed back. Each option is listed with what
+choosing it costs you. It finishes by printing the equivalent one-line command
+(the credential excluded, on purpose), so the second project does not need the
+questions. Any flag you already supplied is taken as decided rather than asked
+about:
 
 ```bash
 toolseal init myagent --provider ollama
@@ -111,6 +113,18 @@ answer.
 configuration, credentials resolved from the OS keychain instead of a file on
 disk, a redacting log filter, a pinned dependency set, and a generated SBOM.
 
+A hosted provider's credential goes into the keychain at scaffold time, too —
+`--api-key` for scripting, or typed hidden at the guided flow's last question
+(never on the command line, where it could land in shell history):
+
+```bash
+toolseal init myagent --provider openai --api-key sk-...
+```
+
+A keychain that refuses the write is reported, not raised — the project is
+still created either way, with `Credential: not stored - <reason>` telling you
+to reach for another way to provide it.
+
 `toolseal add framework` and `add mcp` extend a project that already exists.
 Everything written is recorded, and `toolseal revert` removes exactly what was
 added — including restoring files that existed beforehand, and refusing to
@@ -124,6 +138,18 @@ $ toolseal add mcp @invented/definitely-not-real
 error: '@invented/definitely-not-real' resolves in no registry checked. A name
 that does not exist today is one an attacker can register tomorrow. Re-run with
 --skip-verify if you are certain. (exit 2: usage)
+```
+
+A name that *does* resolve is not automatically safe either — a registered
+typosquat resolves too, by definition. `add mcp` also checks a resolving name
+for resemblance to a known package, and refuses one that is a near-miss of it
+(`reqeusts` of `requests`, say) rather than treating "it installs" as "it's
+safe":
+
+```console
+$ toolseal add mcp reqeusts
+error: 'reqeusts' looks like a near-miss of 'requests'. Check the spelling, or
+re-run with --skip-verify. (exit 2: usage)
 ```
 
 ### Audit — 28 checks, mapped to published standards
@@ -274,7 +300,7 @@ Two more commands close the loop:
 | `init` | Create a new agent project with secure defaults |
 | `audit` | Score a project against the misconfiguration taxonomy |
 | `add framework` | Write a framework's configuration into an existing project |
-| `add mcp` | Add an MCP server, refusing a name that resolves nowhere |
+| `add mcp` | Add an MCP server, refusing a name that resolves nowhere or looks like a typosquat |
 | `add tool` | Lower a registry entry into the project, compensating what is lost |
 | `revert` | Undo what toolseal wrote into this project |
 | `policy list` / `explain` / `show` | Inspect checks, standards, and regimes |
