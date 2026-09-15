@@ -1,0 +1,3117 @@
+{
+  "tools": [
+    {
+      "description": "Add a new frame to an existing Aseprite sprite. Returns the frame number (1-based index).",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "duration_ms"
+        ],
+        "properties": {
+          "duration_ms": {
+            "type": "integer",
+            "description": "Frame duration in milliseconds (1-65535)"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "add_frame",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "frame_number"
+        ],
+        "properties": {
+          "frame_number": {
+            "type": "integer",
+            "description": "Index of the created frame (1-based)"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Add a new layer to an existing Aseprite sprite. Returns success status.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "layer_name"
+        ],
+        "properties": {
+          "layer_name": {
+            "type": "string",
+            "description": "Name for the new layer"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "add_layer",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the layer was added successfully"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Add a new color to the palette. The palette will be resized to accommodate the new color. Returns the index of the newly added color. Maximum palette size is 256 colors.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "color"
+        ],
+        "properties": {
+          "color": {
+            "type": "string",
+            "description": "Hex color to add (#RRGGBB format)"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "add_palette_color",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "color_index"
+        ],
+        "properties": {
+          "color_index": {
+            "type": "integer",
+            "description": "Index of the newly added color"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Analyze color palette for harmonious relationships. Identifies complementary pairs (opposite colors on color wheel), triadic sets (3 evenly spaced colors), analogous groups (adjacent colors), and color temperature (warm/cool/neutral). Essential for creating professional, cohesive pixel art palettes based on color theory.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "palette"
+        ],
+        "properties": {
+          "palette": {
+            "type": "array",
+            "description": "Array of hex colors to analyze (#RRGGBB format)",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "analyze_palette_harmonies",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "complementary",
+          "triadic",
+          "analogous",
+          "temperature"
+        ],
+        "properties": {
+          "analogous": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "colors",
+                "harmony",
+                "description"
+              ],
+              "properties": {
+                "colors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "description": {
+                  "type": "string"
+                },
+                "harmony": {
+                  "type": "number"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "complementary": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "color1",
+                "color2",
+                "contrast",
+                "description"
+              ],
+              "properties": {
+                "color1": {
+                  "type": "string"
+                },
+                "color2": {
+                  "type": "string"
+                },
+                "contrast": {
+                  "type": "number"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "temperature": {
+            "type": "object",
+            "required": [
+              "warm_colors",
+              "cool_colors",
+              "neutral_colors",
+              "dominant",
+              "description"
+            ],
+            "properties": {
+              "cool_colors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "description": {
+                "type": "string"
+              },
+              "dominant": {
+                "type": "string"
+              },
+              "neutral_colors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "warm_colors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "triadic": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "colors",
+                "balance",
+                "description"
+              ],
+              "properties": {
+                "balance": {
+                  "type": "number"
+                },
+                "colors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Extract structured data from reference images to guide pixel art creation. Performs k-means palette extraction, brightness/edge detection, and composition analysis. Returns palette sorted by hue/lightness, brightness map with quantized levels, edge map with major contours, composition guides (rule of thirds, focal points), and suggested dithering zones.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "reference_path",
+          "target_width",
+          "target_height"
+        ],
+        "properties": {
+          "brightness_levels": {
+            "type": "integer",
+            "description": "Quantize brightness into N levels (2-10, default: 5)"
+          },
+          "edge_threshold": {
+            "type": "integer",
+            "description": "Edge detection sensitivity (0-255, default: 30)"
+          },
+          "palette_size": {
+            "type": "integer",
+            "description": "Number of colors to extract (5-32, default: 16)"
+          },
+          "reference_path": {
+            "type": "string",
+            "description": "Path to reference image (.jpg, .png, .gif, .bmp, .aseprite)"
+          },
+          "target_height": {
+            "type": "integer",
+            "description": "Pixel art target height (1-65535)"
+          },
+          "target_width": {
+            "type": "integer",
+            "description": "Pixel art target width (1-65535)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "analyze_reference",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "palette",
+          "brightness_map",
+          "edge_map",
+          "composition",
+          "dithering_zones",
+          "metadata"
+        ],
+        "properties": {
+          "brightness_map": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "required": [
+              "grid",
+              "legend"
+            ],
+            "properties": {
+              "grid": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "legend": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "composition": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "required": [
+              "focal_points",
+              "rule_of_thirds",
+              "dominant_region"
+            ],
+            "properties": {
+              "dominant_region": {
+                "type": "object",
+                "required": [
+                  "x",
+                  "y",
+                  "width",
+                  "height"
+                ],
+                "properties": {
+                  "height": {
+                    "type": "integer"
+                  },
+                  "width": {
+                    "type": "integer"
+                  },
+                  "x": {
+                    "type": "integer"
+                  },
+                  "y": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "focal_points": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "x",
+                    "y",
+                    "weight"
+                  ],
+                  "properties": {
+                    "weight": {
+                      "type": "number"
+                    },
+                    "x": {
+                      "type": "integer"
+                    },
+                    "y": {
+                      "type": "integer"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "rule_of_thirds": {
+                "type": "object",
+                "required": [
+                  "vertical_lines",
+                  "horizontal_lines",
+                  "intersections"
+                ],
+                "properties": {
+                  "horizontal_lines": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "intersections": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "x",
+                        "y",
+                        "has_focal_point"
+                      ],
+                      "properties": {
+                        "has_focal_point": {
+                          "type": "boolean"
+                        },
+                        "x": {
+                          "type": "integer"
+                        },
+                        "y": {
+                          "type": "integer"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "vertical_lines": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "dithering_zones": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "region",
+                "type",
+                "colors",
+                "pattern",
+                "reason"
+              ],
+              "properties": {
+                "colors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "pattern": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "region": {
+                  "type": "object",
+                  "required": [
+                    "x",
+                    "y",
+                    "width",
+                    "height"
+                  ],
+                  "properties": {
+                    "height": {
+                      "type": "integer"
+                    },
+                    "width": {
+                      "type": "integer"
+                    },
+                    "x": {
+                      "type": "integer"
+                    },
+                    "y": {
+                      "type": "integer"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "edge_map": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "required": [
+              "grid",
+              "major_edges"
+            ],
+            "properties": {
+              "grid": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "major_edges": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "from",
+                    "to",
+                    "strength"
+                  ],
+                  "properties": {
+                    "from": {
+                      "type": "object",
+                      "required": [
+                        "x",
+                        "y"
+                      ],
+                      "properties": {
+                        "x": {
+                          "type": "integer"
+                        },
+                        "y": {
+                          "type": "integer"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "strength": {
+                      "type": "number"
+                    },
+                    "to": {
+                      "type": "object",
+                      "required": [
+                        "x",
+                        "y"
+                      ],
+                      "properties": {
+                        "x": {
+                          "type": "integer"
+                        },
+                        "y": {
+                          "type": "integer"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "metadata": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "required": [
+              "source_dimensions",
+              "target_dimensions",
+              "scale_factor",
+              "dominant_hue",
+              "color_harmony",
+              "contrast_ratio"
+            ],
+            "properties": {
+              "color_harmony": {
+                "type": "string"
+              },
+              "contrast_ratio": {
+                "type": "string"
+              },
+              "dominant_hue": {
+                "type": "number"
+              },
+              "scale_factor": {
+                "type": "number"
+              },
+              "source_dimensions": {
+                "type": "object",
+                "required": [
+                  "width",
+                  "height"
+                ],
+                "properties": {
+                  "height": {
+                    "type": "integer"
+                  },
+                  "width": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "target_dimensions": {
+                "type": "object",
+                "required": [
+                  "width",
+                  "height"
+                ],
+                "properties": {
+                  "height": {
+                    "type": "integer"
+                  },
+                  "width": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "palette": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "color",
+                "hue",
+                "saturation",
+                "lightness",
+                "usage_percent",
+                "role"
+              ],
+              "properties": {
+                "color": {
+                  "type": "string"
+                },
+                "hue": {
+                  "type": "number"
+                },
+                "lightness": {
+                  "type": "number"
+                },
+                "role": {
+                  "type": "string"
+                },
+                "saturation": {
+                  "type": "number"
+                },
+                "usage_percent": {
+                  "type": "number"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Automatically add shading to sprite based on light direction. Analyzes sprite geometry to identify surfaces/regions, determines which surfaces face toward/away from light, generates shadow and highlight colors for each base color (with optional hue shifting), and applies shading pixels with smooth transitions. Supports three styles: cell (hard-edged 2-3 bands), smooth (gradient with dithering), soft (subtle gradient). Essential for adding depth and dimension to pixel art automatically.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "layer_name",
+          "frame_number",
+          "light_direction",
+          "intensity",
+          "style",
+          "hue_shift"
+        ],
+        "properties": {
+          "frame_number": {
+            "type": "integer",
+            "description": "Frame number (1-based)"
+          },
+          "hue_shift": {
+            "type": "boolean",
+            "description": "Apply hue shifting (shadows\u2192cool, highlights\u2192warm) default: true"
+          },
+          "intensity": {
+            "type": "number",
+            "description": "Shading intensity (0.0-1.0)"
+          },
+          "layer_name": {
+            "type": "string",
+            "description": "Layer to apply shading to"
+          },
+          "light_direction": {
+            "type": "string",
+            "description": "Light direction: top_left, top, top_right, left, right, bottom_left, bottom, bottom_right"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to .aseprite file"
+          },
+          "style": {
+            "type": "string",
+            "description": "Shading style: cell, smooth, or soft"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "apply_auto_shading",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success",
+          "colors_added",
+          "palette",
+          "regions_shaded"
+        ],
+        "properties": {
+          "colors_added": {
+            "type": "integer",
+            "description": "Number of colors added to palette"
+          },
+          "palette": {
+            "type": "array",
+            "description": "Final palette after shading",
+            "items": {
+              "type": "string"
+            }
+          },
+          "regions_shaded": {
+            "type": "integer",
+            "description": "Number of regions shaded"
+          },
+          "success": {
+            "type": "boolean",
+            "description": "Whether the operation succeeded"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Apply an outline effect to a layer at a specified frame. The outline is drawn around non-transparent pixels with configurable color and thickness.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "layer_name",
+          "frame_number",
+          "color",
+          "thickness"
+        ],
+        "properties": {
+          "color": {
+            "type": "string",
+            "description": "Outline color in hex format (#RRGGBB or #RRGGBBAA)"
+          },
+          "frame_number": {
+            "type": "integer",
+            "description": "Frame number (1-based index)"
+          },
+          "layer_name": {
+            "type": "string",
+            "description": "Name of the layer to apply outline to"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "thickness": {
+            "type": "integer",
+            "description": "Outline thickness in pixels (1-10)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "apply_outline",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Apply palette-constrained shading to a region based on light direction. Automatically adjusts pixel colors to create highlights and shadows while staying within the provided palette. Supports smooth, hard, and pillow shading styles. Essential for adding depth and dimension to pixel art.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "layer_name",
+          "frame_number",
+          "region",
+          "palette",
+          "light_direction",
+          "intensity",
+          "style"
+        ],
+        "properties": {
+          "frame_number": {
+            "type": "integer",
+            "description": "Frame number (1-based index)"
+          },
+          "intensity": {
+            "type": "number",
+            "description": "Shading intensity (0.0-1.0)"
+          },
+          "layer_name": {
+            "type": "string",
+            "description": "Name of the layer to apply shading to"
+          },
+          "light_direction": {
+            "type": "string",
+            "description": "Light direction: top_left, top, top_right, left, right, bottom_left, bottom, bottom_right"
+          },
+          "palette": {
+            "type": "array",
+            "description": "Array of hex colors ordered darkest to lightest (#RRGGBB format)",
+            "items": {
+              "type": "string"
+            }
+          },
+          "region": {
+            "type": "object",
+            "description": "Rectangular region to apply shading to",
+            "required": [
+              "x",
+              "y",
+              "width",
+              "height"
+            ],
+            "properties": {
+              "height": {
+                "type": "integer",
+                "description": "Height of region"
+              },
+              "width": {
+                "type": "integer",
+                "description": "Width of region"
+              },
+              "x": {
+                "type": "integer",
+                "description": "X coordinate of top-left corner"
+              },
+              "y": {
+                "type": "integer",
+                "description": "Y coordinate of top-left corner"
+              }
+            },
+            "additionalProperties": false
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "style": {
+            "type": "string",
+            "description": "Shading style: pillow, smooth, or hard"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "apply_shading",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "Success"
+        ],
+        "properties": {
+          "Success": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Copy the selected pixels to clipboard without removing them. Requires an active selection.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path"
+        ],
+        "properties": {
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "copy_selection",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the copy was successful"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Create a new Aseprite sprite with specified dimensions and color mode. Returns the path to the created .aseprite file.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "width",
+          "height",
+          "color_mode"
+        ],
+        "properties": {
+          "color_mode": {
+            "type": "string",
+            "description": "Color mode: rgb, grayscale, or indexed"
+          },
+          "height": {
+            "type": "integer",
+            "description": "Canvas height in pixels (1-65535)"
+          },
+          "width": {
+            "type": "integer",
+            "description": "Canvas width in pixels (1-65535)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "create_canvas",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "file_path"
+        ],
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Absolute path to the created Aseprite file"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Create an animation tag to define a named frame range with playback direction.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "tag_name",
+          "from_frame",
+          "to_frame",
+          "direction"
+        ],
+        "properties": {
+          "direction": {
+            "type": "string",
+            "description": "Playback direction: forward, reverse, or pingpong"
+          },
+          "from_frame": {
+            "type": "integer",
+            "description": "Starting frame number (1-based, inclusive)"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "tag_name": {
+            "type": "string",
+            "description": "Name for the animation tag"
+          },
+          "to_frame": {
+            "type": "integer",
+            "description": "Ending frame number (1-based, inclusive)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "create_tag",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the tag was created successfully"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Crop a sprite to a specified rectangular region. The crop bounds must be within the sprite dimensions.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "x",
+          "y",
+          "width",
+          "height"
+        ],
+        "properties": {
+          "height": {
+            "type": "integer",
+            "description": "Crop region height (must be positive)"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "width": {
+            "type": "integer",
+            "description": "Crop region width (must be positive)"
+          },
+          "x": {
+            "type": "integer",
+            "description": "Crop region X coordinate"
+          },
+          "y": {
+            "type": "integer",
+            "description": "Crop region Y coordinate"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "crop_sprite",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Cut the selected pixels to clipboard. Removes pixels from the specified layer and frame, placing them on the clipboard. Requires an active selection.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "layer_name",
+          "frame_number"
+        ],
+        "properties": {
+          "frame_number": {
+            "type": "integer",
+            "description": "Frame number to cut from (1-based index)"
+          },
+          "layer_name": {
+            "type": "string",
+            "description": "Name of the layer to cut from"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "cut_selection",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the cut was successful"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Delete a frame from an existing sprite. Cannot delete the last remaining frame.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "frame_number"
+        ],
+        "properties": {
+          "frame_number": {
+            "type": "integer",
+            "description": "Frame number to delete (1-based)"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "delete_frame",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the frame was deleted successfully"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Delete a layer from an existing sprite. Cannot delete the last remaining layer.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "layer_name"
+        ],
+        "properties": {
+          "layer_name": {
+            "type": "string",
+            "description": "Name of the layer to delete"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "delete_layer",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the layer was deleted successfully"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Delete an animation tag by name.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "tag_name"
+        ],
+        "properties": {
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "tag_name": {
+            "type": "string",
+            "description": "Name of the tag to delete"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "delete_tag",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Deletion success status"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Clear the current selection. Removes any active selection from the sprite.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path"
+        ],
+        "properties": {
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "deselect",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether deselect was successful"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Downsample an image to smaller dimensions using box filter (area averaging) algorithm. Accepts any image format supported by Aseprite (.aseprite, .png, .jpg, .bmp, .gif) and creates a new downsampled sprite. This is useful for creating pixel art versions of high-resolution images or reducing image size while maintaining quality.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "source_path",
+          "target_width",
+          "target_height"
+        ],
+        "properties": {
+          "output_path": {
+            "type": "string",
+            "description": "Optional output path for downsampled sprite (defaults to temp directory)"
+          },
+          "source_path": {
+            "type": "string",
+            "description": "Path to source image file (.aseprite, .png, .jpg, .bmp, .gif)"
+          },
+          "target_height": {
+            "type": "integer",
+            "description": "Target height in pixels (1-65535)"
+          },
+          "target_width": {
+            "type": "integer",
+            "description": "Target width in pixels (1-65535)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "downsample_image",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "output_path",
+          "source_width",
+          "source_height",
+          "target_width",
+          "target_height"
+        ],
+        "properties": {
+          "output_path": {
+            "type": "string",
+            "description": "Path to the downsampled sprite file"
+          },
+          "source_height": {
+            "type": "integer",
+            "description": "Original source image height"
+          },
+          "source_width": {
+            "type": "integer",
+            "description": "Original source image width"
+          },
+          "target_height": {
+            "type": "integer",
+            "description": "Downsampled image height"
+          },
+          "target_width": {
+            "type": "integer",
+            "description": "Downsampled image width"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Draw a circle with specified center, radius, color, and fill option.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "layer_name",
+          "frame_number",
+          "center_x",
+          "center_y",
+          "radius",
+          "color",
+          "filled"
+        ],
+        "properties": {
+          "center_x": {
+            "type": "integer",
+            "description": "X coordinate of circle center"
+          },
+          "center_y": {
+            "type": "integer",
+            "description": "Y coordinate of circle center"
+          },
+          "color": {
+            "type": "string",
+            "description": "Hex color string in format #RRGGBB or #RRGGBBAA"
+          },
+          "filled": {
+            "type": "boolean",
+            "description": "Fill interior (true) or draw outline only (false)"
+          },
+          "frame_number": {
+            "type": "integer",
+            "description": "Frame number to draw on (1-based)"
+          },
+          "layer_name": {
+            "type": "string",
+            "description": "Name of the layer to draw on"
+          },
+          "radius": {
+            "type": "integer",
+            "description": "Radius of circle in pixels"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "use_palette": {
+            "type": "boolean",
+            "description": "Snap colors to nearest palette color (default: false)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "draw_circle",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the circle was drawn successfully"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Draw a polyline or polygon by connecting multiple points. Supports both open paths and closed shapes.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "layer_name",
+          "frame_number",
+          "points",
+          "color",
+          "thickness",
+          "closed"
+        ],
+        "properties": {
+          "closed": {
+            "type": "boolean",
+            "description": "Connect last point to first to form a closed polygon (default: false)"
+          },
+          "color": {
+            "type": "string",
+            "description": "Hex color string in format #RRGGBB or #RRGGBBAA"
+          },
+          "frame_number": {
+            "type": "integer",
+            "description": "Frame number to draw on (1-based)"
+          },
+          "layer_name": {
+            "type": "string",
+            "description": "Name of the layer to draw on"
+          },
+          "points": {
+            "type": "array",
+            "description": "Array of points to connect (minimum 2 points)",
+            "items": {
+              "type": "object",
+              "required": [
+                "x",
+                "y"
+              ],
+              "properties": {
+                "x": {
+                  "type": "integer",
+                  "description": "X coordinate of the point"
+                },
+                "y": {
+                  "type": "integer",
+                  "description": "Y coordinate of the point"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "thickness": {
+            "type": "integer",
+            "description": "Line thickness in pixels (1-100)"
+          },
+          "use_palette": {
+            "type": "boolean",
+            "description": "Snap colors to nearest palette color (default: false)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "draw_contour",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the contour was drawn successfully"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Draw a line between two points with specified color and thickness.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "layer_name",
+          "frame_number",
+          "x1",
+          "y1",
+          "x2",
+          "y2",
+          "color",
+          "thickness"
+        ],
+        "properties": {
+          "color": {
+            "type": "string",
+            "description": "Hex color string in format #RRGGBB or #RRGGBBAA"
+          },
+          "frame_number": {
+            "type": "integer",
+            "description": "Frame number to draw on (1-based)"
+          },
+          "layer_name": {
+            "type": "string",
+            "description": "Name of the layer to draw on"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "thickness": {
+            "type": "integer",
+            "description": "Line thickness in pixels (1-100)"
+          },
+          "use_palette": {
+            "type": "boolean",
+            "description": "Snap colors to nearest palette color (default: false)"
+          },
+          "x1": {
+            "type": "integer",
+            "description": "X coordinate of line start point"
+          },
+          "x2": {
+            "type": "integer",
+            "description": "X coordinate of line end point"
+          },
+          "y1": {
+            "type": "integer",
+            "description": "Y coordinate of line start point"
+          },
+          "y2": {
+            "type": "integer",
+            "description": "Y coordinate of line end point"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "draw_line",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the line was drawn successfully"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Draw individual pixels at specified coordinates with colors. Supports batch operations for efficiency.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "layer_name",
+          "frame_number",
+          "pixels"
+        ],
+        "properties": {
+          "frame_number": {
+            "type": "integer",
+            "description": "Frame number to draw on (1-based)"
+          },
+          "layer_name": {
+            "type": "string",
+            "description": "Name of the layer to draw on"
+          },
+          "pixels": {
+            "type": "array",
+            "description": "Array of pixels to draw",
+            "items": {
+              "type": "object",
+              "required": [
+                "x",
+                "y",
+                "color"
+              ],
+              "properties": {
+                "color": {
+                  "type": "string",
+                  "description": "Hex color string in format #RRGGBB or #RRGGBBAA"
+                },
+                "x": {
+                  "type": "integer",
+                  "description": "X coordinate of the pixel"
+                },
+                "y": {
+                  "type": "integer",
+                  "description": "Y coordinate of the pixel"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "use_palette": {
+            "type": "boolean",
+            "description": "Snap colors to nearest palette color (default: false)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "draw_pixels",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "pixels_drawn"
+        ],
+        "properties": {
+          "pixels_drawn": {
+            "type": "integer",
+            "description": "Number of pixels successfully drawn"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Draw a rectangle with specified position, size, color, and fill option.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "layer_name",
+          "frame_number",
+          "x",
+          "y",
+          "width",
+          "height",
+          "color",
+          "filled"
+        ],
+        "properties": {
+          "color": {
+            "type": "string",
+            "description": "Hex color string in format #RRGGBB or #RRGGBBAA"
+          },
+          "filled": {
+            "type": "boolean",
+            "description": "Fill interior (true) or draw outline only (false)"
+          },
+          "frame_number": {
+            "type": "integer",
+            "description": "Frame number to draw on (1-based)"
+          },
+          "height": {
+            "type": "integer",
+            "description": "Height of rectangle in pixels"
+          },
+          "layer_name": {
+            "type": "string",
+            "description": "Name of the layer to draw on"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "use_palette": {
+            "type": "boolean",
+            "description": "Snap colors to nearest palette color (default: false)"
+          },
+          "width": {
+            "type": "integer",
+            "description": "Width of rectangle in pixels"
+          },
+          "x": {
+            "type": "integer",
+            "description": "X coordinate of rectangle top-left corner"
+          },
+          "y": {
+            "type": "integer",
+            "description": "Y coordinate of rectangle top-left corner"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "draw_rectangle",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the rectangle was drawn successfully"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Fill a region with a dithering pattern to create smooth gradients and textures. Supports 16 patterns: Bayer matrix (bayer_2x2, bayer_4x4, bayer_8x8) for ordered dithering, Floyd-Steinberg error diffusion (floyd_steinberg) for high-quality gradients, checkerboard for 50/50 blends, and texture patterns (grass, water, stone, cloud, brick, dots, diagonal, cross, noise, horizontal_lines, vertical_lines) for organic effects. Use density parameter to control the ratio of color1 to color2 (0.0 = all color1, 1.0 = all color2, 0.5 = even mix). Essential for professional pixel art gradients and textures.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "layer_name",
+          "frame_number",
+          "region",
+          "color1",
+          "color2",
+          "pattern"
+        ],
+        "properties": {
+          "color1": {
+            "type": "string",
+            "description": "First color (hex #RRGGBB or #RRGGBBAA)"
+          },
+          "color2": {
+            "type": "string",
+            "description": "Second color (hex #RRGGBB or #RRGGBBAA)"
+          },
+          "density": {
+            "type": "number",
+            "description": "Ratio of color1 to color2 (0.0-1.0, default: 0.5)"
+          },
+          "frame_number": {
+            "type": "integer",
+            "description": "Frame number to draw on (1-based)"
+          },
+          "layer_name": {
+            "type": "string",
+            "description": "Name of the layer to draw on"
+          },
+          "pattern": {
+            "type": "string",
+            "description": "Dithering pattern: bayer_2x2|bayer_4x4|bayer_8x8|checkerboard|floyd_steinberg|grass|water|stone|cloud|brick|dots|diagonal|cross|noise|horizontal_lines|vertical_lines"
+          },
+          "region": {
+            "type": "object",
+            "description": "Rectangular region to fill with dithering",
+            "required": [
+              "x",
+              "y",
+              "width",
+              "height"
+            ],
+            "properties": {
+              "height": {
+                "type": "integer",
+                "description": "Height of region"
+              },
+              "width": {
+                "type": "integer",
+                "description": "Width of region"
+              },
+              "x": {
+                "type": "integer",
+                "description": "X coordinate of top-left corner"
+              },
+              "y": {
+                "type": "integer",
+                "description": "Y coordinate of top-left corner"
+              }
+            },
+            "additionalProperties": false
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "draw_with_dither",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "Success"
+        ],
+        "properties": {
+          "Success": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Duplicate an existing frame and insert it at the specified position.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "source_frame",
+          "insert_after"
+        ],
+        "properties": {
+          "insert_after": {
+            "type": "integer",
+            "description": "Insert duplicated frame after this frame number (1-based, 0 = insert at end)"
+          },
+          "source_frame": {
+            "type": "integer",
+            "description": "Frame number to duplicate (1-based)"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "duplicate_frame",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "new_frame_number"
+        ],
+        "properties": {
+          "new_frame_number": {
+            "type": "integer",
+            "description": "Index of the newly created frame (1-based)"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Export sprite to common image formats (PNG, GIF, JPG, BMP).",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "output_path",
+          "format",
+          "frame_number"
+        ],
+        "properties": {
+          "format": {
+            "type": "string",
+            "description": "Export format: png, gif, jpg, bmp"
+          },
+          "frame_number": {
+            "type": "integer",
+            "description": "Specific frame to export (0 = all frames, 1-based)"
+          },
+          "output_path": {
+            "type": "string",
+            "description": "Output file path for exported image"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "export_sprite",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "exported_path",
+          "file_size"
+        ],
+        "properties": {
+          "exported_path": {
+            "type": "string",
+            "description": "Path to the exported file"
+          },
+          "file_size": {
+            "type": "integer",
+            "description": "Size of exported file in bytes"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Export animation frames as spritesheet with layout options.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "output_path",
+          "layout",
+          "padding",
+          "include_json"
+        ],
+        "properties": {
+          "include_json": {
+            "type": "boolean",
+            "description": "Include JSON metadata file"
+          },
+          "layout": {
+            "type": "string",
+            "description": "Spritesheet layout: horizontal, vertical, rows, columns, or packed"
+          },
+          "output_path": {
+            "type": "string",
+            "description": "Output file path for spritesheet"
+          },
+          "padding": {
+            "type": "integer",
+            "description": "Padding between frames in pixels (0-100)"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "export_spritesheet",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "spritesheet_path",
+          "frame_count"
+        ],
+        "properties": {
+          "frame_count": {
+            "type": "integer",
+            "description": "Number of frames in spritesheet"
+          },
+          "metadata_path": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Path to JSON metadata if included"
+          },
+          "spritesheet_path": {
+            "type": "string",
+            "description": "Path to exported spritesheet"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Flood fill from a starting point with specified color (paint bucket tool).",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "layer_name",
+          "frame_number",
+          "x",
+          "y",
+          "color",
+          "tolerance"
+        ],
+        "properties": {
+          "color": {
+            "type": "string",
+            "description": "Hex color string in format #RRGGBB or #RRGGBBAA"
+          },
+          "frame_number": {
+            "type": "integer",
+            "description": "Frame number to draw on (1-based)"
+          },
+          "layer_name": {
+            "type": "string",
+            "description": "Name of the layer to draw on"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "tolerance": {
+            "type": "integer",
+            "description": "Color matching tolerance (0-255, default 0)"
+          },
+          "use_palette": {
+            "type": "boolean",
+            "description": "Snap colors to nearest palette color (default: false)"
+          },
+          "x": {
+            "type": "integer",
+            "description": "X coordinate of starting point"
+          },
+          "y": {
+            "type": "integer",
+            "description": "Y coordinate of starting point"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "fill_area",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the fill operation was successful"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Flatten all layers in a sprite into a single layer.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path"
+        ],
+        "properties": {
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "flatten_layers",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the layers were flattened successfully"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Flip a sprite, layer, or cel horizontally or vertically. This operation mirrors the image content along the specified axis.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "direction",
+          "target"
+        ],
+        "properties": {
+          "direction": {
+            "type": "string",
+            "description": "Flip direction: horizontal or vertical"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "target": {
+            "type": "string",
+            "description": "What to flip: sprite, layer, or cel (default: sprite)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "flip_sprite",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Retrieve the current sprite palette as an array of hex colors. Returns both the color array and palette size. Useful for inspecting existing palettes before modification.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path"
+        ],
+        "properties": {
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "get_palette",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "colors",
+          "size"
+        ],
+        "properties": {
+          "colors": {
+            "type": "array",
+            "description": "Array of hex colors in the palette",
+            "items": {
+              "type": "string"
+            }
+          },
+          "size": {
+            "type": "integer",
+            "description": "Number of colors in the palette"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Read pixel data from a rectangular region of a sprite. Returns an array of pixels with their coordinates and colors in hex format (#RRGGBBAA). Supports pagination for large regions using cursor and page_size parameters (default page size: 1000, max: 10000).",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "layer_name",
+          "frame_number",
+          "x",
+          "y",
+          "width",
+          "height"
+        ],
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "description": "Pagination cursor for fetching next page (optional)"
+          },
+          "frame_number": {
+            "type": "integer",
+            "description": "Frame number to read from (1-based)"
+          },
+          "height": {
+            "type": "integer",
+            "description": "Height of region to read"
+          },
+          "layer_name": {
+            "type": "string",
+            "description": "Name of the layer to read from"
+          },
+          "page_size": {
+            "type": "integer",
+            "description": "Number of pixels to return per page (default: 1000, max: 10000)"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "width": {
+            "type": "integer",
+            "description": "Width of region to read"
+          },
+          "x": {
+            "type": "integer",
+            "description": "X coordinate of top-left corner of region"
+          },
+          "y": {
+            "type": "integer",
+            "description": "Y coordinate of top-left corner of region"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "get_pixels",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "pixels",
+          "total_pixels"
+        ],
+        "properties": {
+          "next_cursor": {
+            "type": "string",
+            "description": "Cursor for fetching next page (empty if no more pages)"
+          },
+          "pixels": {
+            "type": "array",
+            "description": "Array of pixels with coordinates and colors",
+            "items": {
+              "type": "object",
+              "required": [
+                "x",
+                "y",
+                "color"
+              ],
+              "properties": {
+                "color": {
+                  "type": "string"
+                },
+                "x": {
+                  "type": "integer"
+                },
+                "y": {
+                  "type": "integer"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "total_pixels": {
+            "type": "integer",
+            "description": "Total number of pixels in the region"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Retrieve metadata about an existing Aseprite sprite including dimensions, color mode, frame count, layer count, and layer names.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path"
+        ],
+        "properties": {
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "get_sprite_info",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "width",
+          "height",
+          "color_mode",
+          "frame_count",
+          "layer_count",
+          "layers"
+        ],
+        "properties": {
+          "color_mode": {
+            "type": "string",
+            "description": "Color mode (rgb, grayscale, or indexed)"
+          },
+          "frame_count": {
+            "type": "integer",
+            "description": "Number of frames in the sprite"
+          },
+          "height": {
+            "type": "integer",
+            "description": "Sprite height in pixels"
+          },
+          "layer_count": {
+            "type": "integer",
+            "description": "Number of layers in the sprite"
+          },
+          "layers": {
+            "type": "array",
+            "description": "Names of all layers in the sprite",
+            "items": {
+              "type": "string"
+            }
+          },
+          "width": {
+            "type": "integer",
+            "description": "Sprite width in pixels"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Import an external image file as a layer in the sprite.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "image_path",
+          "layer_name",
+          "frame_number"
+        ],
+        "properties": {
+          "frame_number": {
+            "type": "integer",
+            "description": "Frame number to place image (1-based)"
+          },
+          "image_path": {
+            "type": "string",
+            "description": "Path to image file to import"
+          },
+          "layer_name": {
+            "type": "string",
+            "description": "Layer name for imported image"
+          },
+          "position": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "description": "Position to place image (optional defaults to 0,0)",
+            "required": [
+              "x",
+              "y"
+            ],
+            "properties": {
+              "x": {
+                "type": "integer"
+              },
+              "y": {
+                "type": "integer"
+              }
+            },
+            "additionalProperties": false
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "import_image",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Import success status"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Create a linked cel that references another cel's image data, useful for animation optimization.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "layer_name",
+          "source_frame",
+          "target_frame"
+        ],
+        "properties": {
+          "layer_name": {
+            "type": "string",
+            "description": "Name of the layer"
+          },
+          "source_frame": {
+            "type": "integer",
+            "description": "Source frame with the cel to link (1-based)"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "target_frame": {
+            "type": "integer",
+            "description": "Target frame where linked cel will be created (1-based)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "link_cel",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the cel was linked successfully"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Move the current selection by a specified offset. Does not move the pixel content, only the selection bounds. Requires an active selection.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "dx",
+          "dy"
+        ],
+        "properties": {
+          "dx": {
+            "type": "integer",
+            "description": "Horizontal offset in pixels (can be negative)"
+          },
+          "dy": {
+            "type": "integer",
+            "description": "Vertical offset in pixels (can be negative)"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "move_selection",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the selection was moved successfully"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Paste clipboard content onto the specified layer and frame. Optionally specify paste position (x, y). Requires clipboard to contain image data.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "layer_name",
+          "frame_number"
+        ],
+        "properties": {
+          "frame_number": {
+            "type": "integer",
+            "description": "Frame number to paste onto (1-based index)"
+          },
+          "layer_name": {
+            "type": "string",
+            "description": "Name of the layer to paste onto"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "x": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "description": "X coordinate for paste position (optional)"
+          },
+          "y": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "description": "Y coordinate for paste position (optional)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "paste_clipboard",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the paste was successful"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Automatically reduce sprite colors using industry-standard quantization algorithms. Supports three algorithms: median_cut (fast, balanced quality), kmeans (highest quality, slower), octree (very fast, good for photos). Can apply Floyd-Steinberg dithering for smoother gradients. Optionally converts to indexed color mode for true palette constraint or keeps RGB mode for flexible multi-pass workflows.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "target_colors",
+          "algorithm",
+          "dither"
+        ],
+        "properties": {
+          "algorithm": {
+            "type": "string",
+            "description": "Quantization algorithm: median_cut (default), kmeans, or octree"
+          },
+          "convert_to_indexed": {
+            "type": [
+              "null",
+              "boolean"
+            ],
+            "description": "Convert sprite to indexed color mode (default: true)"
+          },
+          "dither": {
+            "type": "boolean",
+            "description": "Apply Floyd-Steinberg dithering during quantization (default: false)"
+          },
+          "preserve_transparency": {
+            "type": [
+              "null",
+              "boolean"
+            ],
+            "description": "Keep transparent pixels transparent (default: true)"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to source .aseprite file"
+          },
+          "target_colors": {
+            "type": "integer",
+            "description": "Target palette size (2-256)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "quantize_palette",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success",
+          "original_colors",
+          "quantized_colors",
+          "color_mode",
+          "palette",
+          "algorithm_used"
+        ],
+        "properties": {
+          "algorithm_used": {
+            "type": "string",
+            "description": "Quantization algorithm that was used"
+          },
+          "color_mode": {
+            "type": "string",
+            "description": "Color mode after quantization (indexed or rgb)"
+          },
+          "original_colors": {
+            "type": "integer",
+            "description": "Number of unique colors in original sprite"
+          },
+          "palette": {
+            "type": "array",
+            "description": "Array of hex colors in the quantized palette",
+            "items": {
+              "type": "string"
+            }
+          },
+          "quantized_colors": {
+            "type": "integer",
+            "description": "Number of colors in quantized palette"
+          },
+          "success": {
+            "type": "boolean",
+            "description": "Whether the operation succeeded"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Resize the canvas without scaling content. Content is positioned according to the anchor point (center, top_left, top_right, bottom_left, or bottom_right).",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "width",
+          "height",
+          "anchor"
+        ],
+        "properties": {
+          "anchor": {
+            "type": "string",
+            "description": "Anchor position: center, top_left, top_right, bottom_left, or bottom_right (default: center)"
+          },
+          "height": {
+            "type": "integer",
+            "description": "New canvas height (1-65535)"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "width": {
+            "type": "integer",
+            "description": "New canvas width (1-65535)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "resize_canvas",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Rotate a sprite, layer, or cel by 90, 180, or 270 degrees clockwise.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "angle",
+          "target"
+        ],
+        "properties": {
+          "angle": {
+            "type": "integer",
+            "description": "Rotation angle: 90, 180, or 270 degrees"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "target": {
+            "type": "string",
+            "description": "What to rotate: sprite, layer, or cel (default: sprite)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "rotate_sprite",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Save sprite to a new .aseprite file path.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "output_path"
+        ],
+        "properties": {
+          "output_path": {
+            "type": "string",
+            "description": "New .aseprite file path"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "save_as",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success",
+          "file_path"
+        ],
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to saved file"
+          },
+          "success": {
+            "type": "boolean",
+            "description": "Save success status"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Scale a sprite by specified X and Y factors using a chosen algorithm (nearest, bilinear, or rotsprite). Returns the new dimensions.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "scale_x",
+          "scale_y",
+          "algorithm"
+        ],
+        "properties": {
+          "algorithm": {
+            "type": "string",
+            "description": "Scaling algorithm: nearest, bilinear, or rotsprite (default: nearest)"
+          },
+          "scale_x": {
+            "type": "number",
+            "description": "Horizontal scale factor (0.01 to 100.0)"
+          },
+          "scale_y": {
+            "type": "number",
+            "description": "Vertical scale factor (0.01 to 100.0)"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "scale_sprite",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success",
+          "new_width",
+          "new_height"
+        ],
+        "properties": {
+          "new_height": {
+            "type": "integer",
+            "description": "New sprite height after scaling"
+          },
+          "new_width": {
+            "type": "integer",
+            "description": "New sprite width after scaling"
+          },
+          "success": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Select the entire canvas. This selects all pixels in the sprite, regardless of layers or frames.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path"
+        ],
+        "properties": {
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "select_all",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether select all was successful"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Create an elliptical selection with specified mode (replace/add/subtract/intersect). The ellipse is defined by a bounding box.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "x",
+          "y",
+          "width",
+          "height",
+          "mode"
+        ],
+        "properties": {
+          "height": {
+            "type": "integer",
+            "description": "Height of selection ellipse (minimum 1)"
+          },
+          "mode": {
+            "type": "string",
+            "description": "Selection mode: replace, add, subtract, or intersect (default: replace)"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "width": {
+            "type": "integer",
+            "description": "Width of selection ellipse (minimum 1)"
+          },
+          "x": {
+            "type": "integer",
+            "description": "X coordinate of selection ellipse bounding box"
+          },
+          "y": {
+            "type": "integer",
+            "description": "Y coordinate of selection ellipse bounding box"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "select_ellipse",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the selection was created successfully"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Create a rectangular selection with specified mode (replace/add/subtract/intersect). Selections define which pixels will be affected by editing operations.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "x",
+          "y",
+          "width",
+          "height",
+          "mode"
+        ],
+        "properties": {
+          "height": {
+            "type": "integer",
+            "description": "Height of selection rectangle (minimum 1)"
+          },
+          "mode": {
+            "type": "string",
+            "description": "Selection mode: replace, add, subtract, or intersect (default: replace)"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "width": {
+            "type": "integer",
+            "description": "Width of selection rectangle (minimum 1)"
+          },
+          "x": {
+            "type": "integer",
+            "description": "X coordinate of selection rectangle"
+          },
+          "y": {
+            "type": "integer",
+            "description": "Y coordinate of selection rectangle"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "select_rectangle",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the selection was created successfully"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Set the duration of an existing animation frame in milliseconds.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "frame_number",
+          "duration_ms"
+        ],
+        "properties": {
+          "duration_ms": {
+            "type": "integer",
+            "description": "Frame duration in milliseconds (1-65535)"
+          },
+          "frame_number": {
+            "type": "integer",
+            "description": "Frame number to modify (1-based)"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "set_frame_duration",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the frame duration was set successfully"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Set the sprite's color palette to the specified colors. Useful for applying extracted palettes from analyze_reference or creating custom limited palettes for pixel art. Colors should be in #RRGGBB hex format.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "colors"
+        ],
+        "properties": {
+          "colors": {
+            "type": "array",
+            "description": "Array of hex colors to set as palette (#RRGGBB format)",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "set_palette",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "Success"
+        ],
+        "properties": {
+          "Success": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Set a specific palette index to a color. Index must be within the current palette range (0 to palette size - 1). Useful for modifying individual palette entries.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "index",
+          "color"
+        ],
+        "properties": {
+          "color": {
+            "type": "string",
+            "description": "Hex color to set (#RRGGBB format)"
+          },
+          "index": {
+            "type": "integer",
+            "description": "Palette index (0-255)"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "set_palette_color",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "Success"
+        ],
+        "properties": {
+          "Success": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Sort the palette by hue, saturation, brightness, or luminance. Can sort in ascending or descending order. Useful for organizing palettes for easier color selection.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "method",
+          "ascending"
+        ],
+        "properties": {
+          "ascending": {
+            "type": "boolean",
+            "description": "Sort in ascending order (default: true)"
+          },
+          "method": {
+            "type": "string",
+            "description": "Sort method: hue, saturation, brightness, or luminance"
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "sort_palette",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "Success"
+        ],
+        "properties": {
+          "Success": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Analyze pixel art for jagged diagonal edges and suggest intermediate colors to smooth them (antialiasing). Detects stair-step patterns on diagonals and calculates blended colors to create smoother curves. Use auto_apply to automatically apply suggestions or use_palette to constrain intermediate colors to the sprite's palette. Returns suggestions with positions, colors, and directions for manual review or automatic application.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "sprite_path",
+          "layer_name",
+          "frame_number"
+        ],
+        "properties": {
+          "auto_apply": {
+            "type": "boolean",
+            "description": "If true applies smoothing automatically (default: false)"
+          },
+          "frame_number": {
+            "type": "integer",
+            "description": "Frame number to analyze (1-based)"
+          },
+          "layer_name": {
+            "type": "string",
+            "description": "Name of the layer to analyze"
+          },
+          "region": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "description": "Region to analyze (defaults to entire sprite)",
+            "required": [
+              "x",
+              "y",
+              "width",
+              "height"
+            ],
+            "properties": {
+              "height": {
+                "type": "integer",
+                "description": "Height of region"
+              },
+              "width": {
+                "type": "integer",
+                "description": "Width of region"
+              },
+              "x": {
+                "type": "integer",
+                "description": "X coordinate of top-left corner"
+              },
+              "y": {
+                "type": "integer",
+                "description": "Y coordinate of top-left corner"
+              }
+            },
+            "additionalProperties": false
+          },
+          "sprite_path": {
+            "type": "string",
+            "description": "Path to the Aseprite sprite file"
+          },
+          "threshold": {
+            "type": "integer",
+            "description": "Edge detection sensitivity 0-255 (default: 128)"
+          },
+          "use_palette": {
+            "type": "boolean",
+            "description": "If true snaps intermediate colors to palette (default: false)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "suggest_antialiasing",
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "suggestions",
+          "applied",
+          "total_edges"
+        ],
+        "properties": {
+          "applied": {
+            "type": "boolean"
+          },
+          "suggestions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "x",
+                "y",
+                "current_color",
+                "neighbor_color",
+                "suggested_color",
+                "direction"
+              ],
+              "properties": {
+                "current_color": {
+                  "type": "string"
+                },
+                "direction": {
+                  "type": "string"
+                },
+                "neighbor_color": {
+                  "type": "string"
+                },
+                "suggested_color": {
+                  "type": "string"
+                },
+                "x": {
+                  "type": "integer"
+                },
+                "y": {
+                  "type": "integer"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "total_edges": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  ]
+}

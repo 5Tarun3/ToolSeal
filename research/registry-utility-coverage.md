@@ -70,6 +70,8 @@ For three capabilities the ecosystem has no maintained canonical server at all:
 | Slack | The official server was archived; nothing replaced it. |
 | Gmail | No server published by Google. Candidates are third-party. |
 | Jira | No server published by Atlassian in the registry. |
+
+Added 2026-09-16: **`pixel-mcp`** sits alongside `aseprite-live-mcp` rather than replacing it. The PyPI-published server is the one a registry lookup finds and it does not currently start (unpinned `mcp`, broken by 2.x); `pixel-mcp` is the one an Aseprite user can run. It is distributed only as a GitHub release binary, so it has no package registry behind it and `assess` marks it down accordingly - which is the honest reading of that distribution model, not a gap in the criteria.
 | GitHub | Official server exists but ships as a Go binary and Docker image, so `C3` cannot resolve it through npm or PyPI. |
 
 These are recorded as absences rather than filled. An absence a reader can see
@@ -102,6 +104,7 @@ what was true when the choice was made.
 | Containers | `docker-mcp` | npm | 1.0.0 | MIT |
 | Orchestration | `kubernetes-mcp-server` | npm | 0.0.66 | Apache-2.0 |
 | Pixel art | `aseprite-live-mcp` | PyPI | 0.2.0 | MIT |
+| Pixel art (local) | `pixel-mcp` | none - GitHub release binary | 0.5.0 | MIT |
 | Error tracking | `@sentry/mcp-server` | npm | 0.25.0 | FSL-1.1-ALv2 |
 | Documents | `@notionhq/notion-mcp-server` | npm | 2.5.1 | MIT |
 | Issue tracking | Linear (remote only) | - | - | - |

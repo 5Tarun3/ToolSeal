@@ -1,6 +1,6 @@
 {
   "built_at": "2026-08-17T18:16:54+00:00",
-  "count": 224,
+  "count": 275,
   "entries": [
     {
       "audit": {
@@ -18395,6 +18395,4411 @@
       "audit": {
         "blocking": false,
         "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Draw, animate, shade and export sprites by driving a local Aseprite install.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0",
+        "interface": {
+          "input_schema": {},
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "willibrandon/pixel-mcp",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": false
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Add a new frame to an existing Aseprite sprite. Returns the frame number (1-based index).",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#add_frame",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "duration_ms": {
+                "description": "Frame duration in milliseconds (1-65535)",
+                "type": "integer"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "duration_ms"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "add_frame",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Add a new layer to an existing Aseprite sprite. Returns success status.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#add_layer",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "layer_name": {
+                "description": "Name for the new layer",
+                "type": "string"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "layer_name"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "add_layer",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Add a new color to the palette. The palette will be resized to accommodate the new color. Returns the index of the newly added color. Maximum palette size is 256 colors.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#add_palette_color",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "color": {
+                "description": "Hex color to add (#RRGGBB format)",
+                "type": "string"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "color"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "add_palette_color",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Analyze color palette for harmonious relationships. Identifies complementary pairs (opposite colors on color wheel), triadic sets (3 evenly spaced colors), analogous groups (adjacent colors), and color temperature (warm/cool/neutral). Essential for creating professional, cohesive pixel art palettes based on color theory.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#analyze_palette_harmonies",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "palette": {
+                "description": "Array of hex colors to analyze (#RRGGBB format)",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "palette"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "analyze_palette_harmonies",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Extract structured data from reference images to guide pixel art creation. Performs k-means palette extraction, brightness/edge detection, and composition analysis. Returns palette sorted by hue/lightness, brightness map with quantized levels, edge map with major contours, composition guides (rule of thirds, focal points), and suggested dithering zones.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#analyze_reference",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "brightness_levels": {
+                "description": "Quantize brightness into N levels (2-10, default: 5)",
+                "type": "integer"
+              },
+              "edge_threshold": {
+                "description": "Edge detection sensitivity (0-255, default: 30)",
+                "type": "integer"
+              },
+              "palette_size": {
+                "description": "Number of colors to extract (5-32, default: 16)",
+                "type": "integer"
+              },
+              "reference_path": {
+                "description": "Path to reference image (.jpg, .png, .gif, .bmp, .aseprite)",
+                "type": "string"
+              },
+              "target_height": {
+                "description": "Pixel art target height (1-65535)",
+                "type": "integer"
+              },
+              "target_width": {
+                "description": "Pixel art target width (1-65535)",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "reference_path",
+              "target_width",
+              "target_height"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "analyze_reference",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Automatically add shading to sprite based on light direction. Analyzes sprite geometry to identify surfaces/regions, determines which surfaces face toward/away from light, generates shadow and highlight colors for each base color (with optional hue shifting), and applies shading pixels with smooth transitions. Supports three styles: cell (hard-edged 2-3 bands), smooth (gradient with dithering), soft (subtle gradient). Essential for adding depth and dimension to pixel art automatically.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#apply_auto_shading",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "frame_number": {
+                "description": "Frame number (1-based)",
+                "type": "integer"
+              },
+              "hue_shift": {
+                "description": "Apply hue shifting (shadows\u2192cool, highlights\u2192warm) default: true",
+                "type": "boolean"
+              },
+              "intensity": {
+                "description": "Shading intensity (0.0-1.0)",
+                "type": "number"
+              },
+              "layer_name": {
+                "description": "Layer to apply shading to",
+                "type": "string"
+              },
+              "light_direction": {
+                "description": "Light direction: top_left, top, top_right, left, right, bottom_left, bottom, bottom_right",
+                "type": "string"
+              },
+              "sprite_path": {
+                "description": "Path to .aseprite file",
+                "type": "string"
+              },
+              "style": {
+                "description": "Shading style: cell, smooth, or soft",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "layer_name",
+              "frame_number",
+              "light_direction",
+              "intensity",
+              "style",
+              "hue_shift"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "apply_auto_shading",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Apply an outline effect to a layer at a specified frame. The outline is drawn around non-transparent pixels with configurable color and thickness.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#apply_outline",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "color": {
+                "description": "Outline color in hex format (#RRGGBB or #RRGGBBAA)",
+                "type": "string"
+              },
+              "frame_number": {
+                "description": "Frame number (1-based index)",
+                "type": "integer"
+              },
+              "layer_name": {
+                "description": "Name of the layer to apply outline to",
+                "type": "string"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "thickness": {
+                "description": "Outline thickness in pixels (1-10)",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "layer_name",
+              "frame_number",
+              "color",
+              "thickness"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "apply_outline",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Apply palette-constrained shading to a region based on light direction. Automatically adjusts pixel colors to create highlights and shadows while staying within the provided palette. Supports smooth, hard, and pillow shading styles. Essential for adding depth and dimension to pixel art.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#apply_shading",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "frame_number": {
+                "description": "Frame number (1-based index)",
+                "type": "integer"
+              },
+              "intensity": {
+                "description": "Shading intensity (0.0-1.0)",
+                "type": "number"
+              },
+              "layer_name": {
+                "description": "Name of the layer to apply shading to",
+                "type": "string"
+              },
+              "light_direction": {
+                "description": "Light direction: top_left, top, top_right, left, right, bottom_left, bottom, bottom_right",
+                "type": "string"
+              },
+              "palette": {
+                "description": "Array of hex colors ordered darkest to lightest (#RRGGBB format)",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "region": {
+                "additionalProperties": false,
+                "description": "Rectangular region to apply shading to",
+                "properties": {
+                  "height": {
+                    "description": "Height of region",
+                    "type": "integer"
+                  },
+                  "width": {
+                    "description": "Width of region",
+                    "type": "integer"
+                  },
+                  "x": {
+                    "description": "X coordinate of top-left corner",
+                    "type": "integer"
+                  },
+                  "y": {
+                    "description": "Y coordinate of top-left corner",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "x",
+                  "y",
+                  "width",
+                  "height"
+                ],
+                "type": "object"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "style": {
+                "description": "Shading style: pillow, smooth, or hard",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "layer_name",
+              "frame_number",
+              "region",
+              "palette",
+              "light_direction",
+              "intensity",
+              "style"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "apply_shading",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Copy the selected pixels to clipboard without removing them. Requires an active selection.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#copy_selection",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "copy_selection",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Create a new Aseprite sprite with specified dimensions and color mode. Returns the path to the created .aseprite file.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#create_canvas",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "color_mode": {
+                "description": "Color mode: rgb, grayscale, or indexed",
+                "type": "string"
+              },
+              "height": {
+                "description": "Canvas height in pixels (1-65535)",
+                "type": "integer"
+              },
+              "width": {
+                "description": "Canvas width in pixels (1-65535)",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "width",
+              "height",
+              "color_mode"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "create_canvas",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Create an animation tag to define a named frame range with playback direction.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#create_tag",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "direction": {
+                "description": "Playback direction: forward, reverse, or pingpong",
+                "type": "string"
+              },
+              "from_frame": {
+                "description": "Starting frame number (1-based, inclusive)",
+                "type": "integer"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "tag_name": {
+                "description": "Name for the animation tag",
+                "type": "string"
+              },
+              "to_frame": {
+                "description": "Ending frame number (1-based, inclusive)",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "tag_name",
+              "from_frame",
+              "to_frame",
+              "direction"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "create_tag",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Crop a sprite to a specified rectangular region. The crop bounds must be within the sprite dimensions.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#crop_sprite",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "height": {
+                "description": "Crop region height (must be positive)",
+                "type": "integer"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "width": {
+                "description": "Crop region width (must be positive)",
+                "type": "integer"
+              },
+              "x": {
+                "description": "Crop region X coordinate",
+                "type": "integer"
+              },
+              "y": {
+                "description": "Crop region Y coordinate",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "x",
+              "y",
+              "width",
+              "height"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "crop_sprite",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Cut the selected pixels to clipboard. Removes pixels from the specified layer and frame, placing them on the clipboard. Requires an active selection.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#cut_selection",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "frame_number": {
+                "description": "Frame number to cut from (1-based index)",
+                "type": "integer"
+              },
+              "layer_name": {
+                "description": "Name of the layer to cut from",
+                "type": "string"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "layer_name",
+              "frame_number"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "cut_selection",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Delete a frame from an existing sprite. Cannot delete the last remaining frame.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#delete_frame",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "frame_number": {
+                "description": "Frame number to delete (1-based)",
+                "type": "integer"
+              },
+              "sprite_path": {
+                "description": "Path to the sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "frame_number"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "delete_frame",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Delete a layer from an existing sprite. Cannot delete the last remaining layer.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#delete_layer",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "layer_name": {
+                "description": "Name of the layer to delete",
+                "type": "string"
+              },
+              "sprite_path": {
+                "description": "Path to the sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "layer_name"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "delete_layer",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Delete an animation tag by name.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#delete_tag",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "tag_name": {
+                "description": "Name of the tag to delete",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "tag_name"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "delete_tag",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Clear the current selection. Removes any active selection from the sprite.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#deselect",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "deselect",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Downsample an image to smaller dimensions using box filter (area averaging) algorithm. Accepts any image format supported by Aseprite (.aseprite, .png, .jpg, .bmp, .gif) and creates a new downsampled sprite. This is useful for creating pixel art versions of high-resolution images or reducing image size while maintaining quality.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#downsample_image",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "output_path": {
+                "description": "Optional output path for downsampled sprite (defaults to temp directory)",
+                "type": "string"
+              },
+              "source_path": {
+                "description": "Path to source image file (.aseprite, .png, .jpg, .bmp, .gif)",
+                "type": "string"
+              },
+              "target_height": {
+                "description": "Target height in pixels (1-65535)",
+                "type": "integer"
+              },
+              "target_width": {
+                "description": "Target width in pixels (1-65535)",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "source_path",
+              "target_width",
+              "target_height"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "downsample_image",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Draw a circle with specified center, radius, color, and fill option.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#draw_circle",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "center_x": {
+                "description": "X coordinate of circle center",
+                "type": "integer"
+              },
+              "center_y": {
+                "description": "Y coordinate of circle center",
+                "type": "integer"
+              },
+              "color": {
+                "description": "Hex color string in format #RRGGBB or #RRGGBBAA",
+                "type": "string"
+              },
+              "filled": {
+                "description": "Fill interior (true) or draw outline only (false)",
+                "type": "boolean"
+              },
+              "frame_number": {
+                "description": "Frame number to draw on (1-based)",
+                "type": "integer"
+              },
+              "layer_name": {
+                "description": "Name of the layer to draw on",
+                "type": "string"
+              },
+              "radius": {
+                "description": "Radius of circle in pixels",
+                "type": "integer"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "use_palette": {
+                "description": "Snap colors to nearest palette color (default: false)",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "layer_name",
+              "frame_number",
+              "center_x",
+              "center_y",
+              "radius",
+              "color",
+              "filled"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "draw_circle",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Draw a polyline or polygon by connecting multiple points. Supports both open paths and closed shapes.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#draw_contour",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "closed": {
+                "description": "Connect last point to first to form a closed polygon (default: false)",
+                "type": "boolean"
+              },
+              "color": {
+                "description": "Hex color string in format #RRGGBB or #RRGGBBAA",
+                "type": "string"
+              },
+              "frame_number": {
+                "description": "Frame number to draw on (1-based)",
+                "type": "integer"
+              },
+              "layer_name": {
+                "description": "Name of the layer to draw on",
+                "type": "string"
+              },
+              "points": {
+                "description": "Array of points to connect (minimum 2 points)",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "x": {
+                      "description": "X coordinate of the point",
+                      "type": "integer"
+                    },
+                    "y": {
+                      "description": "Y coordinate of the point",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "x",
+                    "y"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "thickness": {
+                "description": "Line thickness in pixels (1-100)",
+                "type": "integer"
+              },
+              "use_palette": {
+                "description": "Snap colors to nearest palette color (default: false)",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "layer_name",
+              "frame_number",
+              "points",
+              "color",
+              "thickness",
+              "closed"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "draw_contour",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Draw a line between two points with specified color and thickness.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#draw_line",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "color": {
+                "description": "Hex color string in format #RRGGBB or #RRGGBBAA",
+                "type": "string"
+              },
+              "frame_number": {
+                "description": "Frame number to draw on (1-based)",
+                "type": "integer"
+              },
+              "layer_name": {
+                "description": "Name of the layer to draw on",
+                "type": "string"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "thickness": {
+                "description": "Line thickness in pixels (1-100)",
+                "type": "integer"
+              },
+              "use_palette": {
+                "description": "Snap colors to nearest palette color (default: false)",
+                "type": "boolean"
+              },
+              "x1": {
+                "description": "X coordinate of line start point",
+                "type": "integer"
+              },
+              "x2": {
+                "description": "X coordinate of line end point",
+                "type": "integer"
+              },
+              "y1": {
+                "description": "Y coordinate of line start point",
+                "type": "integer"
+              },
+              "y2": {
+                "description": "Y coordinate of line end point",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "layer_name",
+              "frame_number",
+              "x1",
+              "y1",
+              "x2",
+              "y2",
+              "color",
+              "thickness"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "draw_line",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Draw individual pixels at specified coordinates with colors. Supports batch operations for efficiency.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#draw_pixels",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "frame_number": {
+                "description": "Frame number to draw on (1-based)",
+                "type": "integer"
+              },
+              "layer_name": {
+                "description": "Name of the layer to draw on",
+                "type": "string"
+              },
+              "pixels": {
+                "description": "Array of pixels to draw",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "color": {
+                      "description": "Hex color string in format #RRGGBB or #RRGGBBAA",
+                      "type": "string"
+                    },
+                    "x": {
+                      "description": "X coordinate of the pixel",
+                      "type": "integer"
+                    },
+                    "y": {
+                      "description": "Y coordinate of the pixel",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "x",
+                    "y",
+                    "color"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "use_palette": {
+                "description": "Snap colors to nearest palette color (default: false)",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "layer_name",
+              "frame_number",
+              "pixels"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "draw_pixels",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Draw a rectangle with specified position, size, color, and fill option.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#draw_rectangle",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "color": {
+                "description": "Hex color string in format #RRGGBB or #RRGGBBAA",
+                "type": "string"
+              },
+              "filled": {
+                "description": "Fill interior (true) or draw outline only (false)",
+                "type": "boolean"
+              },
+              "frame_number": {
+                "description": "Frame number to draw on (1-based)",
+                "type": "integer"
+              },
+              "height": {
+                "description": "Height of rectangle in pixels",
+                "type": "integer"
+              },
+              "layer_name": {
+                "description": "Name of the layer to draw on",
+                "type": "string"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "use_palette": {
+                "description": "Snap colors to nearest palette color (default: false)",
+                "type": "boolean"
+              },
+              "width": {
+                "description": "Width of rectangle in pixels",
+                "type": "integer"
+              },
+              "x": {
+                "description": "X coordinate of rectangle top-left corner",
+                "type": "integer"
+              },
+              "y": {
+                "description": "Y coordinate of rectangle top-left corner",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "layer_name",
+              "frame_number",
+              "x",
+              "y",
+              "width",
+              "height",
+              "color",
+              "filled"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "draw_rectangle",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Fill a region with a dithering pattern to create smooth gradients and textures. Supports 16 patterns: Bayer matrix (bayer_2x2, bayer_4x4, bayer_8x8) for ordered dithering, Floyd-Steinberg error diffusion (floyd_steinberg) for high-quality gradients, checkerboard for 50/50 blends, and texture patterns (grass, water, stone, cloud, brick, dots, diagonal, cross, noise, horizontal_lines, vertical_lines) for organic effects. Use density parameter to control the ratio of color1 to color2 (0.0 = all color1, 1.0 = all color2, 0.5 = even mix). Essential for professional pixel art gradients and textures.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#draw_with_dither",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "color1": {
+                "description": "First color (hex #RRGGBB or #RRGGBBAA)",
+                "type": "string"
+              },
+              "color2": {
+                "description": "Second color (hex #RRGGBB or #RRGGBBAA)",
+                "type": "string"
+              },
+              "density": {
+                "description": "Ratio of color1 to color2 (0.0-1.0, default: 0.5)",
+                "type": "number"
+              },
+              "frame_number": {
+                "description": "Frame number to draw on (1-based)",
+                "type": "integer"
+              },
+              "layer_name": {
+                "description": "Name of the layer to draw on",
+                "type": "string"
+              },
+              "pattern": {
+                "description": "Dithering pattern: bayer_2x2|bayer_4x4|bayer_8x8|checkerboard|floyd_steinberg|grass|water|stone|cloud|brick|dots|diagonal|cross|noise|horizontal_lines|vertical_lines",
+                "type": "string"
+              },
+              "region": {
+                "additionalProperties": false,
+                "description": "Rectangular region to fill with dithering",
+                "properties": {
+                  "height": {
+                    "description": "Height of region",
+                    "type": "integer"
+                  },
+                  "width": {
+                    "description": "Width of region",
+                    "type": "integer"
+                  },
+                  "x": {
+                    "description": "X coordinate of top-left corner",
+                    "type": "integer"
+                  },
+                  "y": {
+                    "description": "Y coordinate of top-left corner",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "x",
+                  "y",
+                  "width",
+                  "height"
+                ],
+                "type": "object"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "layer_name",
+              "frame_number",
+              "region",
+              "color1",
+              "color2",
+              "pattern"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "draw_with_dither",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Duplicate an existing frame and insert it at the specified position.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#duplicate_frame",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "insert_after": {
+                "description": "Insert duplicated frame after this frame number (1-based, 0 = insert at end)",
+                "type": "integer"
+              },
+              "source_frame": {
+                "description": "Frame number to duplicate (1-based)",
+                "type": "integer"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "source_frame",
+              "insert_after"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "duplicate_frame",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Export sprite to common image formats (PNG, GIF, JPG, BMP).",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#export_sprite",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "format": {
+                "description": "Export format: png, gif, jpg, bmp",
+                "type": "string"
+              },
+              "frame_number": {
+                "description": "Specific frame to export (0 = all frames, 1-based)",
+                "type": "integer"
+              },
+              "output_path": {
+                "description": "Output file path for exported image",
+                "type": "string"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "output_path",
+              "format",
+              "frame_number"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "export_sprite",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Export animation frames as spritesheet with layout options.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#export_spritesheet",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "include_json": {
+                "description": "Include JSON metadata file",
+                "type": "boolean"
+              },
+              "layout": {
+                "description": "Spritesheet layout: horizontal, vertical, rows, columns, or packed",
+                "type": "string"
+              },
+              "output_path": {
+                "description": "Output file path for spritesheet",
+                "type": "string"
+              },
+              "padding": {
+                "description": "Padding between frames in pixels (0-100)",
+                "type": "integer"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "output_path",
+              "layout",
+              "padding",
+              "include_json"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "export_spritesheet",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Flood fill from a starting point with specified color (paint bucket tool).",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#fill_area",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "color": {
+                "description": "Hex color string in format #RRGGBB or #RRGGBBAA",
+                "type": "string"
+              },
+              "frame_number": {
+                "description": "Frame number to draw on (1-based)",
+                "type": "integer"
+              },
+              "layer_name": {
+                "description": "Name of the layer to draw on",
+                "type": "string"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "tolerance": {
+                "description": "Color matching tolerance (0-255, default 0)",
+                "type": "integer"
+              },
+              "use_palette": {
+                "description": "Snap colors to nearest palette color (default: false)",
+                "type": "boolean"
+              },
+              "x": {
+                "description": "X coordinate of starting point",
+                "type": "integer"
+              },
+              "y": {
+                "description": "Y coordinate of starting point",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "layer_name",
+              "frame_number",
+              "x",
+              "y",
+              "color",
+              "tolerance"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "fill_area",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Flatten all layers in a sprite into a single layer.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#flatten_layers",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "flatten_layers",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Flip a sprite, layer, or cel horizontally or vertically. This operation mirrors the image content along the specified axis.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#flip_sprite",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "direction": {
+                "description": "Flip direction: horizontal or vertical",
+                "type": "string"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "target": {
+                "description": "What to flip: sprite, layer, or cel (default: sprite)",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "direction",
+              "target"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "flip_sprite",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Retrieve the current sprite palette as an array of hex colors. Returns both the color array and palette size. Useful for inspecting existing palettes before modification.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#get_palette",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "get_palette",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Read pixel data from a rectangular region of a sprite. Returns an array of pixels with their coordinates and colors in hex format (#RRGGBBAA). Supports pagination for large regions using cursor and page_size parameters (default page size: 1000, max: 10000).",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#get_pixels",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "cursor": {
+                "description": "Pagination cursor for fetching next page (optional)",
+                "type": "string"
+              },
+              "frame_number": {
+                "description": "Frame number to read from (1-based)",
+                "type": "integer"
+              },
+              "height": {
+                "description": "Height of region to read",
+                "type": "integer"
+              },
+              "layer_name": {
+                "description": "Name of the layer to read from",
+                "type": "string"
+              },
+              "page_size": {
+                "description": "Number of pixels to return per page (default: 1000, max: 10000)",
+                "type": "integer"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "width": {
+                "description": "Width of region to read",
+                "type": "integer"
+              },
+              "x": {
+                "description": "X coordinate of top-left corner of region",
+                "type": "integer"
+              },
+              "y": {
+                "description": "Y coordinate of top-left corner of region",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "layer_name",
+              "frame_number",
+              "x",
+              "y",
+              "width",
+              "height"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "get_pixels",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Retrieve metadata about an existing Aseprite sprite including dimensions, color mode, frame count, layer count, and layer names.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#get_sprite_info",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "get_sprite_info",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Import an external image file as a layer in the sprite.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#import_image",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "frame_number": {
+                "description": "Frame number to place image (1-based)",
+                "type": "integer"
+              },
+              "image_path": {
+                "description": "Path to image file to import",
+                "type": "string"
+              },
+              "layer_name": {
+                "description": "Layer name for imported image",
+                "type": "string"
+              },
+              "position": {
+                "additionalProperties": false,
+                "description": "Position to place image (optional defaults to 0,0)",
+                "properties": {
+                  "x": {
+                    "type": "integer"
+                  },
+                  "y": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "x",
+                  "y"
+                ],
+                "type": [
+                  "null",
+                  "object"
+                ]
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "image_path",
+              "layer_name",
+              "frame_number"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "import_image",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Create a linked cel that references another cel's image data, useful for animation optimization.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#link_cel",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "layer_name": {
+                "description": "Name of the layer",
+                "type": "string"
+              },
+              "source_frame": {
+                "description": "Source frame with the cel to link (1-based)",
+                "type": "integer"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "target_frame": {
+                "description": "Target frame where linked cel will be created (1-based)",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "layer_name",
+              "source_frame",
+              "target_frame"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "link_cel",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Move the current selection by a specified offset. Does not move the pixel content, only the selection bounds. Requires an active selection.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#move_selection",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "dx": {
+                "description": "Horizontal offset in pixels (can be negative)",
+                "type": "integer"
+              },
+              "dy": {
+                "description": "Vertical offset in pixels (can be negative)",
+                "type": "integer"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "dx",
+              "dy"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "move_selection",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Paste clipboard content onto the specified layer and frame. Optionally specify paste position (x, y). Requires clipboard to contain image data.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#paste_clipboard",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "frame_number": {
+                "description": "Frame number to paste onto (1-based index)",
+                "type": "integer"
+              },
+              "layer_name": {
+                "description": "Name of the layer to paste onto",
+                "type": "string"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "x": {
+                "description": "X coordinate for paste position (optional)",
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "y": {
+                "description": "Y coordinate for paste position (optional)",
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              }
+            },
+            "required": [
+              "sprite_path",
+              "layer_name",
+              "frame_number"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "paste_clipboard",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Automatically reduce sprite colors using industry-standard quantization algorithms. Supports three algorithms: median_cut (fast, balanced quality), kmeans (highest quality, slower), octree (very fast, good for photos). Can apply Floyd-Steinberg dithering for smoother gradients. Optionally converts to indexed color mode for true palette constraint or keeps RGB mode for flexible multi-pass workflows.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#quantize_palette",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "algorithm": {
+                "description": "Quantization algorithm: median_cut (default), kmeans, or octree",
+                "type": "string"
+              },
+              "convert_to_indexed": {
+                "description": "Convert sprite to indexed color mode (default: true)",
+                "type": [
+                  "null",
+                  "boolean"
+                ]
+              },
+              "dither": {
+                "description": "Apply Floyd-Steinberg dithering during quantization (default: false)",
+                "type": "boolean"
+              },
+              "preserve_transparency": {
+                "description": "Keep transparent pixels transparent (default: true)",
+                "type": [
+                  "null",
+                  "boolean"
+                ]
+              },
+              "sprite_path": {
+                "description": "Path to source .aseprite file",
+                "type": "string"
+              },
+              "target_colors": {
+                "description": "Target palette size (2-256)",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "target_colors",
+              "algorithm",
+              "dither"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "quantize_palette",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Resize the canvas without scaling content. Content is positioned according to the anchor point (center, top_left, top_right, bottom_left, or bottom_right).",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#resize_canvas",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "anchor": {
+                "description": "Anchor position: center, top_left, top_right, bottom_left, or bottom_right (default: center)",
+                "type": "string"
+              },
+              "height": {
+                "description": "New canvas height (1-65535)",
+                "type": "integer"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "width": {
+                "description": "New canvas width (1-65535)",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "width",
+              "height",
+              "anchor"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "resize_canvas",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Rotate a sprite, layer, or cel by 90, 180, or 270 degrees clockwise.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#rotate_sprite",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "angle": {
+                "description": "Rotation angle: 90, 180, or 270 degrees",
+                "type": "integer"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "target": {
+                "description": "What to rotate: sprite, layer, or cel (default: sprite)",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "angle",
+              "target"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "rotate_sprite",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Save sprite to a new .aseprite file path.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#save_as",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "output_path": {
+                "description": "New .aseprite file path",
+                "type": "string"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "output_path"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "save_as",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Scale a sprite by specified X and Y factors using a chosen algorithm (nearest, bilinear, or rotsprite). Returns the new dimensions.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#scale_sprite",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "algorithm": {
+                "description": "Scaling algorithm: nearest, bilinear, or rotsprite (default: nearest)",
+                "type": "string"
+              },
+              "scale_x": {
+                "description": "Horizontal scale factor (0.01 to 100.0)",
+                "type": "number"
+              },
+              "scale_y": {
+                "description": "Vertical scale factor (0.01 to 100.0)",
+                "type": "number"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "scale_x",
+              "scale_y",
+              "algorithm"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "scale_sprite",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Select the entire canvas. This selects all pixels in the sprite, regardless of layers or frames.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#select_all",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "select_all",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Create an elliptical selection with specified mode (replace/add/subtract/intersect). The ellipse is defined by a bounding box.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#select_ellipse",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "height": {
+                "description": "Height of selection ellipse (minimum 1)",
+                "type": "integer"
+              },
+              "mode": {
+                "description": "Selection mode: replace, add, subtract, or intersect (default: replace)",
+                "type": "string"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "width": {
+                "description": "Width of selection ellipse (minimum 1)",
+                "type": "integer"
+              },
+              "x": {
+                "description": "X coordinate of selection ellipse bounding box",
+                "type": "integer"
+              },
+              "y": {
+                "description": "Y coordinate of selection ellipse bounding box",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "x",
+              "y",
+              "width",
+              "height",
+              "mode"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "select_ellipse",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Create a rectangular selection with specified mode (replace/add/subtract/intersect). Selections define which pixels will be affected by editing operations.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#select_rectangle",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "height": {
+                "description": "Height of selection rectangle (minimum 1)",
+                "type": "integer"
+              },
+              "mode": {
+                "description": "Selection mode: replace, add, subtract, or intersect (default: replace)",
+                "type": "string"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "width": {
+                "description": "Width of selection rectangle (minimum 1)",
+                "type": "integer"
+              },
+              "x": {
+                "description": "X coordinate of selection rectangle",
+                "type": "integer"
+              },
+              "y": {
+                "description": "Y coordinate of selection rectangle",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "x",
+              "y",
+              "width",
+              "height",
+              "mode"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "select_rectangle",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Set the duration of an existing animation frame in milliseconds.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#set_frame_duration",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "duration_ms": {
+                "description": "Frame duration in milliseconds (1-65535)",
+                "type": "integer"
+              },
+              "frame_number": {
+                "description": "Frame number to modify (1-based)",
+                "type": "integer"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "frame_number",
+              "duration_ms"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "set_frame_duration",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Set the sprite's color palette to the specified colors. Useful for applying extracted palettes from analyze_reference or creating custom limited palettes for pixel art. Colors should be in #RRGGBB hex format.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#set_palette",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "colors": {
+                "description": "Array of hex colors to set as palette (#RRGGBB format)",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "colors"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "set_palette",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Set a specific palette index to a color. Index must be within the current palette range (0 to palette size - 1). Useful for modifying individual palette entries.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#set_palette_color",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "color": {
+                "description": "Hex color to set (#RRGGBB format)",
+                "type": "string"
+              },
+              "index": {
+                "description": "Palette index (0-255)",
+                "type": "integer"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "index",
+              "color"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "set_palette_color",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Sort the palette by hue, saturation, brightness, or luminance. Can sort in ascending or descending order. Useful for organizing palettes for easier color selection.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#sort_palette",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "ascending": {
+                "description": "Sort in ascending order (default: true)",
+                "type": "boolean"
+              },
+              "method": {
+                "description": "Sort method: hue, saturation, brightness, or luminance",
+                "type": "string"
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "method",
+              "ascending"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "sort_palette",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
+          "C4: no verifiable package registry for this server",
+          "C4: no signature or attestation"
+        ],
+        "scanned_at": "2026-09-15T19:12:31+00:00",
+        "score": 60
+      },
+      "compat": {},
+      "descriptor": {
+        "compliance": {
+          "controls": [],
+          "data_classes": [],
+          "residency": {
+            "evidence": "UNKNOWN",
+            "regions": []
+          }
+        },
+        "description": "Analyze pixel art for jagged diagonal edges and suggest intermediate colors to smooth them (antialiasing). Detects stair-step patterns on diagonals and calculates blended colors to create smoother curves. Use auto_apply to automatically apply suggestions or use_palette to constrain intermediate colors to the sprite's palette. Returns suggestions with positions, colors, and directions for manual review or automatic application.",
+        "id": "mcp/io.github.willibrandon/pixel-mcp@0.5.0#suggest_antialiasing",
+        "interface": {
+          "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "auto_apply": {
+                "description": "If true applies smoothing automatically (default: false)",
+                "type": "boolean"
+              },
+              "frame_number": {
+                "description": "Frame number to analyze (1-based)",
+                "type": "integer"
+              },
+              "layer_name": {
+                "description": "Name of the layer to analyze",
+                "type": "string"
+              },
+              "region": {
+                "additionalProperties": false,
+                "description": "Region to analyze (defaults to entire sprite)",
+                "properties": {
+                  "height": {
+                    "description": "Height of region",
+                    "type": "integer"
+                  },
+                  "width": {
+                    "description": "Width of region",
+                    "type": "integer"
+                  },
+                  "x": {
+                    "description": "X coordinate of top-left corner",
+                    "type": "integer"
+                  },
+                  "y": {
+                    "description": "Y coordinate of top-left corner",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "x",
+                  "y",
+                  "width",
+                  "height"
+                ],
+                "type": [
+                  "null",
+                  "object"
+                ]
+              },
+              "sprite_path": {
+                "description": "Path to the Aseprite sprite file",
+                "type": "string"
+              },
+              "threshold": {
+                "description": "Edge detection sensitivity 0-255 (default: 128)",
+                "type": "integer"
+              },
+              "use_palette": {
+                "description": "If true snaps intermediate colors to palette (default: false)",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "sprite_path",
+              "layer_name",
+              "frame_number"
+            ],
+            "type": "object"
+          },
+          "output_schema": null
+        },
+        "is_latest": true,
+        "name": "suggest_antialiasing",
+        "provenance": {
+          "license": "MIT",
+          "publisher": "willibrandon",
+          "repository": "https://github.com/willibrandon/pixel-plugin",
+          "signature": "none"
+        },
+        "schema_version": 1,
+        "security": {
+          "annotations": {
+            "destructive": null,
+            "idempotent": null,
+            "open_world": null,
+            "read_only": null
+          },
+          "egress_hosts": [],
+          "filesystem_scope": null,
+          "permissions": []
+        },
+        "source": {
+          "kind": "mcp",
+          "package": "github.com/willibrandon/pixel-plugin",
+          "registry": "unknown",
+          "version": "0.5.0"
+        },
+        "status": "active"
+      },
+      "tools_enumerated": true
+    },
+    {
+      "audit": {
+        "blocking": false,
+        "findings": [
           "C4: no signature or attestation"
         ],
         "scanned_at": "2026-08-27T19:18:49+00:00",
@@ -21616,7 +26021,7 @@
         "findings": [
           "C4: no signature or attestation"
         ],
-        "scanned_at": "2026-08-27T21:00:35+00:00",
+        "scanned_at": "2026-09-15T19:47:14+00:00",
         "score": 90
       },
       "compat": {},
@@ -21692,7 +26097,7 @@
         "findings": [
           "C4: no signature or attestation"
         ],
-        "scanned_at": "2026-08-27T21:00:35+00:00",
+        "scanned_at": "2026-09-15T19:47:14+00:00",
         "score": 90
       },
       "compat": {},

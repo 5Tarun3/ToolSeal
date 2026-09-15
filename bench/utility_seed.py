@@ -275,6 +275,32 @@ SERVERS: tuple[Server, ...] = (
         publisher="oaktreegames",
         license="MIT",
     ),
+    # The same capability twice, deliberately. `aseprite-live-mcp` above is
+    # published to PyPI and is the entry a registry lookup finds, but it does
+    # not currently start: it imports `mcp.server.fastmcp`, which mcp 2.x
+    # renamed, and its own dependency on `mcp` is unpinned - so every fresh
+    # install resolves to a release that breaks it. That is check `C1`
+    # happening to a real package rather than in a test fixture, which is
+    # worth keeping in the index rather than quietly replacing.
+    #
+    # `pixel-mcp` is the server an Aseprite user can actually run today. It
+    # ships only as a GitHub release binary, so `registry` is `unknown` and
+    # `assess` marks it down for exactly that - the score is the honest
+    # reading of "a binary with no package registry behind it", not an
+    # oversight. Its 50 tools carry no annotations at all, which is the single
+    # largest unannotated server in the set.
+    Server(
+        "pixel-art-local",
+        "mcp/io.github.willibrandon/pixel-mcp@0.5.0",
+        "willibrandon/pixel-mcp",
+        "Draw, animate, shade and export sprites by driving a local Aseprite install.",
+        "unknown",
+        "github.com/willibrandon/pixel-plugin",
+        "0.5.0",
+        repository="https://github.com/willibrandon/pixel-plugin",
+        publisher="willibrandon",
+        license="MIT",
+    ),
     Server(
         "error-tracking",
         "mcp/io.github.getsentry/sentry-mcp@0.25.0",
