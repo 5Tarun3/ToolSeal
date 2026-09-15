@@ -22,6 +22,7 @@ from toolseal.core.adapters.mcp_targets import TARGETS_BY_FRAMEWORK, target_for
 from toolseal.core.injection import inject
 from toolseal.core.manifest import Manifest
 from toolseal.core.model import MCPServerBinding, Transport
+from toolseal.core.policy.family_c import known_package_names
 from toolseal.core.registry.resolve import Channel, Resolution, resolve
 from toolseal.errors import ExitCode, ResolutionError, UsageError
 
@@ -67,7 +68,11 @@ def add_mcp(
     detail = "not checked"
     if not skip_verify:
         try:
-            result = resolve(name, channels=(Channel.NPM, Channel.PYPI))
+            result = resolve(
+                name,
+                channels=(Channel.NPM, Channel.PYPI),
+                known=known_package_names(),
+            )
         except ResolutionError as exc:
             # An unreachable registry is not evidence of absence, so this stops
             # rather than guessing either way.

@@ -217,6 +217,24 @@ def test_phantom_name_is_refused(tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     assert not (tmp_path / ".mcp.json").exists()
 
 
+def test_a_registered_typosquat_is_refused_not_verified(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The dangerous case, and the reason `resolve()` cannot stop looking the
+    # moment a name is found: a successful typosquat resolves too - the
+    # install works, so nothing looks wrong unless resemblance is checked on
+    # the "it exists" path as well as the "it doesn't" one. "requests" ships
+    # in known_packages.toml; "reqeusts" is two edits away (a transposition).
+    monkeypatch.setattr("toolseal.core.registry.resolve.exists", lambda url, **_: True)
+
+    result = runner.invoke(app, ["add", "mcp", "reqeusts", "--directory", str(tmp_path)])
+
+    assert result.exit_code == ExitCode.USAGE
+    assert "near-miss" in result.output
+    assert "requests" in result.output
+    assert not (tmp_path / "mcp.json").exists()
+
+
 def test_verified_name_is_added(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("toolseal.core.registry.resolve.exists", lambda url, **_: True)
 

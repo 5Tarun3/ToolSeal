@@ -159,6 +159,24 @@ def resolve(
 
         reachable = True
         if found:
+            # A name that resolves is not automatically safe: a successful
+            # typosquat resolves too - that is what makes it successful. The
+            # install works and nothing looks wrong, which is exactly the
+            # LOOKALIKE case this module's own docstring describes. Checking
+            # resemblance only in the not-found branch below would give this
+            # the most dangerous case a pass, so it is checked here first.
+            resembles = nearest_known(name, known)
+            if resembles is not None:
+                return ResolutionResult(
+                    name=name,
+                    resolution=Resolution.LOOKALIKE,
+                    channel=channel,
+                    resembles=resembles,
+                    detail=(
+                        f"resolved in {channel}, but is within {MAX_TYPO_DISTANCE} edits "
+                        f"of {resembles!r}"
+                    ),
+                )
             return ResolutionResult(
                 name=name,
                 resolution=Resolution.EXISTS,

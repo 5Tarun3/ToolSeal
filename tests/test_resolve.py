@@ -67,6 +67,20 @@ def test_exact_hit_is_verified(monkeypatch: pytest.MonkeyPatch) -> None:
     assert result.channel is Channel.PYPI
 
 
+def test_a_registered_typosquat_is_a_lookalike_not_exists(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The case that matters most: a name that DOES resolve is not automatically
+    # safe. A successful typosquat is registered and installs cleanly - that is
+    # what "successful" means - so resemblance has to be checked before a hit
+    # in a channel is allowed to short-circuit straight to EXISTS.
+    monkeypatch.setattr("toolseal.core.registry.resolve.exists", lambda url, **_: True)
+
+    result = resolve("reqeusts", channels=(Channel.PYPI,), known=KNOWN)
+
+    assert result.resolution is Resolution.LOOKALIKE
+    assert result.resembles == "requests"
+    assert not result.is_verified
+
+
 def test_absent_but_typo_shaped_name_is_a_lookalike(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("toolseal.core.registry.resolve.exists", lambda url, **_: False)
 
