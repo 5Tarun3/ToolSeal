@@ -24,11 +24,12 @@ project audits clean; changing them is allowed, and `toolseal audit` will notice
 from __future__ import annotations
 
 import logging
+import os
 import sys
 
 from crewai import LLM, Agent, Crew, Task
 
-from agent_config import BASE_URL, MODEL
+from agent_config import BASE_URL, CREDENTIAL_ENV_VAR, MODEL, PROVIDER_ID
 from guards import configure_logging
 from tools import TOOLS
 
@@ -49,6 +50,29 @@ MAX_ITERATIONS = 15
 LITELLM_PREFIX = "$litellm_prefix"
 
 
+def _resolve_credential() -> None:
+    """A1/A5: read the credential `toolseal init` stored in the OS keychain.
+
+    The keychain wins over whatever is already in the environment. Without
+    that ordering, a value some earlier, unrelated shell session exported
+    would silently outlive the one toolseal actually manages here, and this
+    project would look secure - `.env` holds no literal, `toolseal audit`
+    reports clean - while still authenticating with a credential nobody
+    scoped to it.
+    """
+    if CREDENTIAL_ENV_VAR is None:
+        return
+    try:
+        import keyring
+
+        value = keyring.get_password("toolseal", PROVIDER_ID)
+    except Exception:
+        log.debug("could not read %s from the OS keychain", PROVIDER_ID, exc_info=True)
+        return
+    if value:
+        os.environ[CREDENTIAL_ENV_VAR] = value
+
+
 def build_llm() -> LLM:
     """Construct the LLM binding.
 
@@ -56,6 +80,7 @@ def build_llm() -> LLM:
     `toolseal.toml` - the one place this project records them - rather than
     from a value frozen into this file when it was scaffolded.
     """
+    _resolve_credential()
     return LLM(
         model=f"{LITELLM_PREFIX}/{MODEL}",
         base_url=BASE_URL,

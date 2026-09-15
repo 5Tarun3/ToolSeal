@@ -15,6 +15,7 @@ from typer.testing import CliRunner
 
 from toolseal.cli import app
 from toolseal.core.adapters import RenderedFile, ScaffoldSpec
+from toolseal.core.credentials import KeyringStore
 from toolseal.core.manifest import MANIFEST_NAME, Manifest
 from toolseal.core.scaffold import ScaffoldPlan, apply_plan, build_plan
 from toolseal.errors import ConfigError, ExitCode
@@ -199,13 +200,22 @@ def test_second_init_refuses_without_force(tmp_path: Path) -> None:
 
 
 # --- the guided flow -------------------------------------------------------
+#
+# The wizard's own `--interactive`/`-i` (branch: interactive-init-wizard) and
+# the credential prompt's original standalone `--interactive` (branch:
+# init-api-key-credential) collided on the same flag name during the rebase
+# of the latter onto the former. Resolved by folding credential collection
+# into the guided flow as its last question (`wizard._ask_credential`) rather
+# than keeping two different meanings for one flag - see wizard.py. Every
+# wizard run below therefore answers one extra question whenever the chosen
+# provider needs a credential; a trailing blank line means "skip it".
 
 
 def test_interactive_scaffolds_from_the_answers(tmp_path: Path) -> None:
     result = runner.invoke(
         app,
         ["init", "--interactive", "--directory", str(tmp_path / "demo")],
-        input="demo\n1\n1\n1\n",
+        input="demo\n1\n1\n1\n\n",
     )
     assert result.exit_code == ExitCode.OK, result.output
     assert (tmp_path / "demo" / MANIFEST_NAME).exists()
@@ -215,7 +225,7 @@ def test_interactive_prints_the_equivalent_command(tmp_path: Path) -> None:
     result = runner.invoke(
         app,
         ["init", "--interactive", "--directory", str(tmp_path / "demo")],
-        input="demo\n1\n1\n1\n",
+        input="demo\n1\n1\n1\n\n",
     )
     assert "toolseal init demo --provider" in result.output
 
@@ -256,7 +266,144 @@ def test_a_missing_name_on_a_tty_runs_the_wizard(
     result = runner.invoke(
         app,
         ["init", "--directory", str(tmp_path / "demo")],
-        input="demo\n1\n1\n1\n",
+        input="demo\n1\n1\n1\n\n",
     )
     assert result.exit_code == ExitCode.OK, result.output
     assert (tmp_path / "demo" / MANIFEST_NAME).exists()
+
+
+# --- credential provisioning (check A1) -------------------------------------
+
+
+def test_credential_free_provider_reports_nothing(tmp_path: Path) -> None:
+    # Ollama needs no credential; nothing about one should appear.
+    result = runner.invoke(app, ["init", "demo", "--directory", str(tmp_path / "demo")])
+
+    assert result.exit_code == ExitCode.OK
+    assert "Credential:" not in result.output
+
+
+def test_api_key_flag_stores_into_the_keychain(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    stored: dict[str, str] = {}
+    monkeypatch.setattr(
+        KeyringStore,
+        "set",
+        lambda self, account, value: stored.__setitem__(account, value),
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "init",
+            "demo",
+            "--provider",
+            "openai",
+            "--directory",
+            str(tmp_path / "demo"),
+            "--api-key",
+            "sk-test-value",
+        ],
+    )
+
+    assert result.exit_code == ExitCode.OK
+    assert stored == {"openai": "sk-test-value"}
+    assert "stored in the OS keychain" in result.output
+
+
+def test_no_api_key_and_not_interactive_never_prompts(tmp_path: Path) -> None:
+    # Regression: `isatty()` was tried as the gate for an automatic prompt and
+    # dropped - it can report a terminal present with nobody there to answer,
+    # which hung `init` inside an unattended harness. Without --interactive,
+    # a credentialed provider must be handled without ever blocking on input.
+    result = runner.invoke(
+        app,
+        ["init", "demo", "--provider", "openai", "--directory", str(tmp_path / "demo")],
+        input="",
+    )
+
+    assert result.exit_code == ExitCode.OK
+    assert "not provided" in result.output
+    assert "--interactive" in result.output
+
+
+def test_interactive_flag_prompts_and_stores(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # --provider and --framework are both given, so the only question the
+    # wizard has left to ask is the regime (blank -> none) and then the
+    # credential - it does not need to re-derive provider/framework here.
+    stored: dict[str, str] = {}
+    monkeypatch.setattr(
+        KeyringStore,
+        "set",
+        lambda self, account, value: stored.__setitem__(account, value),
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "init",
+            "demo",
+            "--provider",
+            "openai",
+            "--framework",
+            "langgraph",
+            "--directory",
+            str(tmp_path / "demo"),
+            "--interactive",
+        ],
+        input="\nsk-typed-at-the-prompt\n",
+    )
+
+    assert result.exit_code == ExitCode.OK, result.output
+    assert stored == {"openai": "sk-typed-at-the-prompt"}
+
+
+def test_interactive_flag_blank_answer_skips_storage(tmp_path: Path) -> None:
+    result = runner.invoke(
+        app,
+        [
+            "init",
+            "demo",
+            "--provider",
+            "openai",
+            "--framework",
+            "langgraph",
+            "--directory",
+            str(tmp_path / "demo"),
+            "--interactive",
+        ],
+        input="\n\n",
+    )
+
+    assert result.exit_code == ExitCode.OK, result.output
+    assert "not provided" in result.output
+
+
+def test_a_keychain_that_refuses_storage_does_not_fail_init(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def _refuse(self: object, account: str, value: str) -> None:
+        raise ConfigError("no OS keychain is available on this machine")
+
+    monkeypatch.setattr(KeyringStore, "set", _refuse)
+
+    result = runner.invoke(
+        app,
+        [
+            "init",
+            "demo",
+            "--provider",
+            "openai",
+            "--directory",
+            str(tmp_path / "demo"),
+            "--api-key",
+            "sk-test-value",
+        ],
+    )
+
+    assert result.exit_code == ExitCode.OK
+    assert (tmp_path / "demo" / "agent.py").exists()
+    assert "not stored" in result.output

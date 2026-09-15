@@ -19,6 +19,7 @@ from typing import Final
 
 from toolseal.core.adapters.base import Provider as ProviderProtocol
 from toolseal.core.adapters.base import RenderedFile, ScaffoldSpec
+from toolseal.core.credentials import KEYRING_PACKAGE_PIN
 from toolseal.core.translate.lattice import profile
 from toolseal.errors import UsageError
 from toolseal.templates import langgraph as tpl
@@ -101,7 +102,13 @@ class LangGraphFramework:
         produces an empty diff rather than a reshuffled one.
         """
         integration = self._integration(provider)
-        return (*FRAMEWORK_PACKAGES, integration.package, *provider.packages())
+        packages = (*FRAMEWORK_PACKAGES, integration.package, *provider.packages())
+        # `agent.py` reads the credential back from the keychain at runtime
+        # (checks A1/A5) whenever the provider needs one, which needs `keyring`
+        # installed alongside it.
+        if provider.credential_env_var is not None:
+            packages = (*packages, KEYRING_PACKAGE_PIN)
+        return packages
 
     def expressible_properties(self) -> frozenset[str]:
         """Taken from the lattice, which P0 measured. Not restated here.

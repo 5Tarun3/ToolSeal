@@ -25,6 +25,7 @@ from typing import Final
 from toolseal.core.adapters.base import Provider as ProviderProtocol
 from toolseal.core.adapters.base import RenderedFile, ScaffoldSpec
 from toolseal.core.adapters.frameworks.langgraph import _env_body, _package_name, _provider_note
+from toolseal.core.credentials import KEYRING_PACKAGE_PIN
 from toolseal.core.translate.lattice import profile
 from toolseal.errors import UsageError
 from toolseal.templates import common
@@ -78,7 +79,13 @@ class CrewAIFramework:
         so unlike LangGraph there is no per-provider integration package.
         """
         integration = self._integration(provider)
-        return (*FRAMEWORK_PACKAGES, *integration.packages, *provider.packages())
+        packages = (*FRAMEWORK_PACKAGES, *integration.packages, *provider.packages())
+        # `agent.py` reads the credential back from the keychain at runtime
+        # (checks A1/A5) whenever the provider needs one, which needs `keyring`
+        # installed alongside it.
+        if provider.credential_env_var is not None:
+            packages = (*packages, KEYRING_PACKAGE_PIN)
+        return packages
 
     def expressible_properties(self) -> frozenset[str]:
         """Taken from the lattice, which P0 measured against a live adapter.

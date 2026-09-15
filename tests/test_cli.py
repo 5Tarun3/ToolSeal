@@ -37,6 +37,20 @@ def test_doctor_json_is_parseable() -> None:
     assert report["toolseal"] == __version__
 
 
+def test_doctor_reports_keychain_state() -> None:
+    # CHANGELOG (0.1.0) promises this field; `doctor` had silently stopped
+    # reporting it, which meant the one thing this command exists to help
+    # diagnose - "can toolseal actually reach the OS keychain here?" - it
+    # could not answer.
+    result = runner.invoke(app, ["doctor", "--json"])
+
+    assert result.exit_code == ExitCode.OK
+    report = json.loads(result.stdout)
+    assert "keychain" in report
+    assert isinstance(report["keychain"], str)
+    assert report["keychain"]
+
+
 def test_doctor_human_output_includes_python_version() -> None:
     result = runner.invoke(app, ["doctor"])
 

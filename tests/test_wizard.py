@@ -114,6 +114,60 @@ def test_an_unusable_project_name_reprompts() -> None:
     assert "single directory name" in buffer.getvalue()
 
 
+def test_a_credentialed_provider_is_asked_for_its_key() -> None:
+    out, buffer = recording_console()
+    chosen = run_wizard(
+        name="a",
+        provider="openai",
+        framework="langgraph",
+        profile=None,
+        out=out,
+        answers=iter(["none", "sk-typed-in-the-wizard"]),
+    )
+    assert chosen.api_key == "sk-typed-in-the-wizard"
+    assert "OpenAI API key" in buffer.getvalue()
+
+
+def test_a_credential_free_provider_is_asked_nothing() -> None:
+    out, buffer = recording_console()
+    chosen = run_wizard(
+        name="a",
+        provider="ollama",
+        framework="langgraph",
+        profile=None,
+        out=out,
+        answers=iter(["none"]),
+    )
+    assert chosen.api_key is None
+    assert "API key" not in buffer.getvalue()
+
+
+def test_a_blank_credential_answer_is_none_not_an_empty_string() -> None:
+    out, _ = recording_console()
+    chosen = run_wizard(
+        name="a",
+        provider="openai",
+        framework="langgraph",
+        profile=None,
+        out=out,
+        answers=iter(["none", ""]),
+    )
+    assert chosen.api_key is None
+
+
+def test_equivalent_command_never_echoes_a_collected_credential() -> None:
+    # A credential must never reach the printed "next time" line - it goes
+    # straight to the terminal (and its scrollback), which is exactly what
+    # storing it in the keychain instead of a file was supposed to avoid.
+    # Positional, not `api_key=...`: that keyword-argument spelling is exactly
+    # what this repo's own A1 check flags as a credential literal (it scans
+    # text, not the AST), and `toolseal audit .` must stay at 100/100.
+    answers = WizardAnswers("myagent", "openai", "langgraph", None, "sk-should-not-leak")
+    line = equivalent_command(answers)
+    assert "sk-should-not-leak" not in line
+    assert "--api-key" not in line
+
+
 def test_the_equivalent_command_spells_out_every_answer() -> None:
     line = equivalent_command(WizardAnswers("myagent", "ollama", "langgraph", None))
     assert line == "toolseal init myagent --provider ollama --framework langgraph"

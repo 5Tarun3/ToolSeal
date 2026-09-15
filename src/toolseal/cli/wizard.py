@@ -40,11 +40,17 @@ class Option:
     summary: str
 
 
-def _read(out: Console, answers: Iterator[str] | None) -> str:
-    """One reply, from the injected sequence in tests or the console otherwise."""
+def _read(out: Console, answers: Iterator[str] | None, *, hidden: bool = False) -> str:
+    """One reply, from the injected sequence in tests or the console otherwise.
+
+    *hidden* is passed straight through to `Console.input`'s own `password`
+    flag for the credential question - typed text is not echoed to the
+    terminal. Tests bypass the console entirely via the injected *answers*
+    sequence, so it has no effect there.
+    """
     if answers is not None:
         return next(answers, "")
-    return out.input("  > ")
+    return out.input("  > ", password=hidden)
 
 
 def choose(
@@ -93,6 +99,9 @@ class WizardAnswers:
     provider: str
     framework: str
     profile: str | None
+    api_key: str | None = None
+    """The provider credential, if one was typed. Never echoed back anywhere -
+    see `equivalent_command`, which deliberately has no line for this."""
 
 
 def _provider_options() -> tuple[Option, ...]:
@@ -134,6 +143,27 @@ def _ask_name(out: Console, answers: Iterator[str] | None) -> str:
             return _validate_project_name(reply)
         except UsageError as exc:
             print_text(out, Text(f"  {exc}", style="verdict.warn"))
+
+
+def _ask_credential(out: Console, answers: Iterator[str] | None, provider_id: str) -> str | None:
+    """The provider credential (check A1), if the chosen provider needs one.
+
+    Stored in the OS keychain by `init`, never in a file - this question only
+    exists for a provider that actually has somewhere that value needs to go.
+    A local provider like Ollama needing none is asked nothing, not asked and
+    then discarded.
+    """
+    adapter = provider_registry.get(provider_id)
+    if adapter.credential_env_var is None:
+        return None
+
+    out.print()
+    print_text(out, Text(f"{adapter.display_name} API key", style="heading"))
+    print_text(
+        out, Text("  Stored in the OS keychain; leave blank to add it later.", style="muted")
+    )
+    reply = _read(out, answers, hidden=True).strip()
+    return reply or None
 
 
 def run_wizard(
@@ -182,12 +212,14 @@ def run_wizard(
             answers=answers,
         )
     )
+    api_key = _ask_credential(target, answers, resolved_provider)
 
     return WizardAnswers(
         name=resolved_name,
         provider=resolved_provider,
         framework=resolved_framework,
         profile=None if resolved_profile == NO_PROFILE else resolved_profile,
+        api_key=api_key,
     )
 
 
@@ -198,6 +230,11 @@ def equivalent_command(chosen: WizardAnswers) -> str:
     wizard exists because the flags are invisible, so it ends by showing them.
     Every answer is spelled out, including ones that match a default - the line
     has to keep working if a default changes.
+
+    Deliberately has no `--api-key` here even when the wizard collected one:
+    this line goes straight to the terminal (and its scrollback), and echoing
+    a credential back defeats the reason `init` never prints it in the first
+    place. Whether it was stored is reported separately, by `init` itself.
     """
     parts = [
         "toolseal init",

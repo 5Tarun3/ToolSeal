@@ -11,9 +11,12 @@ paper would be overclaiming. The test names carry it.
 
 from __future__ import annotations
 
+import logging
+import os
 import socket
 import subprocess
 import sys
+import types
 from pathlib import Path
 
 import pytest
@@ -163,6 +166,124 @@ def test_no_cell_writes_a_credential_value(
     for line in (root / ".env.example").read_text(encoding="utf-8").splitlines():
         if "=" in line and not line.lstrip().startswith("#"):
             assert line.rstrip().endswith("="), line
+
+
+# --- runtime credential resolution ------------------------------------------
+#
+# Storing a credential's *name* in a file (above) is only half of check A1's
+# remediation. The other half is that the generated project actually reads the
+# value back from the keychain at run time, in preference to whatever the
+# ambient environment already holds - otherwise a credential some earlier,
+# unrelated shell session exported would silently outlive the one toolseal
+# manages, while every static signal (`.env`, `toolseal audit`) still reads
+# clean. This is the failure mode `agent.py`'s `_resolve_credential` exists to
+# close, and the two tests below hold it in place at two different levels.
+
+
+@pytest.mark.parametrize(("provider_id", "framework_id"), CELLS)
+def test_credentialed_cells_pin_keyring(
+    tmp_path: Path, provider_id: str, framework_id: str
+) -> None:
+    # Runtime credential resolution needs `keyring` installed; a provider
+    # needing no credential (ollama) should not gain a dependency for nothing.
+    root = tmp_path / f"{provider_id}-{framework_id}"
+    apply_plan(
+        build_plan(
+            ScaffoldSpec(
+                project_name="cell",
+                provider_id=provider_id,
+                framework_id=framework_id,
+                workspace_root=root,
+            )
+        )
+    )
+
+    requirements = (root / "requirements.txt").read_text(encoding="utf-8")
+    needs_credential = provider_id != "ollama"
+    assert ("keyring==" in requirements) is needs_credential
+
+
+@pytest.mark.parametrize("framework_id", ["langgraph", "crewai"])
+def test_keychain_credential_overrides_a_stale_ambient_value(
+    tmp_path: Path, framework_id: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The exact attack A1/A5 exist to prevent.
+
+    A shell that exported `OPENAI_API_KEY` for something unrelated, earlier,
+    is exactly the "stale session" that must not be able to override a
+    credential this project actually manages through the keychain.
+    """
+    root = tmp_path / f"stale-session-{framework_id}"
+    apply_plan(
+        build_plan(
+            ScaffoldSpec(
+                project_name="stalesession",
+                provider_id="openai",
+                framework_id=framework_id,
+                workspace_root=root,
+            )
+        )
+    )
+
+    source = (root / "agent.py").read_text(encoding="utf-8")
+    start = source.index("def _resolve_credential")
+    end = source.index("\ndef ", start + 1)
+    namespace: dict[str, object] = {
+        "CREDENTIAL_ENV_VAR": "OPENAI_API_KEY",
+        "PROVIDER_ID": "openai",
+        "os": os,
+        "log": logging.getLogger("test-agent"),
+    }
+    exec(compile(source[start:end], str(root / "agent.py"), "exec"), namespace)  # noqa: S102
+
+    # Short enough to stay under A1's own credential-shape threshold - this
+    # repo's own audit must stay at 100/100, and these are not real secrets.
+    fake_keyring = types.ModuleType("keyring")
+    fake_keyring.get_password = lambda service, account: "sk-keychain"  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "keyring", fake_keyring)
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-stale-session")
+
+    namespace["_resolve_credential"]()  # type: ignore[operator]
+
+    assert os.environ["OPENAI_API_KEY"] == "sk-keychain"
+
+
+def test_credential_resolution_falls_back_to_ambient_when_keychain_is_empty(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # A keychain with nothing stored must not erase a value the caller already
+    # provided another way (e.g. CI secrets injected as plain env vars).
+    root = tmp_path / "no-keychain-entry"
+    apply_plan(
+        build_plan(
+            ScaffoldSpec(
+                project_name="nokeychainentry",
+                provider_id="openai",
+                framework_id="langgraph",
+                workspace_root=root,
+            )
+        )
+    )
+
+    source = (root / "agent.py").read_text(encoding="utf-8")
+    start = source.index("def _resolve_credential")
+    end = source.index("\ndef ", start + 1)
+    namespace: dict[str, object] = {
+        "CREDENTIAL_ENV_VAR": "OPENAI_API_KEY",
+        "PROVIDER_ID": "openai",
+        "os": os,
+        "log": logging.getLogger("test-agent"),
+    }
+    exec(compile(source[start:end], str(root / "agent.py"), "exec"), namespace)  # noqa: S102
+
+    fake_keyring = types.ModuleType("keyring")
+    fake_keyring.get_password = lambda service, account: None  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "keyring", fake_keyring)
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-from-ci")
+
+    namespace["_resolve_credential"]()  # type: ignore[operator]
+
+    assert os.environ["OPENAI_API_KEY"] == "sk-from-ci"
 
 
 # --- endpoint override -----------------------------------------------------

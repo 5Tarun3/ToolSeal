@@ -89,6 +89,19 @@ def test_reports_unavailable_when_the_null_backend_is_selected(
     assert not KeyringStore().available()
 
 
+def test_backend_name_reports_the_selected_backend(working_keyring: FakeKeyringModule) -> None:
+    # `doctor` reports this (CHANGELOG 0.1.0 promised it, the CLI never wired
+    # it in); it needs the name even when the backend is real and usable.
+    assert KeyringStore().backend_name() == "FakeBackend"
+
+
+def test_backend_name_is_none_when_keyring_is_not_installed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setitem(__import__("sys").modules, "keyring", None)
+    assert KeyringStore().backend_name() is None
+
+
 def test_null_backend_is_matched_by_qualified_name() -> None:
     # The detection must not depend on importing keyring a second time, which
     # is what previously made a working keychain report itself as missing.

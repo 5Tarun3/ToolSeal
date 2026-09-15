@@ -25,6 +25,13 @@ from toolseal.errors import ConfigError
 
 SERVICE_NAME: Final = "toolseal"
 
+# Pinned exactly, matching this project's own dependency. A generated project
+# that resolves its credential from the keychain at runtime (`agent.py`) needs
+# `keyring` itself; this is the one place both the scaffolder and the
+# scaffolded project's `requirements.txt` get the version from, so they cannot
+# drift apart.
+KEYRING_PACKAGE_PIN: Final = "keyring==25.7.0"
+
 # Backends that exist only to raise when used. `keyring` selects one of these
 # when the platform offers no real credential store.
 NULL_BACKENDS: Final[frozenset[str]] = frozenset({"keyring.backends.fail.Keyring"})
@@ -141,6 +148,19 @@ class KeyringStore:
         # A chainer with nothing in it behaves like the null backend.
         children = getattr(backend, "backends", None)
         return not (children is not None and not list(children))
+
+    def backend_name(self) -> str | None:
+        """The keychain backend `keyring` would use, for diagnostics (`doctor`).
+
+        Returns ``None`` when `keyring` is not importable at all, distinct from
+        `available()` returning ``False`` for a real-but-null backend - `doctor`
+        reports the two differently.
+        """
+        try:
+            import keyring
+        except ImportError:
+            return None
+        return type(keyring.get_keyring()).__qualname__
 
     def _require_backend(self) -> None:
         if not self.available():

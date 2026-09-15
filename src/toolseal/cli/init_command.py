@@ -19,6 +19,7 @@ from toolseal.cli._ui import (
 )
 from toolseal.cli.wizard import equivalent_command, run_wizard
 from toolseal.core.adapters import ScaffoldSpec, framework_registry, provider_registry
+from toolseal.core.credentials import KeyringStore
 from toolseal.core.policy.profile import load_profile, profile_ids
 from toolseal.core.scaffold import apply_plan, build_plan
 from toolseal.errors import ConfigError, ExitCode, UsageError
@@ -100,10 +101,28 @@ def init(
         typer.Option(
             "--interactive",
             "-i",
-            help="Choose provider, framework and regime from a guided prompt.",
+            help=(
+                "Choose provider, framework, regime and credential from a guided "
+                "prompt. Off by default even when a name is given: `isatty()` is not "
+                "a reliable signal that a human is actually present to answer - some "
+                "CI runners and agent harnesses attach a pty to an otherwise "
+                "unattended process, and prompting there would hang the run rather "
+                "than skip it."
+            ),
         ),
     ] = False,
     force: Annotated[bool, typer.Option("--force", help="Overwrite existing files.")] = False,
+    api_key: Annotated[
+        str | None,
+        typer.Option(
+            "--api-key",
+            help=(
+                "Provider credential to store in the OS keychain (check A1) without "
+                "the guided prompt - a value here can land in shell history, so "
+                "prefer --interactive when running by hand."
+            ),
+        ),
+    ] = None,
     dry_run: Annotated[
         bool, typer.Option("--dry-run", help="Show what would be written, and write nothing.")
     ] = False,
@@ -145,6 +164,8 @@ def init(
         provider = chosen.provider
         framework = chosen.framework
         profile = chosen.profile
+        if api_key is None:
+            api_key = chosen.api_key
     elif name is None:
         message = (
             "a project name is required when not running interactively; "
@@ -160,7 +181,7 @@ def init(
 
     # Resolved before rendering so an unknown id fails with the list of valid
     # ones rather than part-way through writing a tree.
-    provider_registry.get(provider)
+    provider_adapter = provider_registry.get(provider)
     framework_registry.get(framework)
     if profile is not None:
         _resolve_profile_or_usage_error(profile)
@@ -197,13 +218,49 @@ def init(
         )
         raise typer.Exit(ExitCode.OK if plan.is_applicable else ExitCode.FINDINGS)
 
+    credential_status = _provision_credential(provider_adapter, api_key)
+
     apply_plan(plan)
 
+    payload: dict[str, Any] = {"action": "created", "root": str(root), "files": paths}
+    if credential_status is not None:
+        payload["credential"] = credential_status
     _emit(
         as_json,
-        {"action": "created", "root": str(root), "files": paths},
-        lambda: _print_created(root, project_name, paths),
+        payload,
+        lambda: _print_created(root, project_name, paths, credential_status),
     )
+
+
+def _provision_credential(provider: Any, api_key: str | None) -> str | None:
+    """Store a provider credential in the OS keychain (check A1's remediation).
+
+    Runs before the scaffold is written but never blocks it: a provider that
+    needs no credential (e.g. a local Ollama) reports nothing at all, and a
+    keychain that refuses the write is reported rather than raised, so a
+    project still gets created on a machine with no OS keychain - the caller
+    just has to provide the credential another way.
+
+    Never prompts itself: prompting only happens inside the guided flow
+    (`wizard._ask_credential`, reached through `--interactive`), which is an
+    explicit opt-in. `isatty()` was tried as an automatic gate here and
+    dropped - it reported a terminal present, and `init` hung waiting for a
+    human, inside a non-interactive harness that had attached a pty to an
+    otherwise unattended process. A flag the caller must opt into cannot make
+    that mistake regardless of what the platform reports.
+    """
+    env_var = provider.credential_env_var
+    if env_var is None:
+        return None
+
+    if api_key is None:
+        return "not provided - pass --api-key, or --interactive to be prompted"
+
+    try:
+        KeyringStore().set(provider.id, api_key)
+    except ConfigError as exc:
+        return f"not stored - {exc}"
+    return "stored in the OS keychain"
 
 
 def _emit(as_json: bool, payload: dict[str, Any], human: Any) -> None:
@@ -234,7 +291,9 @@ def _print_dry_run(root: Path, files: Any, conflicts: Any) -> None:
         )
 
 
-def _print_created(root: Path, project_name: str, paths: list[str]) -> None:
+def _print_created(
+    root: Path, project_name: str, paths: list[str], credential_status: str | None
+) -> None:
     line = Text("Created ", style="verdict.good")
     line.append_text(accent_text(project_name))
     line.append(" in ", style="verdict.good")
@@ -242,6 +301,11 @@ def _print_created(root: Path, project_name: str, paths: list[str]) -> None:
     print_text(console, line)
     for path in sorted(paths):
         print_line(console, f"  {path}", style="muted")
+    if credential_status is not None:
+        console.print()
+        stored = credential_status == "stored in the OS keychain"
+        style = "verdict.good" if stored else "verdict.warn"
+        print_line(console, f"Credential: {credential_status}", style=style)
     console.print()
     print_line(console, "Next:", style="heading")
     for command_example in ("cd " + root.name, "pip install -r requirements.txt", "toolseal audit"):

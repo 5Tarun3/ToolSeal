@@ -31,6 +31,7 @@ from toolseal.cli import (
 from toolseal.cli._ui import accent_text, console, err_console, new_table, print_line
 from toolseal.cli.errors import command as error_boundary
 from toolseal.cli.errors import format_error_line
+from toolseal.core.credentials import KeyringStore
 from toolseal.errors import ExitCode, ToolsealError
 from toolseal.logging import configure_logging
 
@@ -108,12 +109,22 @@ def doctor(
     ] = False,
 ) -> None:
     """Report environment information useful when diagnosing a problem."""
+    store = KeyringStore()
+    backend = store.backend_name()
+    if backend is None:
+        keychain = "not installed"
+    elif store.available():
+        keychain = backend
+    else:
+        keychain = f"{backend} (no usable backend - credentials cannot be stored)"
+
     report: dict[str, Any] = {
         "toolseal": __version__,
         "python": platform.python_version(),
         "platform": f"{platform.system()} {platform.release()}",
         "executable": sys.executable,
         "git": shutil.which("git"),
+        "keychain": keychain,
     }
 
     if as_json:

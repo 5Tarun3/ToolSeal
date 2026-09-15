@@ -41,3 +41,6 @@ Thumbs.db
 # been told to ignore (see [tool.hatch.build.targets.sdist] in pyproject.toml
 # for the second half of that fix).
 .superpowers/
+
+# Test workspace 
+/workspace
