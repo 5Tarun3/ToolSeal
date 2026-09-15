@@ -49,6 +49,16 @@ Reproduce with `uv run python bench/sweep.py`. Full data in
 
 **11 of 18 servers enumerated. 111 tools. 95 annotated.**
 
+> **Re-run, 2026-09-16.** A twelfth server was added and enumerated after a
+> harness defect was fixed: `pixel-mcp` 0.5.0, **50 tools, 0 annotated** - the
+> largest wholly unannotated server in the set, and enough on its own to move
+> the corpus rate from 95/111 (86%) to 145/161 (90%) servers-wide while
+> *lowering* the curated set's to 187/253 (74%). It had been recorded as
+> answering nothing; the harness was translating its own newlines (defect 8
+> below). `postgres-mcp` and `docker-mcp` were re-probed with the same fix and
+> both still fail, for the reasons in findings 2 and 3 - neither was a harness
+> artefact.
+
 Measured at a 300-second per-server timeout. That number is load-bearing:
 at 120s and 180s, `mongodb-mcp-server` was scored a failure, and it is in
 fact simply slow to start (see the harness defects below).
@@ -66,6 +76,7 @@ fact simply slow to start (see the harness defects below).
 | redis (`@upstash/redis-mcp`) | 2 | **0** |
 | reasoning (sequential-thinking) | 1 | 1 |
 | http-fetch | 1 | **0** |
+| pixel-art-local (`pixel-mcp`, added 2026-09-16) | 50 | **0** |
 
 ### Finding 1: annotation coverage is not what P1 suggested
 
@@ -184,5 +195,49 @@ the failure mode a measurement harness must be assumed to have:
    `docker-mcp`'s actual message - "Docker daemon is not accessible" - only
    became visible once the runner's own output was filtered out.
 
-Defect 3 is the one worth dwelling on: the instrument's own security control
-caused a false negative, and nothing about the output looked wrong.
+8. **Every message was newline-translated on Windows.** The probe wrote its
+   JSON-RPC through a text-mode pipe, so each `
+` left the process as
+   `
+
+`. MCP's stdio transport frames on a newline, and a strict server
+   reads the stray `
+` as trailing garbage after a complete JSON value.
+   `pixel-mcp` rejected every message with "invalid trailing data at the end
+   of" and was recorded as answering nothing. Most servers tolerate it, which
+   is exactly why this survived a full sweep: the defect is only visible
+   against servers strict enough to be right about it, and those are the ones
+   it silently excludes.
+9. **No way to give a server non-secret startup configuration.** `pixel-mcp`
+   exits with "Please create config file with aseprite_path configured"
+   before speaking any protocol. The resulting "no response to initialize" was
+   the harness's doing. The fix is narrow on purpose - a local path, never a
+   credential, since a server that needs a secret to answer `tools/list` is a
+   finding this sweep exists to count.
+
+10. **Redaction was never wired up.** `redact()` was defined and documented
+   as "applied to everything written to `results/`". Neither write path
+   called it, from the commit that introduced it onward, and no test covered
+   it. The committed captures were clean because a person had cleaned them.
+   A single-server re-run then wrote the host's IANA timezone straight back
+   into `time-tools.json`, over the `<LOCAL_TZ>` sitting in the committed
+   copy. The published files were one careless re-run away from carrying the
+   operator's approximate location, and nothing in the harness would have
+   objected.
+
+Defects 3, 8 and 9 are the ones worth dwelling on, and they are the same
+mistake three times: **the instrument caused the failure it then reported, and
+nothing about the output looked wrong.** Each produced a plausible,
+publishable, false claim about the ecosystem - `chroma-mcp` is broken,
+`pixel-mcp` is broken - and each was found only by chasing one server that
+should have worked. The count of servers "that cannot be enumerated" is
+therefore the least trustworthy number this probe produces, and it has moved
+every time someone looked at it closely.
+
+Defect 10 is a different species and arguably the worst of the four. The other
+three made the *measurement* wrong. This one made the *safety claim* wrong: a
+control that is written down, read by reviewers, and never executed. It was
+found by accident, by noticing an unexpected line in a diff - not by any test,
+because the test that existed would have been "does `redact` redact", and it
+does. The lesson recorded here is that a control has to be tested at its call
+site, not at its definition.

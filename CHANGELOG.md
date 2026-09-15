@@ -8,6 +8,74 @@ would notice, not by the internal step numbers used to plan the work.
 
 ## [Unreleased]
 
+### Removed
+
+- **`toolseal registry sync` is withdrawn.** It crawled the public MCP registry
+  into `~/.cache/toolseal/index.json`, and the registry paginates
+  alphabetically, so a bounded crawl returned the front of the alphabet and
+  presented it as an index. A real 2000-entry cache on a developer machine
+  began at `ac.inference.sh` and never reached `s` - which is why
+  `registry search slack` answered with `ai.linkdeal.www` and `ai.backengine`
+  rather than nothing. Those rows also carry no tools, since registry metadata
+  cannot describe a server's tools without running it, so 2000 of them diluted
+  every query against the entries that had been verified by hand.
+
+  This is a removal rather than a fix because an alphabetically truncated
+  sample of a registry is not a lower-quality index - it is not an index, and
+  no ranking change recovers the servers the crawl never fetched.
+  `registry search` and `show` now answer from the curated set shipped in the
+  package, plus anything `registry ingest` has added locally.
+
+  **If you ever ran `registry sync`, delete `~/.cache/toolseal/index.json`.**
+  It is still merged into search results if present, and it is still mostly
+  alphabet.
+
+### Added
+
+- `pixel-mcp` 0.5.0 (`willibrandon/pixel-plugin`) joins the curated set with
+  all 50 of its tools enumerated. It is the Aseprite server that currently
+  runs; the previously indexed `aseprite-live-mcp` does not start at all (see
+  below) and is kept alongside it rather than replaced, because a real package
+  broken in a way check `C1` predicts is worth keeping in the index.
+- The curated set is now 22 servers and 253 tools, up from 21 and 203.
+
+### Fixed
+
+- The tool-enumeration harness wrote its JSON-RPC through a text-mode pipe, so
+  on Windows every message was newline-translated from `\n` to `\r\n`. MCP's
+  stdio transport frames on a newline, and a strict server reads the stray
+  `\r` as trailing garbage after a complete JSON value - `pixel-mcp` rejected
+  every message with "invalid trailing data" and was recorded as answering
+  nothing. Most servers tolerate it, which is how this survived a full sweep.
+  This is the second harness control found manufacturing the failure it then
+  reported, after the stripped `HOME` that made `chroma-mcp` look broken.
+- The harness can now write a server's non-secret startup configuration into
+  the throwaway home before launch. Never a credential: a server that needs a
+  secret to answer `tools/list` is a finding the sweep exists to count.
+- **The sweep's redaction never ran.** `bench/sweep.py` defines `redact()` to
+  strip host-identifying strings from everything written to `results/`, which
+  is committed to a public repository - and neither write path ever called it,
+  from the commit that introduced it onward. The committed captures looked
+  clean only because they had been scrubbed by hand. It surfaced when a
+  single-server re-run wrote the operator's IANA timezone back into
+  `time-tools.json` in place of the `<LOCAL_TZ>` already committed there. Both
+  write paths now call it, and `tests/test_bench_sweep.py` asserts the file on
+  disk is redacted rather than only that the function can redact.
+
+### Notes
+
+Two servers in the curated set still carry no tools, and neither is a harness
+defect - both were re-probed with the fixes above:
+
+- `postgres-mcp` does not start. It imports `mcp.server.fastmcp`, renamed in
+  mcp 2.x, and its own dependency on `mcp` is unpinned, so a fresh install
+  resolves to a release that breaks it. `aseprite-live-mcp` fails identically.
+  This is check `C1` happening to published packages.
+- `docker-mcp` cannot reach the Docker daemon on Windows even with the daemon
+  running and reachable from the same restricted environment, and with
+  `DOCKER_HOST` set to each of the three plausible values. It also refuses to
+  answer `tools/list` before connecting, which the protocol does not require.
+
 ## [0.1.2] - 2026-09-15
 
 ### Fixed

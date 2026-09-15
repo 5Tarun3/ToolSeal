@@ -208,11 +208,20 @@ $ toolseal registry search context7
 ```
 
 A curated set ships inside the package, so `search` and `show` work immediately
-after install — before `registry sync` has ever run. Curation criteria are
+after install, with no crawl step at all. Curation criteria are
 [fixed and published](https://github.com/5Tarun3/ToolSeal/blob/main/research/registry-curation-criteria.md), applied by a
 script rather than a person, and deliberately **blind to the audit score**: a
 registry that selects entries because they scored well and then reports that its
 entries score well has measured nothing.
+
+There is deliberately no registry crawl. An earlier `registry sync` paged the
+public MCP registry, but its pagination is alphabetical, so a bounded crawl
+returns the front of the alphabet and calls it an index — a real 2000-entry
+cache began at `ac.inference.sh` and never reached `s`, which is why searching
+it for `slack` returned `ai.linkdeal.www`. Those rows also carry no tools, so
+they diluted every query against entries that had been verified by hand. An
+alphabetically truncated sample is not a worse index; it is not an index, and
+no amount of ranking recovers the servers it never fetched.
 
 Nothing in the index is ever executed. Enumerating a server's tools means
 running it, so entries record `tools_enumerated: false` rather than implying an
@@ -305,7 +314,8 @@ Two more commands close the loop:
 | `revert` | Undo what toolseal wrote into this project |
 | `policy list` / `explain` / `show` | Inspect checks, standards, and regimes |
 | `policy apply` / `relax` / `enforce` / `verify` | Adopt, deviate from, and seal a policy |
-| `registry sync` / `search` / `show` | Crawl, query, and inspect the tool index |
+| `registry search` / `show` | Query and inspect the curated tool index |
+| `registry ingest` | Add a server's tools from a `tools/list` response you captured |
 | `doctor` | Report environment information for diagnosing a problem |
 
 ## Supported targets
