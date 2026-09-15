@@ -31,17 +31,6 @@ jobs:
   gate:
     name: gate (python ${{ inputs.python-version }})
     runs-on: ubuntu-latest
-    env:
-      # Pin a terminal size for every step, not only the ones under pytest
-      # (`scripts/uat.py` shells out to the installed console script too).
-      # This runner has no controlling terminal, and `shutil.get_terminal_size()`
-      # - what Click's help formatter and Rich both read width from - can come
-      # back `(0, 0)` here instead of raising, which skips its own `(80, 24)`
-      # fallback and collapses `--help` output to one word per line. COLUMNS
-      # and LINES are checked before any OS call, so setting them makes the
-      # width deterministic instead of depending on whether that call raises.
-      COLUMNS: "80"
-      LINES: "24"
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

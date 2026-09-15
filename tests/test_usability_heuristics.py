@@ -70,6 +70,31 @@ def _leaf_ids() -> list[str]:
     return [" ".join(path) for path, _ in _leaves()]
 
 
+def _command_at(path: tuple[str, ...]) -> Command:
+    """The Click `Command` reached by *path*, from the same tree `_leaves()`
+    walks - so a test can assert on a command's declared options directly."""
+    for candidate_path, command in _leaves():
+        if candidate_path == path:
+            return command
+    message = f"no command at {path!r}"
+    raise AssertionError(message)
+
+
+def _has_option(command: Command, flag: str) -> bool:
+    """Whether *command* declares *flag* (e.g. `\"--force\"`) as one of its
+    own option strings.
+
+    Checked against the command's own `params`, not rendered `--help` text:
+    rendered output wraps at whatever width the terminal (or lack of one)
+    reports, and a CI runner with no controlling terminal has reported a
+    width narrow enough to wrap a flag's own name across a line break,
+    which breaks a substring match on the flag without the flag having gone
+    anywhere. What the heuristic actually cares about - that the option
+    exists - is exactly what `params` records, independent of rendering.
+    """
+    return any(flag in getattr(param, "opts", []) for param in command.params)
+
+
 def test_the_sweep_actually_reaches_every_command() -> None:
     """Guard against a vacuous sweep.
 
@@ -266,22 +291,22 @@ def test_writing_into_someone_elses_project_is_reversible(path: tuple[str, ...])
 
 def test_revert_exists_and_can_preview() -> None:
     """Heuristic 3 and 5. The way back is itself previewable before it runs."""
-    rendered = runner.invoke(app, ["revert", "--help"]).stdout
-    assert "--dry-run" in rendered
-    assert "--force" in rendered
+    command = _command_at(("revert",))
+    assert _has_option(command, "--dry-run")
+    assert _has_option(command, "--force")
 
 
 def test_init_refuses_to_clobber_without_an_explicit_second_decision() -> None:
     """Heuristic 5. Overwriting is never the default."""
-    rendered = runner.invoke(app, ["init", "--help"]).stdout
-    assert "--force" in rendered
-    assert "--dry-run" in rendered
+    command = _command_at(("init",))
+    assert _has_option(command, "--force")
+    assert _has_option(command, "--dry-run")
 
 
 def test_applying_a_regime_can_be_previewed_and_confirmed() -> None:
     """Heuristic 5. A change to policy is shown before it is written."""
-    rendered = " ".join(runner.invoke(app, ["policy", "apply", "--help"]).stdout.split())
-    assert "--yes" in rendered, "policy apply must confirm by default, with --yes to skip"
+    command = _command_at(("policy", "apply"))
+    assert _has_option(command, "--yes"), "policy apply must confirm by default, with --yes to skip"
 
 
 # --- Heuristic 4 again: machine output is uniformly available ----------------
