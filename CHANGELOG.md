@@ -8,6 +8,8 @@ would notice, not by the internal step numbers used to plan the work.
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-09-16
+
 ### Removed
 
 - **`toolseal registry sync` is withdrawn.** It crawled the public MCP registry
@@ -29,6 +31,10 @@ would notice, not by the internal step numbers used to plan the work.
   **If you ever ran `registry sync`, delete `~/.cache/toolseal/index.json`.**
   It is still merged into search results if present, and it is still mostly
   alphabet.
+- The weekly `registry-index` workflow goes with it. It ran `registry sync` on
+  a schedule and committed the result, holding `contents: write` to do so, so
+  leaving it in place would have left a scheduled job with repository write
+  access pointed at a command that no longer parses.
 
 ### Added
 
@@ -61,6 +67,15 @@ would notice, not by the internal step numbers used to plan the work.
   `time-tools.json` in place of the `<LOCAL_TZ>` already committed there. Both
   write paths now call it, and `tests/test_bench_sweep.py` asserts the file on
   disk is redacted rather than only that the function can redact.
+
+### Changed
+
+- `cells.yml` pins its GitHub Actions by commit digest, like every other
+  workflow in the repository. It was the one place an action floated on a
+  major tag, where the tag could be repointed at different code without the
+  repository recording a change - the thing this project's own `C`-family
+  checks exist to object to. `actions/upload-artifact` also moves 4 to 7, and
+  `softprops/action-gh-release` 3.0.2 to 3.0.3.
 
 ### Notes
 
@@ -289,7 +304,8 @@ keyless signing of the wheel, sdist, and SBOM.
   implicit one, and the project's own SBOM — previously stale and missing it
   entirely — is regenerated from the environment actually installed.
 
-[Unreleased]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/5Tarun3/ToolSeal/releases/tag/v0.1.0
