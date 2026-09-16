@@ -58,6 +58,13 @@ would notice, not by the internal step numbers used to plan the work.
 - The harness can now write a server's non-secret startup configuration into
   the throwaway home before launch. Never a credential: a server that needs a
   secret to answer `tools/list` is a finding the sweep exists to count.
+- `toolseal init -i` no longer hangs when its answers arrive on a pipe. The
+  credential question read through `getpass`, which takes input from the
+  console device rather than stdin, so a piped answer never reached it and the
+  prompt waited for a keypress that could not come. Anyone driving the guided
+  flow from a script, a CI job or an agent harness hit a hang rather than an
+  error. Echo suppression still applies on a real terminal, where it means
+  something.
 - **The sweep's redaction never ran.** `bench/sweep.py` defines `redact()` to
   strip host-identifying strings from everything written to `results/`, which
   is committed to a public repository - and neither write path ever called it,
