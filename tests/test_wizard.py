@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import io
 
+import pytest
 from rich.console import Console
 
 from toolseal.cli.wizard import (
     Option,
     WizardAnswers,
+    _read,
     choose,
     equivalent_command,
     run_wizard,
@@ -176,3 +178,55 @@ def test_the_equivalent_command_spells_out_every_answer() -> None:
 def test_the_equivalent_command_carries_a_chosen_profile() -> None:
     line = equivalent_command(WizardAnswers("myagent", "ollama", "crewai", "gdpr"))
     assert line == "toolseal init myagent --provider ollama --framework crewai --profile gdpr"
+
+
+# --- the credential prompt must never block a pipe -------------------------
+#
+# `Console.input(password=True)` delegates to `getpass`, which reads the
+# console device directly - `msvcrt.getwch` on Windows - rather than stdin. A
+# piped answer never reaches it, so the prompt waits for a keypress that
+# cannot arrive: a hang, not a failed read. `scripts/uat.py` drives the whole
+# flow over a pipe and sat on that until its 300-second timeout.
+#
+# It could not be caught by the tests that already existed. Under
+# `CliRunner`, stdin is a fake object and `getpass` takes its own fallback
+# path, so the wizard completed happily in-process while hanging for real.
+# What follows therefore asserts the *condition* rather than the outcome:
+# hidden reads only when stdin is genuinely a terminal.
+
+
+def _record_password_flag(
+    out: Console, monkeypatch: pytest.MonkeyPatch, *, tty: bool
+) -> list[bool]:
+    """Capture whether `Console.input` was asked for a hidden read."""
+    seen: list[bool] = []
+
+    def fake_input(self: Console, prompt: str = "", **kwargs: object) -> str:
+        seen.append(bool(kwargs.get("password")))
+        return ""
+
+    monkeypatch.setattr(type(out), "input", fake_input)
+    monkeypatch.setattr("sys.stdin.isatty", lambda: tty)
+    return seen
+
+
+def test_a_hidden_read_is_not_requested_when_stdin_is_not_a_terminal(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    out, _ = recording_console()
+    seen = _record_password_flag(out, monkeypatch, tty=False)
+
+    _read(out, None, hidden=True)
+
+    assert seen == [False], "a pipe must not be read through getpass"
+
+
+def test_a_hidden_read_is_still_hidden_on_a_real_terminal(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    out, _ = recording_console()
+    seen = _record_password_flag(out, monkeypatch, tty=True)
+
+    _read(out, None, hidden=True)
+
+    assert seen == [True], "a typed credential must not echo on a terminal"

@@ -13,6 +13,7 @@ non-interactively, and the summary it prints at the end says exactly how.
 
 from __future__ import annotations
 
+import sys
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 
@@ -43,14 +44,24 @@ class Option:
 def _read(out: Console, answers: Iterator[str] | None, *, hidden: bool = False) -> str:
     """One reply, from the injected sequence in tests or the console otherwise.
 
-    *hidden* is passed straight through to `Console.input`'s own `password`
-    flag for the credential question - typed text is not echoed to the
-    terminal. Tests bypass the console entirely via the injected *answers*
-    sequence, so it has no effect there.
+    *hidden* suppresses echo for the credential question, but **only when
+    stdin is a terminal**, and that condition is load-bearing rather than
+    defensive. `Console.input(password=True)` goes to `getpass`, which reads
+    the console device directly - `msvcrt.getwch` on Windows - instead of
+    reading stdin. A piped answer therefore never arrives and the prompt waits
+    for a keypress that cannot come, which is a hang, not a failed read.
+
+    `scripts/uat.py` feeds the whole flow over a pipe and hit exactly that:
+    the wizard printed all five questions, consumed four, and blocked on the
+    fifth until the 300-second timeout killed it. Any CI job or agent harness
+    driving `init -i` non-interactively would do the same.
+
+    There is nothing to hide when stdin is not a terminal - no echo happens
+    for a pipe - so falling back to a plain read loses no secrecy.
     """
     if answers is not None:
         return next(answers, "")
-    return out.input("  > ", password=hidden)
+    return out.input("  > ", password=hidden and sys.stdin.isatty())
 
 
 def choose(

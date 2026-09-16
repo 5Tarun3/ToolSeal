@@ -14,7 +14,9 @@ the one whose absence went unnoticed.
 from __future__ import annotations
 
 import json
+from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 
 import pytest
 from bench import sweep
@@ -23,7 +25,7 @@ from bench.mcp_probe import ProbeResult
 # A tool description carrying both leak shapes the harness knows about: an
 # absolute path under the operator's home, and mcp-server-time's habit of
 # baking the machine's IANA zone into text a model reads.
-LEAKY_TOOL = {
+LEAKY_TOOL: dict[str, Any] = {
     "name": "leaky",
     "description": (
         "Reads {home}/secrets. Use 'Antarctica/Troll' as local timezone if no timezone provided."
@@ -32,14 +34,14 @@ LEAKY_TOOL = {
 }
 
 
-def _leaky_tools() -> list[dict[str, object]]:
+def _leaky_tools() -> list[dict[str, Any]]:
     tool = dict(LEAKY_TOOL)
     tool["description"] = str(tool["description"]).format(home=Path.home())
     return [tool]
 
 
 @pytest.fixture
-def sweep_into(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+def sweep_into(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
     """Point the sweep's output at a temp directory and stub the probing."""
     results = tmp_path / "results"
     monkeypatch.setattr(sweep, "RESULTS", results)
@@ -52,10 +54,10 @@ def sweep_into(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         return ProbeResult(server_id=launch.entry_id, ok=True, tools=_leaky_tools()), 1
 
     monkeypatch.setattr(sweep, "run", fake_run)
-    return results
+    yield results
 
 
-def test_the_written_capture_is_redacted(sweep_into: Path, monkeypatch) -> None:
+def test_the_written_capture_is_redacted(sweep_into: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("sys.argv", ["sweep.py", "--only", "time"])
     assert sweep.main() == 0
 
@@ -66,7 +68,7 @@ def test_the_written_capture_is_redacted(sweep_into: Path, monkeypatch) -> None:
     assert "<LOCAL_TZ>" in raw
 
 
-def test_the_written_summary_is_redacted(sweep_into: Path, monkeypatch) -> None:
+def test_the_written_summary_is_redacted(sweep_into: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A *failing* server's stderr tail is the summary's real leak.
 
     The per-server capture only exists when a server answered, so the path
@@ -116,7 +118,7 @@ def test_the_timezone_sentence_is_matched_by_shape_not_by_value() -> None:
 
 
 def test_a_capability_with_no_launch_is_an_error_not_an_empty_sweep(
-    sweep_into: Path, monkeypatch
+    sweep_into: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     # A typo in `--only` that silently enumerated nothing would look exactly
     # like a sweep in which every server failed.
@@ -124,7 +126,9 @@ def test_a_capability_with_no_launch_is_an_error_not_an_empty_sweep(
     assert sweep.main() == 1
 
 
-def test_only_does_not_overwrite_the_full_summary(sweep_into: Path, monkeypatch) -> None:
+def test_only_does_not_overwrite_the_full_summary(
+    sweep_into: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     # Regression guard for harness defect 2: a one-server run replacing an
     # all-server summary with a file of identical shape.
     sweep_into.mkdir(parents=True, exist_ok=True)
