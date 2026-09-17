@@ -139,8 +139,9 @@ def _a1(model: ProjectModel) -> Sequence[Finding]:
                             location=str(path),
                             line=number,
                             remediation=(
-                                "Move the value into the OS keychain and revoke the exposed "
-                                "credential; it must be treated as compromised."
+                                "Move the value into the OS keychain, or into the environment "
+                                "for a deployed project, and revoke the exposed credential; "
+                                "it must be treated as compromised."
                             ),
                         )
                     )
@@ -160,7 +161,10 @@ def _a1(model: ProjectModel) -> Sequence[Finding]:
                         ),
                         location=str(path),
                         line=number,
-                        remediation="Assign nothing in the file; store the value in the keychain.",
+                        remediation=(
+                            "Assign nothing in the file; store the value in the OS keychain, "
+                            "or supply it from the environment when deployed."
+                        ),
                     )
                 )
 
@@ -222,7 +226,10 @@ def _a3(model: ProjectModel) -> Sequence[Finding]:
             severity=Severity.MEDIUM,
             title="One credential shared across providers",
             detail=f"{name} is used by {', '.join(sorted(users))}",
-            remediation="Give each provider its own keychain entry so a leak has one blast radius.",
+            remediation=(
+                "Give each provider its own credential entry - a separate keychain entry, "
+                "or a separate environment variable - so a leak has one blast radius."
+            ),
         )
         for name, users in sorted(names.items())
         if len(set(users)) > 1
@@ -257,8 +264,9 @@ def _a5(model: ProjectModel) -> Sequence[Finding]:
             location=str(reference.location) if reference.location else None,
             line=reference.line,
             remediation=(
-                "Reference the credential by name and resolve it from the keychain when the "
-                "server launches."
+                "Reference the credential by name and resolve it from the configured "
+                "credential backend - the OS keychain, or the environment when deployed - "
+                "when the server launches."
             ),
         )
         for server in model.mcp_servers
@@ -273,7 +281,10 @@ A1 = register(
         family="A",
         title="Credential literal in tracked source or configuration",
         severity=Severity.CRITICAL,
-        remediation="Store credentials in the OS keychain; keep only names in files.",
+        remediation=(
+            "Store credentials in the OS keychain, or supply them from the environment "
+            "when deployed; keep only names in files."
+        ),
         run=_a1,
         controls=(
             ControlRef("owasp-llm-top10", "LLM02"),
