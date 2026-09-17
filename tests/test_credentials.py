@@ -16,6 +16,7 @@ from typing import Any, ClassVar
 import pytest
 
 from toolseal.core.credentials import (
+    BACKENDS,
     GITIGNORE_ENTRIES,
     NULL_BACKENDS,
     PRECOMMIT_CONFIG,
@@ -25,6 +26,7 @@ from toolseal.core.credentials import (
     environment_reference,
     is_placeholder,
     merge_gitignore,
+    resolve_backend,
 )
 from toolseal.errors import ConfigError
 
@@ -366,3 +368,99 @@ def test_environment_posture_note_names_the_actual_exposure() -> None:
     note = EnvironmentStore().posture_note
     assert "child process" in note
     assert "process table" in note
+
+
+# --- backend selection ------------------------------------------------------
+#
+# Falling back is allowed. Falling back *quietly* is the surprise this
+# mechanism exists to prevent, so every test here is about whether the caller
+# can tell what happened.
+
+
+def test_resolve_prefers_the_keychain_when_nothing_is_declared(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(KeyringStore, "available", lambda self: True)
+
+    selection = resolve_backend(None)
+
+    assert selection.resolved == "os-keychain"
+    assert selection.fell_back is False
+    assert selection.posture is Posture.STRONG
+
+
+def test_resolve_falls_back_to_the_environment_and_says_so(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # The case this whole task exists for: a container.
+    monkeypatch.setattr(KeyringStore, "available", lambda self: False)
+
+    selection = resolve_backend(None)
+
+    assert selection.resolved == "environment"
+    assert selection.fell_back is True
+    assert selection.posture is Posture.WEAKER
+
+
+def test_an_explicit_backend_is_honoured(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(KeyringStore, "available", lambda self: True)
+
+    selection = resolve_backend("environment")
+
+    assert selection.resolved == "environment"
+    # Asking for it is not falling back to it, and a report that conflated the
+    # two would flag a deliberate choice as an accident.
+    assert selection.fell_back is False
+    assert selection.expected == "environment"
+
+
+def test_an_explicitly_named_unavailable_backend_refuses(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Declaring os-keychain and silently getting something weaker is exactly
+    # the substitution this refuses to make.
+    monkeypatch.setattr(KeyringStore, "available", lambda self: False)
+
+    with pytest.raises(ConfigError, match="os-keychain"):
+        resolve_backend("os-keychain")
+
+
+def test_refusing_an_unavailable_backend_says_nothing_was_downgraded(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(KeyringStore, "available", lambda self: False)
+
+    with pytest.raises(ConfigError) as caught:
+        resolve_backend("os-keychain")
+
+    assert "downgraded" in str(caught.value)
+
+
+def test_an_unknown_backend_names_the_valid_ones() -> None:
+    with pytest.raises(ConfigError) as caught:
+        resolve_backend("vault")
+
+    message = str(caught.value)
+    assert "vault" in message
+    assert "os-keychain" in message
+    assert "environment" in message
+
+
+def test_selection_carries_the_posture_note() -> None:
+    assert "process table" in resolve_backend("environment").note
+
+
+def test_backends_are_ordered_strongest_first() -> None:
+    # resolve_backend walks BACKENDS when nothing is declared, so the mapping's
+    # order *is* the fallback policy rather than a presentation detail.
+    assert list(BACKENDS) == ["os-keychain", "environment"]
+
+
+def test_every_backend_satisfies_the_protocol() -> None:
+    # Non-vacuity guard: a sweep over an empty mapping passes silently.
+    assert len(BACKENDS) >= 2
+    for identifier, factory in BACKENDS.items():
+        store = factory()
+        assert store.name == identifier
+        assert isinstance(store.posture, Posture)
+        assert store.posture_note

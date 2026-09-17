@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import os
 import re
+from dataclasses import dataclass
 from enum import StrEnum
 from typing import Final, Protocol
 
@@ -114,13 +115,27 @@ class Posture(StrEnum):
 
 
 class CredentialStore(Protocol):
-    """Somewhere a credential can live that is not the project directory."""
+    """Somewhere a credential can live that is not the project directory.
 
-    name: str
-    posture: Posture
-    """How well this store protects the value, for reporting."""
-    posture_note: str
-    """One clause naming the concrete exposure, for the audit report."""
+    The three descriptors are declared read-only (``@property``) rather than as
+    plain attributes on purpose: implementations pin them with ``Final``, and a
+    mutable protocol attribute is invariant, so a ``Final`` attribute does not
+    satisfy one. Read-only is also the honest shape - a store's identity and
+    posture are facts about it, not settings a caller may rewrite.
+    """
+
+    @property
+    def name(self) -> str: ...
+
+    @property
+    def posture(self) -> Posture:
+        """How well this store protects the value, for reporting."""
+        ...
+
+    @property
+    def posture_note(self) -> str:
+        """One clause naming the concrete exposure, for the audit report."""
+        ...
 
     def available(self) -> bool:
         """Whether this store can actually be used on this machine."""
@@ -315,6 +330,95 @@ class EnvironmentStore:
             f"{self.variable_for(account)} where it is configured."
         )
         raise ConfigError(message)
+
+
+#: Every backend a project may name, by the id used in ``toolseal.toml``.
+#: Ordered strongest first: :func:`resolve_backend` walks this when nothing is
+#: declared, so the order *is* the fallback policy rather than a presentation
+#: detail.
+BACKENDS: Final[dict[str, type[CredentialStore]]] = {
+    KeyringStore.name: KeyringStore,
+    EnvironmentStore.name: EnvironmentStore,
+}
+
+
+@dataclass(frozen=True)
+class BackendSelection:
+    """Which store was chosen, and whether the project got what it asked for.
+
+    :attr:`fell_back` is the field that earns this class its existence. A
+    deployment quietly landing on a weaker backend than the one it expected is
+    precisely the surprise this record makes visible, so "asked for the
+    environment" and "wanted the keychain and did not get it" stay distinct
+    rather than collapsing into whichever store came back.
+    """
+
+    store: CredentialStore
+    expected: str | None
+    """What the project declared, or ``None`` when it declared nothing."""
+    resolved: str
+    fell_back: bool
+    """True when a stronger backend was preferred but unavailable."""
+    posture: Posture
+    note: str
+
+
+def resolve_backend(expected: str | None = None) -> BackendSelection:
+    """Choose a credential store, recording what was asked for.
+
+    *expected* is what the project declared in ``toolseal.toml``. When it names
+    a backend, that backend is used or the call fails - never downgraded,
+    because a project that asked for the keychain and silently got an
+    environment variable has had its security posture changed without being
+    told.
+
+    When nothing is declared, :data:`BACKENDS` is walked strongest-first and
+    the first available store wins, with :attr:`~BackendSelection.fell_back`
+    recording that the strongest was not the one chosen.
+    """
+    if expected is not None:
+        factory = BACKENDS.get(expected)
+        if factory is None:
+            valid = ", ".join(sorted(BACKENDS))
+            message = f"unknown credential backend {expected!r}; valid backends are {valid}"
+            raise ConfigError(message)
+
+        declared = factory()
+        if not declared.available():
+            message = (
+                f"this project declares the {expected!r} credential backend, but it is "
+                "not available here. Nothing was downgraded; change the declaration or "
+                "make the backend available."
+            )
+            raise ConfigError(message)
+
+        return BackendSelection(
+            store=declared,
+            expected=expected,
+            resolved=declared.name,
+            fell_back=False,
+            posture=declared.posture,
+            note=declared.posture_note,
+        )
+
+    strongest = next(iter(BACKENDS))
+    for identifier, factory in BACKENDS.items():
+        candidate = factory()
+        if candidate.available():
+            return BackendSelection(
+                store=candidate,
+                expected=None,
+                resolved=identifier,
+                fell_back=identifier != strongest,
+                posture=candidate.posture,
+                note=candidate.posture_note,
+            )
+
+    # Unreachable while EnvironmentStore.available() is unconditionally true,
+    # which it is by construction. A future backend list could make it
+    # reachable, and failing loudly beats returning None into a credential path.
+    message = "no credential backend is available on this machine"
+    raise ConfigError(message)
 
 
 def is_placeholder(value: str) -> bool:
