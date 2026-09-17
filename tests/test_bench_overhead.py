@@ -105,3 +105,15 @@ def test_repeats_are_reported_so_precision_is_not_overstated() -> None:
         # Median and p95 alongside the mean: a single figure from a noisy
         # machine overstates its own precision.
         assert {"mean_us", "median_us", "p95_us"} <= payload[key].keys()
+
+
+def test_the_report_labels_the_guard_figure_as_the_bypass_branch() -> None:
+    # guard_overhead() times require_approval with TOOLSEAL_ASSUME_YES=1, which
+    # returns before enforcing anything. The published report must say so on
+    # every regeneration - a note added only to the committed RESULTS.md would
+    # vanish the next time `bench s3` rewrote it. Recorded as a deviation in
+    # research/evaluation-protocol.md; superseded by Study 6.
+    report = to_markdown(run(repeats=5))
+
+    assert "bypass branch" in report
+    assert "Study 6" in report

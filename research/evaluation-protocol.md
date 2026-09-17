@@ -265,6 +265,7 @@ and any affected result is labelled exploratory.
 | --- | --- | --- |
 | 2026-08-19 | Study 1's `official-docs`, `mcp-servers` and `templates` strata run without the 10%-double-materialised agreement check this document's Procedure section requires. | No second person is available to this collection run. Recorded here rather than silently omitted; results from these strata are single-materialiser and reported as such. |
 | 2026-08-19 | `mcp-servers` and `templates` use a fixed *N* = 6 (`research/studies/s1/selection-criteria.md`), smaller than an unqualified reading of "top *N*" might suggest. | *N* is chosen small enough for one person to materialise every entry carefully, per the mitigation above; a larger *N* would dilute rather than remove the single-materialiser limitation. |
+| 2026-09-17 | Study 3's per-call guard figure (0.85 µs, and the 888888.9x ratio derived from it) is relabelled as the cost of the approval guard's **bypass branch**, and superseded by Study 6. | `bench/overhead.py::guard_overhead` measures `require_approval` with `TOOLSEAL_ASSUME_YES=1` set and logging disabled, so the timed path is an environment lookup, not a guard refusing a call. Found while pre-registering Study 6, which measures enforcing paths only. The figure stays published with its basis stated. |
 
 ---
 

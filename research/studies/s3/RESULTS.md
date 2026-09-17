@@ -11,6 +11,14 @@ Excludes provider latency, deliberately: a model round trip hides a millisecond-
 
 ## Per-call cost of a compensating guard
 
+> **Relabelled 2026-09-17 - this is the bypass branch.** The guard below was
+> timed with `TOOLSEAL_ASSUME_YES=1` set, which makes `require_approval`
+> return immediately without enforcing anything. The figure is the cost of
+> *not* enforcing, and the ratio against AgentWarden compares that to a
+> system doing real policy work. Superseded by Study 6, which measures
+> enforcing paths; see the Deviations table in
+> `research/evaluation-protocol.md`.
+
 - **0.85 us** (0.0009 ms) per guarded call.
 - Reference: AgentWarden reports ~800 ms per call for runtime capability governance; quoted from the paper, not reproduced here.
 - Configuration-time enforcement is roughly **888888.9x** cheaper per call than the runtime figure it is compared against.
