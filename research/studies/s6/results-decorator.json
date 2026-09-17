@@ -1,0 +1,519 @@
+{
+  "study": 6,
+  "layer": "decorator",
+  "platform": {
+    "os": "Windows",
+    "release": "10",
+    "python": "3.11.9",
+    "runner": "local",
+    "toolseal_commit": "660e99e1f386bf95dd3b89dab9fb75fb3293dc1b"
+  },
+  "suite_sha256": "c2056d79e4879fb099a3f32f87d5e80f502441a74eb32a8e948f3bc22098edf0",
+  "hypotheses": {
+    "H1": "open - needs the proxy layer (T8)",
+    "H2": "open - needs the proxy layer (T8)",
+    "H3": "open - needs the proxy layer (T8)",
+    "H4": {
+      "claim": "Each decorator guard misses exactly the cases its own docstring says it misses",
+      "supported": true,
+      "cases": 34,
+      "mismatches": []
+    }
+  },
+  "cases": [
+    {
+      "id": "RA-01",
+      "guard": "require_approval",
+      "kind": "attack",
+      "expected": "blocked",
+      "observed": "blocked"
+    },
+    {
+      "id": "RA-02",
+      "guard": "require_approval",
+      "kind": "attack",
+      "expected": "missed",
+      "observed": "missed"
+    },
+    {
+      "id": "RA-03",
+      "guard": "require_approval",
+      "kind": "attack",
+      "expected": "missed",
+      "observed": "missed"
+    },
+    {
+      "id": "RA-B1",
+      "guard": "require_approval",
+      "kind": "benign",
+      "expected": "not_applicable",
+      "observed": "not_applicable"
+    },
+    {
+      "id": "BR-01",
+      "guard": "bound_runtime",
+      "kind": "attack",
+      "expected": "missed",
+      "observed": "missed"
+    },
+    {
+      "id": "BR-02",
+      "guard": "bound_runtime",
+      "kind": "attack",
+      "expected": "blocked",
+      "observed": "blocked"
+    },
+    {
+      "id": "BR-B1",
+      "guard": "bound_runtime",
+      "kind": "benign",
+      "expected": "allowed",
+      "observed": "allowed"
+    },
+    {
+      "id": "RE-01",
+      "guard": "restrict_egress",
+      "kind": "attack",
+      "expected": "blocked",
+      "observed": "blocked"
+    },
+    {
+      "id": "RE-02",
+      "guard": "restrict_egress",
+      "kind": "attack",
+      "expected": "missed",
+      "observed": "missed"
+    },
+    {
+      "id": "RE-03",
+      "guard": "restrict_egress",
+      "kind": "attack",
+      "expected": "missed",
+      "observed": "missed"
+    },
+    {
+      "id": "RE-04",
+      "guard": "restrict_egress",
+      "kind": "attack",
+      "expected": "missed",
+      "observed": "missed"
+    },
+    {
+      "id": "RE-05",
+      "guard": "restrict_egress",
+      "kind": "attack",
+      "expected": "missed",
+      "observed": "missed"
+    },
+    {
+      "id": "RE-06",
+      "guard": "restrict_egress",
+      "kind": "attack",
+      "expected": "missed",
+      "observed": "missed"
+    },
+    {
+      "id": "RE-B1",
+      "guard": "restrict_egress",
+      "kind": "benign",
+      "expected": "allowed",
+      "observed": "allowed"
+    },
+    {
+      "id": "RE-B2",
+      "guard": "restrict_egress",
+      "kind": "benign",
+      "expected": "allowed",
+      "observed": "allowed"
+    },
+    {
+      "id": "VS-01",
+      "guard": "validate_against_schema",
+      "kind": "attack",
+      "expected": "blocked",
+      "observed": "blocked"
+    },
+    {
+      "id": "VS-02",
+      "guard": "validate_against_schema",
+      "kind": "attack",
+      "expected": "missed",
+      "observed": "missed"
+    },
+    {
+      "id": "VS-03",
+      "guard": "validate_against_schema",
+      "kind": "attack",
+      "expected": "missed",
+      "observed": "missed"
+    },
+    {
+      "id": "VS-04",
+      "guard": "validate_against_schema",
+      "kind": "attack",
+      "expected": "missed",
+      "observed": "missed"
+    },
+    {
+      "id": "VS-B1",
+      "guard": "validate_against_schema",
+      "kind": "benign",
+      "expected": "allowed",
+      "observed": "allowed"
+    },
+    {
+      "id": "TE-01",
+      "guard": "raise_on_tool_error",
+      "kind": "attack",
+      "expected": "blocked",
+      "observed": "blocked"
+    },
+    {
+      "id": "TE-02",
+      "guard": "raise_on_tool_error",
+      "kind": "attack",
+      "expected": "missed",
+      "observed": "missed"
+    },
+    {
+      "id": "TE-B1",
+      "guard": "raise_on_tool_error",
+      "kind": "benign",
+      "expected": "false_block",
+      "observed": "false_block"
+    },
+    {
+      "id": "TE-B2",
+      "guard": "raise_on_tool_error",
+      "kind": "benign",
+      "expected": "allowed",
+      "observed": "allowed"
+    },
+    {
+      "id": "RD-01",
+      "guard": "redact",
+      "kind": "attack",
+      "expected": "blocked",
+      "observed": "blocked"
+    },
+    {
+      "id": "RD-02",
+      "guard": "redact",
+      "kind": "attack",
+      "expected": "missed",
+      "observed": "missed"
+    },
+    {
+      "id": "RD-03",
+      "guard": "redact",
+      "kind": "attack",
+      "expected": "missed",
+      "observed": "missed"
+    },
+    {
+      "id": "RD-04",
+      "guard": "redact",
+      "kind": "attack",
+      "expected": "blocked",
+      "observed": "blocked"
+    },
+    {
+      "id": "RD-B1",
+      "guard": "redact",
+      "kind": "benign",
+      "expected": "false_block",
+      "observed": "false_block"
+    },
+    {
+      "id": "RD-B2",
+      "guard": "redact",
+      "kind": "benign",
+      "expected": "allowed",
+      "observed": "allowed"
+    },
+    {
+      "id": "ME-01",
+      "guard": "minimal_environment",
+      "kind": "attack",
+      "expected": "blocked",
+      "observed": "blocked"
+    },
+    {
+      "id": "ME-02",
+      "guard": "minimal_environment",
+      "kind": "attack",
+      "expected": "missed",
+      "observed": "missed"
+    },
+    {
+      "id": "ME-03",
+      "guard": "minimal_environment",
+      "kind": "attack",
+      "expected": "missed",
+      "observed": "missed"
+    },
+    {
+      "id": "ME-B1",
+      "guard": "minimal_environment",
+      "kind": "benign",
+      "expected": "allowed",
+      "observed": "allowed"
+    }
+  ],
+  "rates": {
+    "bound_runtime": {
+      "attacks_blocked": 1,
+      "attacks_applicable": 2,
+      "block_rate": 0.5,
+      "benign_false_blocks": 0,
+      "benign_applicable": 1,
+      "false_block_rate": 0.0
+    },
+    "minimal_environment": {
+      "attacks_blocked": 1,
+      "attacks_applicable": 3,
+      "block_rate": 0.333,
+      "benign_false_blocks": 0,
+      "benign_applicable": 1,
+      "false_block_rate": 0.0
+    },
+    "raise_on_tool_error": {
+      "attacks_blocked": 1,
+      "attacks_applicable": 2,
+      "block_rate": 0.5,
+      "benign_false_blocks": 1,
+      "benign_applicable": 2,
+      "false_block_rate": 0.5
+    },
+    "redact": {
+      "attacks_blocked": 2,
+      "attacks_applicable": 4,
+      "block_rate": 0.5,
+      "benign_false_blocks": 1,
+      "benign_applicable": 2,
+      "false_block_rate": 0.5
+    },
+    "require_approval": {
+      "attacks_blocked": 1,
+      "attacks_applicable": 3,
+      "block_rate": 0.333,
+      "benign_false_blocks": 0,
+      "benign_applicable": 0,
+      "false_block_rate": null
+    },
+    "restrict_egress": {
+      "attacks_blocked": 1,
+      "attacks_applicable": 6,
+      "block_rate": 0.167,
+      "benign_false_blocks": 0,
+      "benign_applicable": 2,
+      "false_block_rate": 0.0
+    },
+    "validate_against_schema": {
+      "attacks_blocked": 1,
+      "attacks_applicable": 4,
+      "block_rate": 0.25,
+      "benign_false_blocks": 0,
+      "benign_applicable": 1,
+      "false_block_rate": 0.0
+    }
+  },
+  "latency": {
+    "evidence_on (shipped default, primary)": {
+      "require_approval": {
+        "enforcing": {
+          "repeats": 1000,
+          "median_us": 87.2,
+          "p95_us": 114.9,
+          "p99_us": 182.3
+        },
+        "allowing": "not measured: the only machine-reachable allow path is the approval override, which Study 6 forbids"
+      },
+      "restrict_egress": {
+        "enforcing": {
+          "repeats": 1000,
+          "median_us": 89.7,
+          "p95_us": 120.2,
+          "p99_us": 176.7
+        },
+        "allowing": {
+          "repeats": 1000,
+          "median_us": 86.1,
+          "p95_us": 116.0,
+          "p99_us": 148.8
+        }
+      },
+      "validate_against_schema": {
+        "enforcing": {
+          "repeats": 1000,
+          "median_us": 87.0,
+          "p95_us": 110.3,
+          "p99_us": 201.2
+        },
+        "allowing": {
+          "repeats": 1000,
+          "median_us": 85.0,
+          "p95_us": 131.3,
+          "p99_us": 210.7
+        }
+      },
+      "raise_on_tool_error": {
+        "enforcing": {
+          "repeats": 1000,
+          "median_us": 84.65,
+          "p95_us": 103.8,
+          "p99_us": 133.6
+        },
+        "allowing": {
+          "repeats": 1000,
+          "median_us": 83.3,
+          "p95_us": 102.2,
+          "p99_us": 145.6
+        }
+      },
+      "bound_runtime": {
+        "enforcing": {
+          "repeats": 200,
+          "median_us": 9117.75,
+          "p95_us": 10289.9,
+          "p99_us": 10420.1,
+          "measure": "overshoot past a 0.001 s bound"
+        },
+        "enforcing_net_of_control": {
+          "repeats": 200,
+          "median_us": -5775.55,
+          "p95_us": -5075.8,
+          "p99_us": -3438.1,
+          "measure": "guarded timeout path minus a bare Thread.join(timeout=0.001) on the same body - exploratory control"
+        },
+        "allowing": {
+          "repeats": 1000,
+          "median_us": 260.5,
+          "p95_us": 319.8,
+          "p99_us": 372.1
+        }
+      },
+      "redact": {
+        "enforcing": {
+          "repeats": 1000,
+          "median_us": 4.5,
+          "p95_us": 5.5,
+          "p99_us": 12.5
+        },
+        "allowing": {
+          "repeats": 1000,
+          "median_us": 3.8,
+          "p95_us": 6.4,
+          "p99_us": 13.6
+        }
+      },
+      "minimal_environment": {
+        "enforcing": {
+          "repeats": 1000,
+          "median_us": -20.5,
+          "p95_us": -18.8,
+          "p99_us": -18.4
+        },
+        "allowing": "same path as enforcing"
+      }
+    },
+    "evidence_off": {
+      "require_approval": {
+        "enforcing": {
+          "repeats": 1000,
+          "median_us": 1.3,
+          "p95_us": 2.1,
+          "p99_us": 2.5
+        },
+        "allowing": "not measured: the only machine-reachable allow path is the approval override, which Study 6 forbids"
+      },
+      "restrict_egress": {
+        "enforcing": {
+          "repeats": 1000,
+          "median_us": 1.8,
+          "p95_us": 3.2,
+          "p99_us": 3.3
+        },
+        "allowing": {
+          "repeats": 1000,
+          "median_us": 1.2,
+          "p95_us": 1.3,
+          "p99_us": 1.8
+        }
+      },
+      "validate_against_schema": {
+        "enforcing": {
+          "repeats": 1000,
+          "median_us": 1.3,
+          "p95_us": 1.7,
+          "p99_us": 2.2
+        },
+        "allowing": {
+          "repeats": 1000,
+          "median_us": 0.8,
+          "p95_us": 1.5,
+          "p99_us": 1.7
+        }
+      },
+      "raise_on_tool_error": {
+        "enforcing": {
+          "repeats": 1000,
+          "median_us": 1.1,
+          "p95_us": 1.7,
+          "p99_us": 13.7
+        },
+        "allowing": {
+          "repeats": 1000,
+          "median_us": 0.7,
+          "p95_us": 0.8,
+          "p99_us": 1.3
+        }
+      },
+      "bound_runtime": {
+        "enforcing": {
+          "repeats": 200,
+          "median_us": 8367.6,
+          "p95_us": 10046.8,
+          "p99_us": 10388.1,
+          "measure": "overshoot past a 0.001 s bound"
+        },
+        "enforcing_net_of_control": {
+          "repeats": 200,
+          "median_us": -5688.15,
+          "p95_us": -5027.5,
+          "p99_us": -4929.6,
+          "measure": "guarded timeout path minus a bare Thread.join(timeout=0.001) on the same body - exploratory control"
+        },
+        "allowing": {
+          "repeats": 1000,
+          "median_us": 79.9,
+          "p95_us": 128.6,
+          "p99_us": 163.4
+        }
+      },
+      "redact": {
+        "enforcing": {
+          "repeats": 1000,
+          "median_us": 4.5,
+          "p95_us": 5.4,
+          "p99_us": 9.0
+        },
+        "allowing": {
+          "repeats": 1000,
+          "median_us": 3.7,
+          "p95_us": 4.9,
+          "p99_us": 8.1
+        }
+      },
+      "minimal_environment": {
+        "enforcing": {
+          "repeats": 1000,
+          "median_us": -21.0,
+          "p95_us": -19.4,
+          "p99_us": -18.6
+        },
+        "allowing": "same path as enforcing"
+      }
+    }
+  }
+}
