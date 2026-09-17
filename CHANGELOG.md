@@ -35,6 +35,39 @@ would notice, not by the internal step numbers used to plan the work.
   that is what resolved, and `toolseal doctor` lists every backend with its
   availability and posture.
 
+- **MITRE ATLAS as a sixth standards catalogue.** `mitre-atlas`, content
+  version `2026.09`, Apache-2.0. It is the only adversary-behaviour catalogue
+  here - the other five enumerate obligations, ATLAS enumerates what an
+  attacker does - which is the gap a reviewer notices first in an
+  adversarial-surface argument. All 28 checks now cite an ATLAS technique.
+
+  **The percentage measures a curated subset, not ATLAS.** ATLAS 2026.09
+  publishes 120 techniques and 88 sub-techniques; this catalogue lists 16,
+  selected as the ones a configuration check bears on. `toolseal policy list`
+  reports `mitre-atlas 100%* 14/14`, and the `*` means what it means for
+  `nist-ai-rmf` and `iso-42001` - coverage of our selection, not of the
+  standard. A test now also requires every checkable entry to be cited by
+  something, so that figure cannot quietly drift downward.
+
+  Two techniques are listed and marked `checkable = false`: `AML.T0051`
+  (LLM Prompt Injection) and `AML.T0080` (AI Agent Context Poisoning). They
+  are named rather than omitted so the gap appears in `policy list` instead
+  of being hidden behind a narrower denominator, and a test refuses any check
+  that tries to cite one.
+
+  Sourced from the primary distribution (`mitre-atlas/atlas-data`), not the
+  website, which is a JavaScript application. Two files there look
+  authoritative and are not: `dist/ATLAS.yaml` declares itself deprecated in
+  its own first line, and `dist/ATLAS-latest.yaml` is a symlink.
+
+- **The drift guard now covers severities.** `reference/taxonomy.md` recorded
+  this against itself: the guard compared control sets per check but never
+  severities, so a severity could drift between the document and the code
+  unnoticed. That is not cosmetic - `blocking` is defined as any applicable
+  `critical` check failing, and the score is a severity-weighted pass rate,
+  so a drifted severity changes both the verdict and the number. `C2` is a
+  named exemption, because it takes its severity from the advisory it reports.
+
 ### Changed
 
 - **Family A's remediations no longer name the OS keychain as the only answer.**
@@ -46,7 +79,9 @@ would notice, not by the internal step numbers used to plan the work.
 
 ### Notes
 
-- **No check ids were added and no score changed.** Credential posture is
+- **Across all of the above, no check ids were added and no score changed.**
+  ATLAS citations are metadata and carry no weight; the severity guard found
+  the document and code already in agreement. Credential posture is
   information, not a check: it is resolved in the CLI from the manifest and
   never enters `ProjectModel`, so no check can read it. A fresh `toolseal init`
   still audits 100/100 on either backend.
