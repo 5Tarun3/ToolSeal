@@ -314,7 +314,7 @@ rate)`, with every per-case outcome alongside the aggregates.
 Expected outcomes were declared from reading source, not from execution. Proxy
 expectations are design commitments for a proxy not yet built.
 
-**Registered suite.** `research/studies/s6/attack-suite.toml` sha256: `PENDING`
+**Registered suite.** `research/studies/s6/attack-suite.toml` sha256: `c2056d79e4879fb099a3f32f87d5e80f502441a74eb32a8e948f3bc22098edf0`
 
 ### Baselines
 
