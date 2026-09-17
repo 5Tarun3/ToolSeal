@@ -1,0 +1,240 @@
+# Study 6 baseline survey - 2026-09-17.
+#
+# Judged against research/studies/s6/baseline-criteria.md, committed before any
+# candidate below was examined (commit bc3cd23). No rule was added afterwards.
+#
+# How candidates were found. Recorded web searches, 2026-09-17:
+#   1. "MCP proxy gateway security intercept tool calls open source github"
+#   2. "agent framework guardrails tool call middleware human in the loop tool guardrail"
+#   3. "open source guardrail library for LLM agents tool call validation runtime policy"
+# plus the two runtime systems cited in this project's literature set:
+# Fides [P12] and AgentWarden [P14].
+#
+# Survey boundary. Every repository a search returned directly is recorded
+# below, whatever its disposition. Search result summaries were used only to
+# nominate candidates; no claim here rests on them. Entries inside a
+# curated list (e2b-dev/awesome-mcp-gateways) were NOT expanded, and are named
+# here so the boundary is visible rather than silent: agentgateway, Gram
+# (speakeasy-api), Kuadrant MCP Gateway, IBM MCP Context Forge, mcpproxy-go,
+# MetaMCP, Microsoft MCP Gateway, ToolSDK MCP Registry. Surveying them is a
+# deviation, not a correction.
+#
+# Evidence. Every record rests on primary sources only: GitHub API metadata
+# (licence, default-branch commit) and verbatim text from the system's own
+# README or documentation, with the snapshot's sha256 and retrieval time, per
+# the protocol's snapshotting rule. `evidence` is quoted text, never paraphrase.
+#
+# criteria_5_6 records whether criteria 5 (installs without an account, API key
+# or hosted service) and 6 (runs offline) are *evidenced* for a reproduced
+# system. It is a verification status, not an additional criterion. Where it is
+# "unverified", the system is reproduced on the evidence of criteria 1-4 and is
+# confirmed at install time in T10; a system that fails there is reclassified
+# as quoted and the change recorded as a deviation.
+
+[[baseline]]
+name = "mcpwall"
+category = "mcp-proxy"
+repository = "https://github.com/behrensd/mcpwall"
+licence = "Apache-2.0"
+commit = "c5a8b25b54fbbd1eb24e319b4ca5bd0fe87d1b89"
+retrieved_at = "2026-09-17T10:07:28+00:00"
+snapshot = "README sha256 51fc323cf6c2b8de327c314ec012641f51a7aab71780b2f5b199287bbaf87c02"
+evidence = "Sits between your AI coding tool (Claude Code, Cursor, Windsurf) and MCP servers, intercepting every JSON-RPC message and enforcing YAML-defined policies. | **iptables for MCP.** Blocks dangerous tool calls, scans for secret leakage, logs everything. No AI, no cloud, pure rules."
+disposition = "reproduced"
+criteria_5_6 = "verified"
+reason = "Stdio proxy that intercepts every JSON-RPC message and blocks tool calls by YAML policy. The LICENSE file is Apache-2.0 (the GitHub API reports NOASSERTION because it cannot classify the file). Its own README states 'No AI, no cloud, pure rules', which evidences criteria 5 and 6."
+
+[[baseline]]
+name = "Lasso MCP Gateway"
+category = "mcp-proxy"
+repository = "https://github.com/lasso-security/mcp-gateway"
+licence = "MIT"
+commit = "7e7f1f6e5314819b3d0928128bb88eaea874b600"
+retrieved_at = "2026-09-17T10:07:31+00:00"
+snapshot = "README sha256 66b8f5bccd53953a5deb66d7ca02fc6d80dcce48b891a69ef62eaf79d43fc68a"
+evidence = "3. 🛡️ Intercepts requests and responses to sanitize sensitive information. | MCP Gateway supports various plugins to enhance security and functionality. Here's a summary of the built-in guardrail plugins:"
+disposition = "reproduced"
+criteria_5_6 = "unverified"
+reason = "MCP gateway that intercepts requests and responses through guardrail plugins. The Lasso guardrail plugin calls Lasso's hosted API and is out of scope for reproduction; only locally-run plugins are eligible. Criteria 5-6 confirmed at install (T10)."
+
+[[baseline]]
+name = "MCP Agent Security Gateway"
+category = "mcp-proxy"
+repository = "https://github.com/poojakira/mcp-agent-security-gateway"
+licence = "MIT"
+commit = "0f25219d0f20521382819654f8a267202febe304"
+retrieved_at = "2026-09-17T10:07:35+00:00"
+snapshot = "README sha256 a26ce30badbac96b821c081a25d9053954c3e5850d78f38e62bab0d949772be2"
+evidence = "- MCP `tools/call` inspection | - inline allow/block decisions | - Does the requested destination violate configured policy?"
+disposition = "reproduced"
+criteria_5_6 = "unverified"
+reason = "Inline MCP stdio proxy with tools/call inspection, allow/block decisions and egress policy. Single-author project. Criteria 5-6 confirmed at install (T10)."
+
+[[baseline]]
+name = "Unified MCP Gateway"
+category = "mcp-proxy"
+repository = "https://github.com/SidPad03/unified-mcp-gateway"
+licence = "Apache-2.0"
+commit = "545aa792becf96cac5055a0ab6c3f39c4498fa43"
+retrieved_at = "2026-09-17T10:07:39+00:00"
+snapshot = "README sha256 20f36d12b465dc2b39b153a7fcd1fc0e3419a2e292994b3550fddd581136adc0"
+evidence = "| **mcp-gateway-server** | Rust, Axum, PostgreSQL | Core gateway — MCP protocol routing, auth, policy enforcement, audit, metrics |"
+disposition = "reproduced"
+criteria_5_6 = "unverified"
+reason = "Self-hosted MCP gateway (Rust, PostgreSQL) with policy enforcement. Requires a local PostgreSQL. Criteria 5-6 confirmed at install (T10)."
+
+[[baseline]]
+name = "Lunar MCPX"
+category = "mcp-proxy"
+repository = "https://github.com/TheLunarCompany/lunar"
+licence = "MIT"
+commit = "2c6122c050b73b8d85d30db4d26f500bc3e8eb0f"
+retrieved_at = "2026-09-17T10:07:42+00:00"
+snapshot = "README sha256 3358970df229ef8fe63531b3fc22a9d35940cfd6612b6c017609ac519666e5a0"
+evidence = "- **AI-Aware Policy Enforcement:** Control tool access, throttle agent actions, and govern agentic traffic with fine-grained rules."
+disposition = "reproduced"
+criteria_5_6 = "unverified"
+reason = "MCP gateway with policy enforcement over tool access. lunar.dev also offers a hosted product; only the open-source self-hosted proxy is eligible. Criteria 5-6 confirmed at install (T10)."
+
+[[baseline]]
+name = "mcp-api-gateway"
+category = "mcp-proxy"
+repository = "https://github.com/Vidmich/mcp-api-gateway"
+licence = "MIT"
+commit = "43e5a1054844a589f044e5c00285c442f75cfaf1"
+retrieved_at = "2026-09-17T10:07:45+00:00"
+snapshot = "README sha256 bc88000b40b975b80b9ce50b9542ab8a98151554d9513f8d761b43238e7ca1dd"
+evidence = "to correct itself. A call to an MCP server's tool is forwarded as `tools/call`"
+disposition = "excluded"
+criteria_5_6 = "n/a"
+reason = "Forwards tools/call to upstream servers, but no evidence was located that it evaluates or refuses a call. Fails criterion 2."
+
+[[baseline]]
+name = "mitmproxy-mcp"
+category = "mcp-proxy"
+repository = "https://github.com/snapspecter/mitmproxy-mcp"
+licence = "MIT"
+commit = "b53e3c6c75f043eec05c21ffa63e9d0e240d07af"
+retrieved_at = "2026-09-17T10:07:48+00:00"
+snapshot = "README sha256 12148cf36bcbc0c483f807c199728acbef36442778b896382e276c6feb24706b"
+evidence = "A Model Context Protocol (MCP) server that transforms mitmproxy into a powerful toolset for AI agents. This allows LLMs (like Claude, GPT-4, or local models) to inspect, modify, and replay HTTP/HTTPS traffic in real-time."
+disposition = "excluded"
+criteria_5_6 = "n/a"
+reason = "An MCP server that exposes mitmproxy to an agent as tools. It intercepts HTTP traffic on the agent's behalf; it does not intercept the agent's tool calls. Fails criterion 2."
+
+[[baseline]]
+name = "awesome-mcp-gateways"
+category = "mcp-proxy"
+repository = "https://github.com/e2b-dev/awesome-mcp-gateways"
+licence = "none"
+commit = "9548c874fc9fabfc10556a7d9176f78884a5dc93"
+retrieved_at = "2026-09-17T10:07:51+00:00"
+snapshot = "README sha256 5e88c438dd0e2050a4dc4f6c4295be495b93ff84a5afb0914f99d0df9d080950"
+evidence = "- [agentgateway](https://github.com/agentgateway/agentgateway) - Next Generation Agentic Proxy for AI Agents and MCP servers that provides drop-in security, observability, and governance for agent-to-agent and agent-to-tool communication."
+disposition = "excluded"
+criteria_5_6 = "n/a"
+reason = "A curated list, not a system. Its entries were not expanded - see the survey boundary in this file's header."
+
+[[baseline]]
+name = "LangChain human-in-the-loop middleware"
+category = "framework-middleware"
+repository = "https://github.com/langchain-ai/langchain"
+licence = "MIT"
+commit = "5c1f28271295bb13034f4cf8964f74c117357d40"
+retrieved_at = "2026-09-17T10:08:45+00:00"
+snapshot = "https://docs.langchain.com/oss/python/langchain/human-in-the-loop sha256 f9142e4c8c70740689e81f0ce2a28fa3d882498d72183eeb6b7a1fc32444f73e"
+evidence = "lets you add human oversight to agent tool calls. | It does this by checking each tool call against a configurable policy. | Skip executing this tool call entirely and return rejection feedback to the agent."
+disposition = "reproduced"
+criteria_5_6 = "unverified"
+reason = "Agent middleware that checks each tool call against a policy and can skip executing it. Criteria 5-6 confirmed at install (T10); measurement needs a stub model, since the agent loop calls one."
+
+[[baseline]]
+name = "OpenAI Agents SDK tool guardrails"
+category = "framework-middleware"
+repository = "https://github.com/openai/openai-agents-python"
+licence = "MIT"
+commit = "58a6d2c932810fcf9cb7a1a5a68e666ff04553ed"
+retrieved_at = "2026-09-17T10:08:45+00:00"
+snapshot = "https://openai.github.io/openai-agents-python/guardrails/ sha256 7ec1a8d48ae8be9dcbd633b335f50816a78894c4ac854611f95b845a6e4fd75a"
+evidence = "If you need checks before and/or after each custom function-tool call in a workflow that includes managers, handoffs, or delegated specialists, use tool guardrails instead of relying only on agent-level input/output guardrails."
+disposition = "reproduced"
+criteria_5_6 = "unverified"
+reason = "Tool guardrails run before and/or after each function-tool call. Criteria 5-6 confirmed at install (T10); measurement needs a stub model."
+
+[[baseline]]
+name = "Microsoft Agent Framework tool approval"
+category = "framework-middleware"
+repository = "https://github.com/microsoft/agent-framework"
+licence = "MIT"
+commit = "a3fc29dbd63a5223ece479b9b7eed53f50144999"
+retrieved_at = "2026-09-17T10:08:47+00:00"
+snapshot = "https://raw.githubusercontent.com/microsoft/agent-framework/main/python/samples/02-agents/tools/README.md sha256 12bcbf95472096b9852c1d1080f94c9f3b3e7f6b3eae16505c276d6310ae423b"
+evidence = "| [`function_tool_with_approval.py`](function_tool_with_approval.py) | Requiring human approval before a tool runs. | | [`function_tool_with_approval_and_sessions.py`](function_tool_with_approval_and_sessions.py) | Tool approvals combined with sessions. | | [`tool_approval_middleware.py`](tool_approval_middleware.py) | Session-backed approval coordination, mixed-batch approvals, and \"always approve\" rules."
+disposition = "reproduced"
+criteria_5_6 = "unverified"
+reason = "Function tools with approval, and a tool-approval middleware, gate a tool before it runs. Criteria 5-6 confirmed at install (T10)."
+
+[[baseline]]
+name = "NeMo Guardrails agent middleware"
+category = "guardrail-library"
+repository = "https://github.com/NVIDIA/NeMo-Guardrails"
+licence = "Apache-2.0"
+commit = "f4013f6a1e761e4832af8b59ac119e421c768a64"
+retrieved_at = "2026-09-17T10:08:46+00:00"
+snapshot = "https://docs.nvidia.com/nemo/guardrails/integration-with-third-party-libraries/langchain/agent-middleware sha256 0ad9620c38d936b8f134893573d4dc7251da8b9811ec4bb1d6186310f44bfc0f"
+evidence = ", including intermediate tool-calling steps. | run after every model response, including intermediate tool-calling responses."
+disposition = "reproduced"
+criteria_5_6 = "unverified"
+reason = "Rails run on every model response including intermediate tool-calling responses, so a tool call the model requested can be refused before execution. It inspects the model's tool-call message rather than the invocation itself - recorded as a weaker interception point. LICENSE.md carries SPDX Apache-2.0 (the API reports NOASSERTION). Rails that call a model are not offline and are excluded from reproduction; criteria 5-6 confirmed at install (T10)."
+
+[[baseline]]
+name = "Guardrails AI"
+category = "guardrail-library"
+repository = "https://github.com/guardrails-ai/guardrails"
+licence = "Apache-2.0"
+commit = "06d0ff2c5f9bcb493d976b76f885e37e41ce845d"
+retrieved_at = "2026-09-17T10:08:10+00:00"
+snapshot = "README sha256 6031353db4bfd3cd632034193b2958ccdf940943b8dbc33ee04aeee7c3a99c0e; https://guardrailsai.com/guardrails/docs sha256 05c4d127953372b1663dd86e0ed1c30e559bb3a155ef734fe9e6fd596807327f"
+evidence = "no excerpt showing tool-call interception was located"
+disposition = "excluded"
+criteria_5_6 = "n/a"
+reason = "The README and the fetched documentation page yielded no primary evidence of evaluating or refusing a tool invocation; they describe input and output validation. Fails criterion 2 on the evidence located. This is absence of evidence found, not a finding that the capability cannot exist - a later survey locating such evidence is a deviation."
+
+[[baseline]]
+name = "guardrail-layer"
+category = "guardrail-library"
+repository = "https://github.com/rishrav/guardrail-layer"
+licence = "none"
+commit = "60de1a29ba7d132b76cf7b45216251029bf7ef39"
+retrieved_at = "2026-09-17T10:08:13+00:00"
+snapshot = "README sha256 c6d5487c077181f065efa1a5d05743d6c31a19d5bb63faac9d50399f9596c047"
+evidence = "| Policy + injection detection | 3.8% | 96.2% | 44.4% | | A[create_agent] --> MW[GuardrailMiddleware]"
+disposition = "quoted"
+criteria_5_6 = "n/a"
+reason = "LangChain agent middleware that screens tool calls. No licence file exists, so it cannot be reproduced under criterion 4. Its README publishes attack-success and blocking rates on its own suite; those are quoted, not reproduced."
+
+[[baseline]]
+name = "Fides Gateway"
+category = "mcp-proxy"
+repository = "https://github.com/microsoft/fides-gateway"
+licence = "MIT"
+commit = "default branch main, pushed 2026-07-10T10:54:44Z"
+retrieved_at = "2026-09-17"
+snapshot = "README sha256 55c96f898e02ab72dd8b7ae6f768cace1db94f83ee0b6cc6d203e1a1048cd52f"
+evidence = "The gateway also registers a policy-evaluation tool on every proxy: | \"delete_file\":{ \"literal\": \"package policy\\n\\ndefault allow := false\\n\" }"
+disposition = "quoted"
+criteria_5_6 = "unverified"
+reason = "MCP proxy from the authors of Fides [P12], with per-tool Rego policy that can deny a call. Its documented defaults include an MSAL token cache, so installing and running without an account is not evidenced; classified quoted under criterion 5 until an offline run is shown. It publishes no latency figure, so as quoted it contributes no measured point. The companion microsoft/fides repository is a notebook accompanying the paper, not an interception point, and is not surveyed separately."
+
+[[baseline]]
+name = "AgentWarden"
+category = "framework-middleware"
+repository = "none located"
+licence = "unknown"
+commit = "n/a"
+retrieved_at = "2026-09-17"
+snapshot = "GitHub repository search for 'AgentWarden', 2026-09-17: five same-named repositories"
+evidence = "none - no repository attributable to the paper was located"
+disposition = "excluded"
+criteria_5_6 = "n/a"
+reason = "Sidik & Rokach, AgentWarden [P14], preprint. A repository search returned five same-named projects (Tbhuvan, reggiethegreat8, serverul, gulivan, AlanMcBuilds), none attributable to the paper's authors - one is a small Rust demo, one an MCP moderation server. None is treated as the paper's implementation. Fails criterion 3. Its ~800 ms figure remains Study 3's quoted reference point and is not a Study 6 baseline."
