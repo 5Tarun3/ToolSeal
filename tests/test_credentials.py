@@ -19,7 +19,9 @@ from toolseal.core.credentials import (
     GITIGNORE_ENTRIES,
     NULL_BACKENDS,
     PRECOMMIT_CONFIG,
+    EnvironmentStore,
     KeyringStore,
+    Posture,
     environment_reference,
     is_placeholder,
     merge_gitignore,
@@ -267,3 +269,100 @@ def test_precommit_config_ships_the_policy_verify_hook() -> None:
 
 def test_environment_reference_carries_no_value() -> None:
     assert environment_reference("ANTHROPIC_API_KEY") == "ANTHROPIC_API_KEY="
+
+
+# --- the environment backend -----------------------------------------------
+#
+# The backend a deployed agent can actually use. Every test here is about the
+# same distinction the keychain tests above are about: what it does, and what
+# it refuses to pretend.
+
+
+def test_environment_store_reads_a_prefixed_variable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("TOOLSEAL_CREDENTIAL_ANTHROPIC", "sk-real-value")
+    assert EnvironmentStore().get("anthropic") == "sk-real-value"
+
+
+def test_environment_store_normalises_the_account_name(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Provider ids are lowercase and may hyphenate; environment variables
+    # conventionally do neither.
+    monkeypatch.setenv("TOOLSEAL_CREDENTIAL_AZURE_OPENAI", "value")
+    assert EnvironmentStore().get("azure-openai") == "value"
+
+
+def test_environment_store_returns_none_when_unset(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("TOOLSEAL_CREDENTIAL_ANTHROPIC", raising=False)
+    assert EnvironmentStore().get("anthropic") is None
+
+
+def test_environment_store_treats_an_empty_value_as_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # A deployment that exported the variable but supplied nothing has not
+    # supplied a credential, and reporting "" as one would push the failure
+    # to whatever tries to authenticate with it.
+    monkeypatch.setenv("TOOLSEAL_CREDENTIAL_ANTHROPIC", "")
+    assert EnvironmentStore().get("anthropic") is None
+
+
+def test_environment_store_refuses_to_set() -> None:
+    # The central guarantee, and the reason this store is not simply a
+    # writable keychain substitute: assigning os.environ changes only this
+    # process and its future children. A credential "stored" that way is gone
+    # the moment the process exits, so claiming success would be a lie of
+    # exactly the kind KeyringStore refuses to tell.
+    with pytest.raises(ConfigError, match="cannot store"):
+        EnvironmentStore().set("anthropic", "sk-real-value")
+
+
+def test_refusing_to_set_names_the_variable_to_use() -> None:
+    # Honest is not enough; it has to be actionable. The deployer needs the
+    # exact name, not a description of one.
+    with pytest.raises(ConfigError, match="TOOLSEAL_CREDENTIAL_ANTHROPIC"):
+        EnvironmentStore().set("anthropic", "sk-real-value")
+
+
+def test_refusing_to_set_does_not_echo_the_value() -> None:
+    # Same rule the keychain path follows: an error message is a place
+    # credentials leak into logs and tickets.
+    with pytest.raises(ConfigError) as caught:
+        EnvironmentStore().set("anthropic", "sk-secret-do-not-echo")
+    assert "sk-secret-do-not-echo" not in str(caught.value)
+
+
+def test_environment_store_refuses_to_delete() -> None:
+    with pytest.raises(ConfigError, match="cannot remove"):
+        EnvironmentStore().delete("anthropic")
+
+
+def test_environment_store_is_always_available() -> None:
+    # Reachability, not strength. Every process has an environment; whether
+    # relying on it is a good idea is what `posture` answers.
+    assert EnvironmentStore().available()
+
+
+# --- posture ----------------------------------------------------------------
+
+
+def test_the_two_stores_report_different_postures() -> None:
+    assert KeyringStore().posture is Posture.STRONG
+    assert EnvironmentStore().posture is Posture.WEAKER
+
+
+def test_every_store_explains_its_posture() -> None:
+    for store in (KeyringStore(), EnvironmentStore()):
+        assert store.posture_note
+
+
+def test_environment_posture_note_names_the_actual_exposure() -> None:
+    # The audit prints this. It has to say what is concretely weaker about
+    # the environment, not merely that something is.
+    note = EnvironmentStore().posture_note
+    assert "child process" in note
+    assert "process table" in note

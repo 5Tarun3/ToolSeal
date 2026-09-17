@@ -18,12 +18,19 @@ one that stops, because the user believes they are protected.
 
 from __future__ import annotations
 
+import os
 import re
+from enum import StrEnum
 from typing import Final, Protocol
 
 from toolseal.errors import ConfigError
 
 SERVICE_NAME: Final = "toolseal"
+
+# Prefix for the environment backend's variables. Namespaced so that a value
+# toolseal is expected to resolve cannot be confused with whatever else the
+# deployment happens to export.
+ENV_PREFIX: Final = "TOOLSEAL_CREDENTIAL_"
 
 # Pinned exactly, matching this project's own dependency. A generated project
 # that resolves its credential from the keychain at runtime (`agent.py`) needs
@@ -93,11 +100,27 @@ _PLACEHOLDER = re.compile(
 )
 
 
+class Posture(StrEnum):
+    """How well a store protects what it holds.
+
+    Supporting a backend is not a claim that it is as good as the others, and a
+    report that listed both without distinguishing them would imply exactly
+    that. The difference travels as data on the store so it cannot be dropped
+    by whoever renders the report.
+    """
+
+    STRONG = "strong"
+    WEAKER = "weaker"
+
+
 class CredentialStore(Protocol):
     """Somewhere a credential can live that is not the project directory."""
 
-    @property
-    def name(self) -> str: ...
+    name: str
+    posture: Posture
+    """How well this store protects the value, for reporting."""
+    posture_note: str
+    """One clause naming the concrete exposure, for the audit report."""
 
     def available(self) -> bool:
         """Whether this store can actually be used on this machine."""
@@ -119,6 +142,11 @@ class KeyringStore:
     """
 
     name: Final = "os-keychain"
+    posture: Final = Posture.STRONG
+    posture_note: Final = (
+        "the OS keychain holds the value outside the project directory and "
+        "outside the process environment"
+    )
 
     def __init__(self, service: str = SERVICE_NAME) -> None:
         self._service = service
@@ -210,6 +238,83 @@ class KeyringStore:
         except Exception:
             # Deleting something already absent is the desired end state.
             return
+
+
+class EnvironmentStore:
+    """Credentials supplied by the process environment.
+
+    The backend a deployed agent can actually use. A container has no keychain
+    and a systemd unit has no unlocked session, so the environment is where a
+    secret manager, an orchestrator or a CI runner puts a value on its way in.
+
+    **This store is deliberately read-only.** ``os.environ`` can be assigned,
+    but the assignment reaches only this process and children it spawns
+    afterwards; nothing survives the process exiting. A ``set()`` that appeared
+    to succeed and silently persisted nothing is the same class of lie as a
+    keychain degrading to plaintext, so both ``set`` and ``delete`` refuse and
+    name what to do instead. The value arrives from outside or it does not
+    arrive.
+
+    It is also genuinely weaker than the keychain, which :attr:`posture` says
+    out loud: an environment variable is readable by every child process and by
+    anything that can enumerate the process table.
+    """
+
+    name: Final = "environment"
+    posture: Final = Posture.WEAKER
+    posture_note: Final = (
+        "an environment variable is visible to every child process and to "
+        "anything that can read the process table"
+    )
+
+    def __init__(self, prefix: str = ENV_PREFIX) -> None:
+        self._prefix = prefix
+
+    def available(self) -> bool:
+        """Always true: every process has an environment.
+
+        This reports *reachability*, not strength. :attr:`posture` is what says
+        this store is the weaker of the two, and the two questions are kept
+        apart on purpose - conflating them is how "it works here" turns into
+        "it is fine here".
+        """
+        return True
+
+    def variable_for(self, account: str) -> str:
+        """The environment variable *account* is read from.
+
+        Provider ids are lowercase and may hyphenate; environment variables
+        conventionally do neither, so the name is normalised rather than
+        requiring the deployer to guess which spelling is expected.
+        """
+        suffix = account.strip().upper().replace("-", "_")
+        return f"{self._prefix}{suffix}"
+
+    def get(self, account: str) -> str | None:
+        value = os.environ.get(self.variable_for(account))
+        # An unset variable and one exported empty mean the same thing here. A
+        # deployment that exported nothing has not supplied a credential, and
+        # returning "" would push the failure to whatever tries to
+        # authenticate with it.
+        return value or None
+
+    def set(self, account: str, value: str) -> None:
+        # Deliberately does not include *value*: an error message is one of the
+        # places credentials leak into logs and support tickets.
+        message = (
+            f"the environment backend cannot store {account!r}: assigning a variable "
+            "here would last only as long as this process. Set "
+            f"{self.variable_for(account)} in your deployment platform's secret "
+            "configuration instead."
+        )
+        raise ConfigError(message)
+
+    def delete(self, account: str) -> None:
+        message = (
+            f"the environment backend cannot remove {account!r}: unset "
+            f"{self.variable_for(account)} where it is configured."
+        )
+        raise ConfigError(message)
 
 
 def is_placeholder(value: str) -> bool:
