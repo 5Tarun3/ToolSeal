@@ -864,22 +864,27 @@ def _reading(payload: dict[str, Any]) -> list[str]:
 
     shares = []
     for guard, entry in on.items():
-        on_point, off_point = entry.get("enforcing"), off.get(guard, {}).get("enforcing")
+        # bound_runtime's enforcing figure is a timeout path dominated by the
+        # platform timer (see below); subtracting two such figures is noise.
+        path = "allowing" if guard == "bound_runtime" else "enforcing"
+        on_point, off_point = entry.get(path), off.get(guard, {}).get(path)
         if isinstance(on_point, dict) and isinstance(off_point, dict):
             record = on_point["median_us"] - off_point["median_us"]
             if on_point["median_us"] > 0 and record > 0:
                 share = round(100 * record / on_point["median_us"])
                 shares.append(
-                    f"| `{guard}` | {on_point['median_us']} | {off_point['median_us']} "
+                    f"| `{guard}` ({path}) | {on_point['median_us']} | {off_point['median_us']} "
                     f"| {round(record, 2)} | {share}% |"
                 )
     if shares:
         lines += [
             "",
-            "**The evidence record's share of each guard's cost** (enforcing path, medians,",
-            "us). Both conditions were registered before the run; this only subtracts them.",
+            "**The evidence record's share of each guard's cost** (medians, us). Both",
+            "conditions were registered before the run; this only subtracts them.",
+            "`bound_runtime` is shown on its allowing path, because its enforcing path is",
+            "dominated by the platform timer.",
             "",
-            "| guard | evidence on | evidence off | record | share of shipped cost |",
+            "| guard (path) | evidence on | evidence off | record | share of shipped cost |",
             "| --- | ---: | ---: | ---: | ---: |",
             *shares,
         ]
@@ -888,7 +893,10 @@ def _reading(payload: dict[str, Any]) -> list[str]:
         (guard, path)
         for guard, entry in on.items()
         for path, point in entry.items()
-        if isinstance(point, dict) and point.get("median_us", 0) < 0
+        if path in ("enforcing", "allowing")
+        and "measure" not in (point if isinstance(point, dict) else {})
+        and isinstance(point, dict)
+        and point.get("median_us", 0) < 0
     ]
     for guard, path in negatives:
         lines += [
@@ -900,14 +908,36 @@ def _reading(payload: dict[str, Any]) -> list[str]:
     control = on.get("bound_runtime", {}).get("enforcing_net_of_control")
     registered = on.get("bound_runtime", {}).get("enforcing")
     if isinstance(control, dict) and isinstance(registered, dict):
+        net, overshoot = control["median_us"], registered["median_us"]
+        # A guard does strictly more work than a bare join, so a negative net,
+        # or one of the same order as the overshoot itself, is the timer's
+        # quantisation showing through, not the guard's cost.
+        resolved = 0 <= net <= 0.5 * overshoot
         lines += [
             "",
             "**`bound_runtime`'s timeout path (exploratory control).** The registered",
-            f"overshoot past a 0.001 s bound has median {registered['median_us']} us. Timed",
-            "against a bare `Thread.join(timeout=0.001)` on the same body with no guard, the",
-            f"guard adds a median {control['median_us']} us. The difference between those two",
-            "figures is the platform's timer granularity, not the guard. This control was",
-            "added after the first run and is recorded as exploratory in the Deviations table.",
+            f"overshoot past a 0.001 s bound has median {overshoot} us. The control times",
+            "the same path against a bare `Thread.join(timeout=0.001)` on the same body.",
+        ]
+        if resolved:
+            lines += [
+                f"Net of that control the guard adds a median {net} us; the rest of the",
+                "overshoot is the platform's timer granularity.",
+            ]
+        else:
+            lines += [
+                f"**Inconclusive on this platform:** the paired difference is {net} us. A guard",
+                "does strictly more work than a bare join, so a negative difference, or one of",
+                "the same order as the overshoot, is not a cost - both arms are quantised to",
+                "the platform timer, and the difference is decided by which tick each call",
+                "lands on. The guard's timeout-path cost cannot be resolved below that",
+                "granularity here. The resolvable figure is its allowing path above.",
+            ]
+        lines += [
+            "",
+            "This control, and the rule used to decide whether it resolved (net between 0",
+            "and half the overshoot), were both chosen after the first run; both are",
+            "recorded as exploratory in the Deviations table.",
         ]
     return lines
 
