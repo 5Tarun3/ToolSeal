@@ -719,8 +719,20 @@ def measure_latency(
         def quick() -> str:
             return "done"
 
+        def bare_join() -> None:
+            worker = threading.Thread(target=slow, daemon=True)
+            worker.start()
+            worker.join(timeout=bound)
+
         points["bound_runtime"] = {
             "enforcing": {**_summary(overshoot), "measure": "overshoot past a 0.001 s bound"},
+            # Exploratory (Deviations, 2026-09-17): the same join with no guard,
+            # so the platform's timer granularity is separated from the guard.
+            "enforcing_net_of_control": {
+                **_paired(bare_join, guarded_slow, milli_repeats),
+                "measure": "guarded timeout path minus a bare Thread.join(timeout=0.001) on the "
+                "same body - exploratory control",
+            },
             "allowing": _paired(quick, g["bound_runtime"](2.0)(quick), micro_repeats),
         }
 
@@ -833,6 +845,73 @@ def _latency_cell(entry: Any) -> str:
     return str(entry)
 
 
+_ON: Final = "evidence_on (shipped default, primary)"
+_OFF: Final = "evidence_off"
+
+
+def _reading(payload: dict[str, Any]) -> list[str]:
+    """What the numbers say, computed from this run rather than written for one."""
+    latency = payload["latency"]
+    on, off = latency.get(_ON, {}), latency.get(_OFF, {})
+    lines = [
+        "",
+        "## Reading these numbers",
+        "",
+        "Comparators: each guard is timed against the same function without it; `redact`",
+        "against the same log handler without the filter; `minimal_environment` against",
+        "`dict(os.environ)`, which is what a caller passes when it does not filter.",
+    ]
+
+    shares = []
+    for guard, entry in on.items():
+        on_point, off_point = entry.get("enforcing"), off.get(guard, {}).get("enforcing")
+        if isinstance(on_point, dict) and isinstance(off_point, dict):
+            record = on_point["median_us"] - off_point["median_us"]
+            if on_point["median_us"] > 0 and record > 0:
+                share = round(100 * record / on_point["median_us"])
+                shares.append(
+                    f"| `{guard}` | {on_point['median_us']} | {off_point['median_us']} "
+                    f"| {round(record, 2)} | {share}% |"
+                )
+    if shares:
+        lines += [
+            "",
+            "**The evidence record's share of each guard's cost** (enforcing path, medians,",
+            "us). Both conditions were registered before the run; this only subtracts them.",
+            "",
+            "| guard | evidence on | evidence off | record | share of shipped cost |",
+            "| --- | ---: | ---: | ---: | ---: |",
+            *shares,
+        ]
+
+    negatives = [
+        (guard, path)
+        for guard, entry in on.items()
+        for path, point in entry.items()
+        if isinstance(point, dict) and point.get("median_us", 0) < 0
+    ]
+    for guard, path in negatives:
+        lines += [
+            "",
+            f"A negative added latency for `{guard}` ({path}) means the guarded call is",
+            "*cheaper* than its comparator, not that the measurement failed.",
+        ]
+
+    control = on.get("bound_runtime", {}).get("enforcing_net_of_control")
+    registered = on.get("bound_runtime", {}).get("enforcing")
+    if isinstance(control, dict) and isinstance(registered, dict):
+        lines += [
+            "",
+            "**`bound_runtime`'s timeout path (exploratory control).** The registered",
+            f"overshoot past a 0.001 s bound has median {registered['median_us']} us. Timed",
+            "against a bare `Thread.join(timeout=0.001)` on the same body with no guard, the",
+            f"guard adds a median {control['median_us']} us. The difference between those two",
+            "figures is the platform's timer granularity, not the guard. This control was",
+            "added after the first run and is recorded as exploratory in the Deviations table.",
+        ]
+    return lines
+
+
 def to_markdown(payload: dict[str, Any]) -> str:
     h4_result = payload["hypotheses"]["H4"]
     platform_info = payload["platform"]
@@ -898,6 +977,8 @@ def to_markdown(payload: dict[str, Any]) -> str:
                 f"| `{guard}` | {_latency_cell(entry['enforcing'])} "
                 f"| {_latency_cell(entry['allowing'])} |"
             )
+
+    lines += _reading(payload)
 
     lines += ["", "## Every case", "", "| case | guard | kind | expected | observed |"]
     lines += ["| --- | --- | --- | --- | --- |"]

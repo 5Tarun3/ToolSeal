@@ -179,3 +179,40 @@ def test_a_run_releases_its_evidence_file(tmp_path: Path) -> None:
     for evidence in tmp_path.glob("latency-evidence-*.jsonl"):
         evidence.unlink()  # raises PermissionError on Windows if still open
     assert not list(tmp_path.glob("latency-evidence-*.jsonl"))
+
+
+def test_bound_runtime_reports_an_exploratory_control(tmp_path: Path) -> None:
+    from bench.study6 import measure_latency
+
+    points = measure_latency(False, tmp_path, micro_repeats=2, milli_repeats=3)
+
+    control = points["bound_runtime"]["enforcing_net_of_control"]
+    assert "exploratory" in control["measure"]
+    # The registered overshoot figure is still reported beside it, unchanged.
+    assert "overshoot" in points["bound_runtime"]["enforcing"]["measure"]
+
+
+def test_the_report_explains_what_the_numbers_mean(tmp_path: Path) -> None:
+    from bench.study6 import measure_latency
+
+    on = measure_latency(True, tmp_path, micro_repeats=20, milli_repeats=3)
+    off = measure_latency(False, tmp_path, micro_repeats=20, milli_repeats=3)
+    payload = {
+        "platform": {
+            "os": "X", "release": "1", "python": "3", "runner": "local", "toolseal_commit": "c",
+        },
+        "suite_sha256": "0" * 64,
+        "hypotheses": {
+            "H1": "open", "H2": "open", "H3": "open",
+            "H4": {"supported": True, "cases": 0, "mismatches": []},
+        },
+        "rates": {},
+        "latency": {"evidence_on (shipped default, primary)": on, "evidence_off": off},
+        "cases": [],
+    }  # fmt: skip
+
+    report = to_markdown(payload)
+
+    assert "## Reading these numbers" in report
+    assert "dict(os.environ)" in report
+    assert "exploratory" in report
