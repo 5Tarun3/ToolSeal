@@ -144,3 +144,41 @@ def test_the_document_declares_the_catalogues_it_cites() -> None:
 
     for catalogue_id in load_catalogues():
         assert catalogue_id in document, f"taxonomy.md never mentions {catalogue_id}"
+
+
+# --- MITRE ATLAS -----------------------------------------------------------
+
+
+def test_atlas_is_loaded_as_a_catalogue() -> None:
+    catalogues = load_catalogues()
+
+    assert "mitre-atlas" in catalogues
+    atlas = catalogues["mitre-atlas"]
+    assert atlas.name
+    assert atlas.version == "2026.09"
+
+
+def test_atlas_records_its_licence() -> None:
+    # The sourcing discipline every other catalogue follows: a third-party
+    # taxonomy is redistributed under a licence, and the file says which.
+    assert load_catalogues()["mitre-atlas"].license == "Apache-2.0"
+
+
+def test_atlas_is_declared_a_curated_subset() -> None:
+    # ATLAS 2026.09 publishes 120 techniques and 88 sub-techniques. This
+    # catalogue lists the handful a configuration auditor can bear on, so a
+    # coverage figure over it measures the selection, not ATLAS. Claiming
+    # complete_enumeration would make that percentage a lie.
+    assert not load_catalogues()["mitre-atlas"].complete_enumeration
+
+
+def test_atlas_ids_use_the_published_form() -> None:
+    # AML.Txxxx or AML.Txxxx.yyy. A typo'd id resolves to nothing, which would
+    # silently drop a citation rather than failing loudly.
+    pattern = re.compile(r"^AML\.T\d{4}(\.\d{3})?$")
+    controls = load_catalogues()["mitre-atlas"].controls
+
+    assert controls, "catalogue is empty"
+    for control in controls:
+        assert pattern.match(control.id), f"{control.id} is not an ATLAS technique id"
+        assert control.title, f"{control.id} has no title"

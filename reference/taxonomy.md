@@ -406,7 +406,15 @@ the check definitions and verified against the shipped catalogues by
 
 Catalogues: `owasp-llm-top10`, `owasp-agentic-threats`, `owasp-agentic-top10`,
 `nist-ai-rmf`, `iso-42001` (clause identifiers only; the standard is paywalled
-and its text is not reproduced).
+and its text is not reproduced), `mitre-atlas`.
+
+`mitre-atlas` holds technique identifiers from *MITRE ATLAS* content version
+`2026.09` (Apache-2.0), and is the one adversary-behaviour catalogue here: the
+other five enumerate obligations, ATLAS enumerates what an attacker does. It is
+a **curated subset** - ATLAS publishes 120 techniques and 88 sub-techniques, of
+which this project lists those a configuration check bears on, plus two named
+and marked not checkable so the gap stays visible rather than hidden behind a
+narrower denominator.
 
 The two agentic catalogues are different documents, not two names for one.
 `owasp-agentic-threats` holds the `T1`–`T15` taxonomy from *Agentic AI – Threats

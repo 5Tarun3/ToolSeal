@@ -1,0 +1,115 @@
+# MITRE ATLAS (Adversarial Threat Landscape for AI Systems), content version
+# 2026.09. Technique identifiers and short titles only.
+#
+# Sourced from the primary distribution rather than the website: MITRE
+# publishes authoritative ATLAS data as YAML in the mitre-atlas/atlas-data
+# repository, so no secondary corroboration was needed for any title here.
+# atlas.mitre.org itself is a JavaScript application and returns only a page
+# heading to a fetch, which is why the website is not the source.
+#
+# Two files in that repository are the wrong ones, and both look right:
+#   - dist/ATLAS.yaml is format-version 5.6.0 and declares itself deprecated
+#     in its own first line ("no longer being updated with new content").
+#   - dist/ATLAS-latest.yaml is a symlink, not data.
+# The file read was dist/v6/ATLAS-2026.09.yaml: format-version 6.0.0,
+# collection.version "2026.09", modified-date 2026-09-15. Every id and title
+# below was copied from it verbatim rather than transcribed from the rendered
+# site or from memory.
+#
+# This file lists a curated subset - 16 entries drawn from the 120 techniques
+# and 88 sub-techniques ATLAS 2026.09 publishes - so complete_enumeration is
+# left unset (false). A coverage figure computed over this file measures
+# coverage of that selection, not of ATLAS as a whole.
+#
+# The selection rule: a technique is listed when one of this project's 28
+# configuration checks bears on it, plus two flagged checkable = false where
+# ATLAS names an attack this project deliberately cannot answer from
+# configuration. Those two are listed rather than omitted so the gap appears
+# in `toolseal policy list` instead of being hidden behind a narrower
+# denominator.
+
+id = "mitre-atlas"
+kind = "standard"
+name = "MITRE ATLAS"
+version = "2026.09"
+license = "Apache-2.0"
+source_url = "https://atlas.mitre.org/"
+text_included = false
+
+# --- credentials -----------------------------------------------------------
+
+[[control]]
+id = "AML.T0055"
+title = "Unsecured Credentials"
+
+[[control]]
+id = "AML.T0083"
+title = "Credentials from AI Agent Configuration"
+
+[[control]]
+id = "AML.T0098"
+title = "AI Agent Tool Credential Harvesting"
+
+# --- tool surface ----------------------------------------------------------
+
+[[control]]
+id = "AML.T0053"
+title = "AI Agent Tool Invocation"
+
+[[control]]
+id = "AML.T0101"
+title = "Data Destruction via AI Agent Tool Invocation"
+
+[[control]]
+id = "AML.T0011"
+title = "User Execution"
+
+# --- supply chain ----------------------------------------------------------
+
+[[control]]
+id = "AML.T0010"
+title = "AI Supply Chain Compromise"
+
+[[control]]
+id = "AML.T0011.001"
+title = "Malicious Package"
+
+[[control]]
+id = "AML.T0109"
+title = "AI Supply Chain Rug Pull"
+
+[[control]]
+id = "AML.T0110"
+title = "AI Agent Tool Poisoning"
+
+# --- egress and exfiltration -----------------------------------------------
+
+[[control]]
+id = "AML.T0025"
+title = "Exfiltration via Cyber Means"
+
+[[control]]
+id = "AML.T0086"
+title = "Exfiltration via AI Agent Tool Invocation"
+
+[[control]]
+id = "AML.T0034.002"
+title = "Agentic Resource Consumption"
+
+# --- configuration integrity -----------------------------------------------
+
+[[control]]
+id = "AML.T0081"
+title = "Modify AI Agent Configuration"
+
+# --- named, and deliberately out of reach from configuration ---------------
+
+[[control]]
+id = "AML.T0051"
+title = "LLM Prompt Injection"
+checkable = false            # a runtime input-manipulation attack, not a config property
+
+[[control]]
+id = "AML.T0080"
+title = "AI Agent Context Poisoning"
+checkable = false            # a runtime/data-quality property, not a config property
