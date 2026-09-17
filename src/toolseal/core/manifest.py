@@ -161,6 +161,18 @@ class Manifest:
     modules filter their own tool objects down to these names instead.
     """
 
+    credential_backend: str | None = None
+    """The credential store this project expects, from ``[credentials] backend``.
+
+    ``None`` means none was declared - resolve the strongest available. It does
+    **not** mean the keychain: every project scaffolded before backends existed
+    would otherwise read as having demanded one, and each would then refuse to
+    run anywhere a keychain is absent.
+
+    Naming a backend makes a weaker substitute a refusal rather than a silent
+    downgrade; see :func:`toolseal.core.credentials.resolve_backend`.
+    """
+
     def justification_for(self, tool_name: str) -> str | None:
         """Why *tool_name* is allowed its capability, if anyone said."""
         reason = self.justifications.get(tool_name, "").strip()
@@ -225,6 +237,20 @@ class Manifest:
             "# CrewAI entrypoints in the same project never disagree about it.",
             f"enabled = [{', '.join(_quote(item) for item in self.tools)}]",
         ]
+
+        # Only when declared. Writing the section unconditionally would make
+        # every scaffolded project look like it had demanded a specific
+        # backend, and `None` has to survive the round trip as absence.
+        if self.credential_backend is not None:
+            lines += [
+                "",
+                "[credentials]",
+                "# Which credential store this project expects. Omit to resolve",
+                "# the strongest available; naming one means a weaker backend is",
+                "# refused rather than silently substituted.",
+                f"backend = {_quote(self.credential_backend)}",
+            ]
+
         return "\n".join(lines) + "\n"
 
     @classmethod
@@ -267,6 +293,13 @@ class Manifest:
             tuple(str(item) for item in raw_profiles) if isinstance(raw_profiles, list) else ()
         )
 
+        # A malformed value is ignored rather than raising: `resolve_backend`
+        # is where an unusable backend name produces its error, and it names
+        # the valid set when it does. Raising here would report the same
+        # problem twice, in the place with less to say about it.
+        raw_backend = (data.get("credentials") or {}).get("backend")
+        credential_backend = raw_backend if isinstance(raw_backend, str) and raw_backend else None
+
         return cls(
             project_name=str(project["name"]),
             provider_id=str(stack["provider"]),
@@ -281,6 +314,7 @@ class Manifest:
             base_url=str(stack.get("base_url", "")),
             tools=tools,
             profiles=profiles,
+            credential_backend=credential_backend,
         )
 
     @classmethod

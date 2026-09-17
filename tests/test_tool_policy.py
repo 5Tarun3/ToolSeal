@@ -310,3 +310,84 @@ def test_a_policy_approval_does_not_duplicate_an_already_compensated_guard() -> 
     result = lower(destructive, "crewai", tool_policy=ToolPolicy(approval="always"))
 
     assert result.source.count("@require_approval(") == 1
+
+
+# --- the declared credential backend ----------------------------------------
+#
+# `[credentials] backend` records which store this project expects, so that a
+# deployment landing on a weaker one is visible rather than silent. Both
+# directions are pinned: `init` writes the manifest through `to_toml`, so a
+# field that parsed but never wrote would make the declaration inert.
+
+
+def test_manifest_reads_a_declared_credential_backend() -> None:
+    manifest = Manifest.from_toml(
+        """
+        [project]
+        name = "demo"
+        [stack]
+        provider = "anthropic"
+        framework = "langgraph"
+        [credentials]
+        backend = "environment"
+        """
+    )
+    assert manifest.credential_backend == "environment"
+
+
+def test_a_manifest_without_a_credentials_section_declares_nothing() -> None:
+    # Absence means "resolve the strongest available", not "use the keychain".
+    # Every project scaffolded before this existed lands here, and reading them
+    # as having demanded a keychain would make each one refuse to deploy.
+    manifest = Manifest.from_toml(
+        """
+        [project]
+        name = "demo"
+        [stack]
+        provider = "anthropic"
+        framework = "langgraph"
+        """
+    )
+    assert manifest.credential_backend is None
+
+
+def test_a_non_string_backend_is_ignored_rather_than_crashing() -> None:
+    # `resolve_backend` is where a bad backend name produces its error, and it
+    # names the valid set when it does. Raising here would report the same
+    # problem twice, in the worse place.
+    manifest = Manifest.from_toml(
+        """
+        [project]
+        name = "demo"
+        [stack]
+        provider = "anthropic"
+        framework = "langgraph"
+        [credentials]
+        backend = 3
+        """
+    )
+    assert manifest.credential_backend is None
+
+
+def test_a_declared_backend_survives_a_round_trip() -> None:
+    original = Manifest(
+        project_name="demo",
+        provider_id="ollama",
+        framework_id="langgraph",
+        model="llama3",
+        credential_backend="environment",
+    )
+    assert Manifest.from_toml(original.to_toml()).credential_backend == "environment"
+
+
+def test_an_undeclared_backend_writes_no_credentials_section() -> None:
+    # Absence has to stay absent through the round trip. Emitting an empty
+    # value would make every scaffolded project look like it had declared one.
+    manifest = Manifest(
+        project_name="demo",
+        provider_id="ollama",
+        framework_id="langgraph",
+        model="llama3",
+    )
+    assert "[credentials]" not in manifest.to_toml()
+    assert Manifest.from_toml(manifest.to_toml()).credential_backend is None

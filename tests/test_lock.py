@@ -313,3 +313,29 @@ def test_the_tamper_evident_notice_never_claims_immutability() -> None:
     assert "tamperproof" not in lowered
     assert "immutable" not in lowered
     assert "tamper-evident" in lowered or "detectable and attributable" in lowered
+
+
+def test_a_credentials_section_does_not_cause_policy_drift(tmp_path: Path) -> None:
+    """`verify` re-derives the policy; it does not hash the file's bytes.
+
+    The harness programme adds its own sections to `toolseal.toml`. If sealing
+    ever hashed the raw file, every one of those would read as tampering. True
+    today by construction, and exactly the kind of property that stops holding
+    without making any noise - hence a test rather than a comment.
+    """
+    root = _init(tmp_path)
+    lock.seal(root)
+    assert not lock.verify(root).drifted
+
+    manifest_path = root / MANIFEST_NAME
+    manifest_path.write_text(
+        manifest_path.read_text(encoding="utf-8") + '\n[credentials]\nbackend = "environment"\n',
+        encoding="utf-8",
+    )
+
+    report = lock.verify(root)
+    # `sealed` matters as much as `drifted`: a verify that found no lock at all
+    # also reports drifted=False, so the second assertion alone would pass
+    # vacuously.
+    assert report.sealed
+    assert not report.drifted
