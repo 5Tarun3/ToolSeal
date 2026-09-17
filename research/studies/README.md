@@ -21,6 +21,7 @@ table.
 | [`s2`](s2/) | Does securing setup cost developer time? (RQ2) | Run, idealised manual arm |
 | [`s3`](s3/) | What does a secure default cost at runtime? (RQ3) | Run |
 | [`s5`](s5/) | How much of each standard does the control mapping reach? (C6) | Run, part (a) only - see below |
+| [`s6`](s6/) | Does each interception layer's protection justify its latency? (RQ5) | **Pre-registered, not run** |
 
 ## A caveat that belongs on every figure
 
