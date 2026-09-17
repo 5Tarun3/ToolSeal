@@ -21,6 +21,8 @@ from toolseal.cli import app
 from toolseal.core.adapters import ScaffoldSpec
 from toolseal.core.audit import audit, extract
 from toolseal.core.audit.engine import audit_model
+from toolseal.core.credentials import KeyringStore
+from toolseal.core.manifest import Manifest
 from toolseal.core.model import Dependency, DependencySet, ProjectModel, RuntimeConfig
 from toolseal.core.policy import all_checks, checks_in
 from toolseal.core.policy.family_a import is_env_var_name, is_inert
@@ -660,12 +662,22 @@ def test_json_output_is_byte_identical_to_the_pinned_machine_contract(tmp_path: 
     # same way the command does internally and diffs the CLI's actual stdout
     # against it, byte for byte, catching any stray console formatting that
     # leaked into the machine path.
-    from toolseal.cli.audit_command import _as_dict
+    from toolseal.cli.audit_command import _as_dict, _credential_posture
 
     (tmp_path / "main.py").write_text("x = 1\n", encoding="utf-8")
 
     report = audit(tmp_path)
-    expected = json.dumps(_as_dict(report, report.findings, ()), indent=2, sort_keys=True) + "\n"
+    # Built from the same inputs the command uses, credential posture included.
+    # The point of this test is that stdout matches the internal payload
+    # exactly, so the payload compared against has to be the same payload.
+    expected = (
+        json.dumps(
+            _as_dict(report, report.findings, (), _credential_posture(Manifest.load(tmp_path))),
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n"
+    )
 
     result = runner.invoke(app, ["audit", str(tmp_path), "--json"])
 
@@ -747,3 +759,95 @@ def test_sarif_command_emits_valid_json(tmp_path: Path) -> None:
     payload = json.loads(runner.invoke(app, ["audit", str(tmp_path), "--sarif"]).stdout)
 
     assert payload["version"] == "2.1.0"
+
+
+# --- credential posture ----------------------------------------------------
+#
+# Posture is *information*, not a check. T1 adds no check ids, so none of this
+# may move the score - that is reserved for the release that changes the
+# denominator deliberately.
+
+
+def _clean_project(tmp_path: Path) -> Path:
+    """The same clean scaffold `test_clean_project_exits_zero` builds."""
+    spec = ScaffoldSpec(
+        project_name="demo",
+        provider_id="ollama",
+        framework_id="langgraph",
+        workspace_root=tmp_path / "demo",
+    )
+    apply_plan(build_plan(spec))
+    (tmp_path / "demo" / "uv.lock").write_text("", encoding="utf-8")
+    return tmp_path / "demo"
+
+
+def test_audit_json_reports_the_credential_posture(tmp_path: Path) -> None:
+    root = _clean_project(tmp_path)
+
+    payload = json.loads(runner.invoke(app, ["audit", str(root), "--json"]).stdout)
+
+    credentials = payload["credentials"]
+    assert credentials["resolved"] in {"os-keychain", "environment"}
+    assert credentials["posture"] in {"strong", "weaker"}
+    assert credentials["note"]
+
+
+def test_audit_json_records_a_silent_downgrade(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The container case. The report must not be silent about having landed on
+    # the weaker backend, even though nothing scores it.
+    root = _clean_project(tmp_path)
+    monkeypatch.setattr(KeyringStore, "available", lambda self: False)
+
+    payload = json.loads(runner.invoke(app, ["audit", str(root), "--json"]).stdout)
+
+    assert payload["credentials"]["fell_back"] is True
+    assert payload["credentials"]["posture"] == "weaker"
+
+
+def test_credential_posture_does_not_change_the_score(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The constraint that keeps T1 out of 0.2.0 territory.
+    root = _clean_project(tmp_path)
+    strong = json.loads(runner.invoke(app, ["audit", str(root), "--json"]).stdout)
+
+    monkeypatch.setattr(KeyringStore, "available", lambda self: False)
+    weak = json.loads(runner.invoke(app, ["audit", str(root), "--json"]).stdout)
+
+    assert strong["score"] == weak["score"] == 100
+    assert strong["blocking"] == weak["blocking"] is False
+
+
+def test_an_undeclared_backend_reports_no_expectation(tmp_path: Path) -> None:
+    root = _clean_project(tmp_path)
+
+    payload = json.loads(runner.invoke(app, ["audit", str(root), "--json"]).stdout)
+
+    # A scaffolded project declares nothing, and `expected: null` is how the
+    # report says "resolve the strongest available" rather than implying the
+    # project demanded whatever it happened to get.
+    assert payload["credentials"]["expected"] is None
+
+
+def test_a_declared_but_unavailable_backend_is_reported_not_fatal(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The audit scores the project's configuration; whether this machine can
+    # reach the declared backend is a fact about the machine. Reporting it
+    # beats dying, and beats pretending the declaration was satisfied.
+    root = _clean_project(tmp_path)
+    manifest = root / "toolseal.toml"
+    manifest.write_text(
+        manifest.read_text(encoding="utf-8") + '\n[credentials]\nbackend = "os-keychain"\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(KeyringStore, "available", lambda self: False)
+
+    result = runner.invoke(app, ["audit", str(root), "--json"])
+    payload = json.loads(result.stdout)
+
+    assert "error" in payload["credentials"]
+    assert "os-keychain" in payload["credentials"]["error"]
+    assert payload["score"] == 100

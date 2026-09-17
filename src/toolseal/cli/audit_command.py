@@ -40,12 +40,13 @@ from toolseal.cli._ui import (
     severity_style,
 )
 from toolseal.core.audit import audit as run_audit
+from toolseal.core.credentials import resolve_backend
 from toolseal.core.manifest import Manifest
 from toolseal.core.policy import progress as progress_hook
 from toolseal.core.policy.model import AuditReport, Finding, Severity, Verdict
 from toolseal.core.policy.profile import apply_resolution, load_profile, resolve
 from toolseal.core.report import to_sarif
-from toolseal.errors import ExitCode
+from toolseal.errors import ConfigError, ExitCode
 
 
 def audit(
@@ -90,15 +91,48 @@ def audit(
 
     findings = _filtered(report, min_severity)
 
+    # Which credential store this project would actually get here. Resolved in
+    # the command, from the manifest already loaded above, and deliberately
+    # never routed through `ProjectModel` - that is what keeps posture out of
+    # scoring by construction rather than by discipline. No check reads it, so
+    # no score can depend on it.
+    credentials = _credential_posture(manifest)
+
     if as_sarif:
+        # SARIF carries findings. Posture is not a finding, so the SARIF
+        # document is unchanged by any of this.
         typer.echo(json.dumps(to_sarif(report), indent=2, sort_keys=True))
     elif as_json:
-        payload = _as_dict(report, findings, active_profiles)
+        payload = _as_dict(report, findings, active_profiles, credentials)
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     else:
-        _print_report(report, findings, active_profiles)
+        _print_report(report, findings, active_profiles, credentials)
 
     raise typer.Exit(ExitCode.FINDINGS if findings else ExitCode.OK)
+
+
+def _credential_posture(manifest: Manifest | None) -> dict[str, Any]:
+    """How this project's credentials would be held, as reportable data.
+
+    A project that declares a backend unavailable on this machine gets that
+    *reported*, not an audit that dies: the score is about the project's
+    configuration, while reachability is a fact about wherever the audit
+    happened to run. Refusing to produce a report at all would make a
+    perfectly good configuration unauditable from the wrong machine.
+    """
+    expected = manifest.credential_backend if manifest else None
+    try:
+        selection = resolve_backend(expected)
+    except ConfigError as exc:
+        return {"expected": expected, "error": str(exc)}
+
+    return {
+        "expected": selection.expected,
+        "resolved": selection.resolved,
+        "fell_back": selection.fell_back,
+        "posture": str(selection.posture),
+        "note": selection.note,
+    }
 
 
 def _filtered(report: AuditReport, minimum: Severity | None) -> tuple[Any, ...]:
@@ -110,10 +144,16 @@ def _filtered(report: AuditReport, minimum: Severity | None) -> tuple[Any, ...]:
 
 
 def _as_dict(
-    report: AuditReport, findings: tuple[Any, ...], active_profiles: tuple[str, ...] = ()
+    report: AuditReport,
+    findings: tuple[Any, ...],
+    active_profiles: tuple[str, ...] = (),
+    credentials: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     return {
         "root": report.root,
+        # Additive only. Every key below predates this one and keeps its name,
+        # type and meaning; `tests/test_audit_contract.py` pins that.
+        "credentials": credentials if credentials is not None else {},
         "profiles": list(active_profiles),
         "score": report.score,
         "blocking": report.blocking,
@@ -256,8 +296,42 @@ def _family_table(report: AuditReport) -> None:
     print_table(console, table)
 
 
+def _print_credential_posture(credentials: dict[str, Any] | None) -> None:
+    """Say something only when there is something to say.
+
+    A workstation resolving the keychain with nothing declared is the expected
+    case and needs no line; printing one for it would train the reader to skip
+    this part of the report, which is exactly when the weaker case would be
+    missed.
+    """
+    if not credentials:
+        return
+
+    if "error" in credentials:
+        line = Text("  credentials: ")
+        line.append("unavailable", style="verdict.warn")
+        line.append(f" - {credentials['error']}")
+        print_text(console, line)
+        console.print()
+        return
+
+    if credentials.get("posture") != "weaker":
+        return
+
+    line = Text("  credentials: ")
+    line.append(str(credentials["resolved"]), style="verdict.warn")
+    line.append(f" - {credentials['note']}")
+    print_text(console, line)
+    if credentials.get("fell_back"):
+        print_text(console, Text("  (no stronger backend was available here)"))
+    console.print()
+
+
 def _print_report(
-    report: AuditReport, findings: tuple[Any, ...], active_profiles: tuple[str, ...] = ()
+    report: AuditReport,
+    findings: tuple[Any, ...],
+    active_profiles: tuple[str, ...] = (),
+    credentials: dict[str, Any] | None = None,
 ) -> None:
     print_text(console, accent_text(report.root))
     console.print()
@@ -268,6 +342,8 @@ def _print_report(
         line.append(" (see `toolseal policy show`)")
         print_text(console, line)
         console.print()
+
+    _print_credential_posture(credentials)
 
     console.print(_summary_panel(report))
     console.print()
