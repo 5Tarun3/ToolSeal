@@ -21,6 +21,7 @@ the data is reported as exploratory, not confirmatory.
 | **RQ2** | Secure defaults cost no developer time | 2 | Setup with the tool is not faster, or the security delta is negligible |
 | **RQ3** | Secure defaults cost no runtime | 3 | Scaffolded projects are measurably slower or more token-hungry |
 | **RQ4** | Translation loses security properties, adapter-dependently | 4 | Loss is uniform across adapters, or absent |
+| **RQ5** | Interception layers trade protection against latency, and both are measurable | 6 | One layer is both cheaper and blocks at least as much |
 
 RQ4 is already supported by probe
 [P0](probes/p0_translation_fidelity/), which is a pilot, not the study.
@@ -239,6 +240,96 @@ an adapter storing them somewhere unusual is scored as dropping them. The list
 is `ANNOTATION_CARRIERS` in `probes/p0_translation_fidelity/probe.py` and grows
 as adapters are added. Any `dropped` verdict for a newly added adapter is
 manually confirmed against its source before publication.
+
+---
+
+## Study 6 — Security per millisecond (RQ5)
+
+Pre-registered 2026-09-17, before any guard was measured against any case and
+before the MCP proxy it compares against was built. Study 3 measured the cost of
+a guard's bypass branch (see Deviations); this study measures enforcing paths
+and, for the first time in this project, what each guard actually stops.
+
+### Claims under test
+
+| | Claim | Falsified if |
+| --- | --- | --- |
+| **H1** | The decorator layer adds less latency per enforcing call than the proxy layer | Decorator median ≥ proxy median |
+| **H2** | The proxy layer blocks strictly more attack cases than the decorator layer | Proxy blocked count ≤ decorator blocked count |
+| **H3** | The two layers trade off cost against protection | One layer is both cheaper **and** blocks at least as much. Then there is no curve, and the claim this programme rests on fails. |
+| **H4** | Each decorator guard misses exactly the cases its own docstring says it misses | A case the suite declares `missed` is observed `blocked`, or the reverse |
+
+H3's falsification condition is binding. A result showing no trade-off is
+reported with the same prominence as one showing it.
+
+### Metrics
+
+**Added latency** is `t(guarded) − t(unguarded)` on identical inputs, in the same
+process, with the same repeat count.
+
+- Measured separately on the **enforcing** path and the **allowing** path. Never
+  on a bypass: a run with `TOOLSEAL_ASSUME_YES` set is invalid for this study.
+- Reported as median, p95 and p99. The mean is not the central estimate.
+- Repeats: **1000** per measurement at microsecond scale, **200** at millisecond
+  scale. Fixed here, not tuned afterwards.
+- Tool bodies are trivial; provider latency is excluded.
+
+**Protection** is judged by each case's declared observable, **not** by whether
+the guard raised.
+
+| Observable | Judged by |
+| --- | --- |
+| `side_effect` | A sentinel the tool body creates. Absent after the call → prevented. |
+| `signal` | Whether failure reached the caller as an exception. |
+| `log_content` | Whether the secret string appears in captured log output. |
+| `child_env` | Whether a spawned child can read the secret. |
+
+**A guard that raises after the side effect has happened has missed.**
+
+| Case kind | Outcomes |
+| --- | --- |
+| attack | `blocked` · `missed` · `not_applicable` |
+| benign | `allowed` · `false_block` · `not_applicable` |
+
+A run-time error is `missed` for an attack unless the observable shows the effect
+was also prevented, and `false_block` for a benign case.
+
+**Reporting.** No single ratio is published. Each (layer, guard) is reported as
+the point `(median added latency on the enforcing path, block rate, false-block
+rate)`, with every per-case outcome alongside the aggregates.
+
+### The attack suite
+
+`research/studies/s6/attack-suite.toml`, validated by `bench/attack_suite.py` and
+`tests/test_bench_attack_suite.py`, which enforce:
+
+1. every guard has cases;
+2. every guard has at least one attack expected `blocked` and one expected
+   `missed` at the decorator layer;
+3. every attack cites a checkable `mitre-atlas` technique;
+4. case ids are unique and outcomes use the vocabulary for their kind;
+5. benign cases exist;
+6. the file's digest matches the one registered below.
+
+Expected outcomes were declared from reading source, not from execution. Proxy
+expectations are design commitments for a proxy not yet built.
+
+**Registered suite.** `research/studies/s6/attack-suite.toml` sha256: `PENDING`
+
+### Baselines
+
+Selected under `research/studies/s6/baseline-criteria.md`, committed before any
+candidate was examined. The result is `research/studies/s6/baselines.toml`.
+
+### Platforms
+
+| Platform | Protection outcomes | Latency | Isolation |
+| --- | --- | --- | --- |
+| Windows, local machine | reported | primary | host |
+| Linux, CI runner | reported | reported, lower-confidence | container |
+| macOS, CI runner | reported | reported, lower-confidence | host |
+
+Every result row records OS, Python version, runner type and toolseal commit.
 
 ---
 
