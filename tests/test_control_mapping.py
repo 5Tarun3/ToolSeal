@@ -254,9 +254,7 @@ def test_every_checkable_atlas_technique_is_cited_by_something() -> None:
 # Family tables are `| ID | Check | Severity |`, except family G's, which
 # carries a fourth `P0 status` column - hence the tolerated trailing cells
 # rather than anchoring the severity cell to end-of-row.
-_FAMILY_ROW: re.Pattern[str] = re.compile(
-    r"^\| `([A-Z]\d+)` \| [^|]+ \| `(\w+)` \|", re.MULTILINE
-)
+_FAMILY_ROW: re.Pattern[str] = re.compile(r"^\| `([A-Z]\d+)` \| [^|]+ \| `(\w+)` \|", re.MULTILINE)
 
 #: Checks whose severity is deliberately not a fixed level in the document.
 #: `C2` takes its severity from the advisory it reports, which the Open items
