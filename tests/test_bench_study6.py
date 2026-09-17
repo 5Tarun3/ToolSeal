@@ -167,3 +167,15 @@ def test_latency_never_runs_under_the_approval_override(
     import os
 
     assert os.environ.get("TOOLSEAL_ASSUME_YES") == "1"
+
+
+def test_a_run_releases_its_evidence_file(tmp_path: Path) -> None:
+    # On Windows an open file cannot be deleted, so a run that kept its sink
+    # open crashed when its temporary directory was cleaned up.
+    from bench.study6 import measure_latency
+
+    measure_latency(True, tmp_path, micro_repeats=2, milli_repeats=2)
+
+    for evidence in tmp_path.glob("latency-evidence-*.jsonl"):
+        evidence.unlink()  # raises PermissionError on Windows if still open
+    assert not list(tmp_path.glob("latency-evidence-*.jsonl"))

@@ -82,6 +82,22 @@ def load_guards(project_name: str = "study6") -> Guards:
     return namespace
 
 
+def close_evidence(guards: Guards) -> None:
+    """Close the evidence sink a loaded guards namespace opened, if any.
+
+    A shipped project holds its sink for the life of the process. A study loads
+    guards repeatedly into temporary directories, and on Windows an open file
+    cannot be deleted - so each run releases its handle when it is done.
+    """
+    state = guards.get("_evidence_state")
+    if not isinstance(state, dict):
+        return
+    sink = state.get("sink")
+    if sink is not None:
+        sink.close()
+        state["sink"] = None
+
+
 # --- fixture helpers -------------------------------------------------------
 
 
@@ -563,6 +579,7 @@ def run_protection(
             results.append(
                 CaseResult(case.id, case.guard, case.kind, case.expected_decorator, observed)
             )
+        close_evidence(guards)
     return tuple(results)
 
 
@@ -728,6 +745,7 @@ def measure_latency(
         # minimal_environment: one path (Deviations item 4).
         single = _paired(lambda: dict(os.environ), g["minimal_environment"], micro_repeats)
         points["minimal_environment"] = {"enforcing": single, "allowing": "same path as enforcing"}
+        close_evidence(g)
 
     return points
 
