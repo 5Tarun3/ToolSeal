@@ -216,3 +216,29 @@ def test_the_report_explains_what_the_numbers_mean(tmp_path: Path) -> None:
     assert "## Reading these numbers" in report
     assert "dict(os.environ)" in report
     assert "exploratory" in report
+
+
+def test_a_result_row_records_where_it_ran(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    import bench.study6 as study6
+
+    monkeypatch.setenv("STUDY6_RUNNER", "ci-ubuntu-container")
+    monkeypatch.setattr(study6, "run_protection", lambda work: ())
+    monkeypatch.setattr(study6, "measure_latency", lambda evidence_on, work: {})
+
+    payload = study6.run(tmp_path / "out", tmp_path)
+
+    assert payload["platform"]["runner"] == "ci-ubuntu-container"
+
+
+def test_the_commit_falls_back_to_the_ci_checkout(monkeypatch: pytest.MonkeyPatch) -> None:
+    import subprocess
+
+    import bench.study6 as study6
+
+    def no_git(*args: object, **kwargs: object) -> object:
+        raise FileNotFoundError("git")
+
+    monkeypatch.setattr(subprocess, "run", no_git)
+    monkeypatch.setenv("GITHUB_SHA", "abc123")
+
+    assert study6._commit() == "abc123"

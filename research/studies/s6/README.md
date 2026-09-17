@@ -1,8 +1,11 @@
 # Study 6 — Security per millisecond (RQ5)
 
-**Status: pre-registered, not run.** No guard has been measured against any case
-in this directory, and the proxy layer it compares against does not exist yet.
-Everything here was committed to fix the rules before a number exists. The
+**Status: decorator layer run; proxy layer not built.** The suite, criteria and
+baselines were committed before any number existed. The decorator layer has now
+been measured against them - see [`RESULTS.md`](RESULTS.md): **H4 is supported,
+34 of 34 cases**, and H1-H3 stay open until the MCP proxy (T8) exists. The
+Linux and macOS rows are defined in `.github/workflows/study6.yml` and have
+not been run; running them is a manual dispatch. The
 claims, metrics and falsification conditions live in
 [`../../evaluation-protocol.md`](../../evaluation-protocol.md#study-6--security-per-millisecond-rq5).
 
@@ -13,6 +16,7 @@ claims, metrics and falsification conditions live in
 | [`baseline-criteria.md`](baseline-criteria.md) | How baselines are chosen | Committed before the survey (bc3cd23) |
 | [`attack-suite.toml`](attack-suite.toml) | The protection numerator: 34 cases, expected outcome per layer | sha256 in the protocol; `tests/test_bench_attack_suite.py` |
 | [`baselines.toml`](baselines.toml) | The comparison systems | `tests/test_s6_baselines.py` |
+| [`RESULTS.md`](RESULTS.md), [`results-decorator.json`](results-decorator.json) | Decorator-layer outcomes and latency (Windows, local) | `bench/study6.py`; `tests/test_bench_study6.py` |
 
 ## Workloads
 

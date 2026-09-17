@@ -1,0 +1,79 @@
+name: study6
+
+# Study 6's cross-platform rows (research/evaluation-protocol.md, Study 6 -
+# Platforms). Protection outcomes are deterministic and reported from every
+# platform; latency from these shared runners is labelled lower-confidence.
+#
+# Manual only. A study run is a deliberate act with a recorded commit, not a
+# side effect of pushing, and its results are uploaded as artifacts rather
+# than committed - a human reads them before anything is published.
+
+on:
+  workflow_dispatch:
+
+# Least privilege: the study reads the repository and uploads an artifact.
+permissions:
+  contents: read
+
+concurrency:
+  group: study6-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  linux:
+    name: study6 (linux, container)
+    runs-on: ubuntu-latest
+    # The protocol's Linux row runs in container isolation. Pinned by digest,
+    # like every action here: python:3.11-slim as resolved 2026-09-17.
+    container:
+      image: python:3.11-slim@sha256:9534e5a8e315485d4061ed659af0fd78a284c015f9b73661b41d6bab25604534
+    env:
+      STUDY6_RUNNER: ci-ubuntu-container
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+
+      - name: Install dependencies
+        run: uv sync --locked --python 3.11
+
+      - name: Run Study 6
+        run: uv run python -m bench s6 --out study6-results
+
+      - name: Upload results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: study6-linux
+          path: study6-results/
+
+  macos:
+    name: study6 (macos, host)
+    # Hosted macOS runners have no Docker, so this row runs in host isolation,
+    # as the protocol's platform table records.
+    runs-on: macos-latest
+    env:
+      STUDY6_RUNNER: ci-macos-host
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+
+      - name: Install dependencies
+        run: uv sync --locked --python 3.11
+
+      - name: Run Study 6
+        run: uv run python -m bench s6 --out study6-results
+
+      - name: Upload results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: study6-macos
+          path: study6-results/

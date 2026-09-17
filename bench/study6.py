@@ -775,7 +775,8 @@ def _commit() -> str:
             timeout=30,
         )
     except (OSError, subprocess.SubprocessError):
-        return "unknown"
+        # A CI container may have no git; the checkout's commit is still known.
+        return os.environ.get("GITHUB_SHA", "unknown")
     return completed.stdout.strip()
 
 
@@ -814,7 +815,9 @@ def run(out: Path, work: Path) -> dict[str, Any]:
             "os": platform.system(),
             "release": platform.release(),
             "python": platform.python_version(),
-            "runner": "local",
+            # "local" unless CI says otherwise: the protocol labels CI latency
+            # lower-confidence, so the row has to say where it ran.
+            "runner": os.environ.get("STUDY6_RUNNER", "local"),
             "toolseal_commit": _commit(),
         },
         "suite_sha256": normalised_digest(),

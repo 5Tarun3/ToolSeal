@@ -68,6 +68,30 @@ would notice, not by the internal step numbers used to plan the work.
   so a drifted severity changes both the verdict and the number. `C2` is a
   named exemption, because it takes its severity from the advisory it reports.
 
+- **Every guard decision is recorded, and never its arguments.** The five
+  call-path guards in a generated `guards.py` write one JSON line per decision -
+  guard, tool, outcome, a reason from a closed vocabulary, and the guard's own
+  cost - to `.toolseal/evidence.jsonl` (rotated), or wherever
+  `TOOLSEAL_EVIDENCE` points: a path, `-` for stderr, or `off`. No argument
+  value ever reaches a record. A call allowed by `TOOLSEAL_ASSUME_YES` is
+  recorded as `approval_override`, never as an approval. Evidence is
+  best-effort: an unwritable sink warns once and the guard's decision stands.
+
+- **A fresh project ships with a guard in its tool's call path.** `guard_tool`
+  binds the guards a `[policy.tool.<name>]` table declares, and a new LangGraph
+  or CrewAI project declares `timeout_seconds = 30` for `read_workspace_file` -
+  with a comment saying it bounds how long the agent waits, not how long the
+  tool runs. Previously the scaffold shipped a guard library and applied none of
+  it. `.toolseal/evidence*` is added to the scaffold's `.gitignore`.
+
+- **Study 6's decorator layer is measured.** `python -m bench s6` runs the
+  registered attack suite against the real generated guards. **H4 is supported:
+  34 of 34 cases** matched their pre-registered expectation - each guard blocked
+  and missed exactly what its code says. The finding the registration did not
+  anticipate: a guard's decision costs about 1-2 us and writing its evidence
+  record about 85 us, so the record is 98-99% of a shipped guard's cost. H1-H3
+  need the proxy layer and remain open.
+
 ### Changed
 
 - **Family A's remediations no longer name the OS keychain as the only answer.**

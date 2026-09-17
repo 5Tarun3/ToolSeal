@@ -8,6 +8,7 @@ it. Regenerate with:
 uv run python -m bench s2 --out research/studies/s2
 uv run python -m bench s3 --out research/studies/s3
 uv run python -m bench s5 --out research/studies/s5
+uv run python -m bench s6 --out research/studies/s6
 ```
 
 Selection rules, metric definitions and falsification conditions are fixed in
@@ -21,7 +22,7 @@ table.
 | [`s2`](s2/) | Does securing setup cost developer time? (RQ2) | Run, idealised manual arm |
 | [`s3`](s3/) | What does a secure default cost at runtime? (RQ3) | Run |
 | [`s5`](s5/) | How much of each standard does the control mapping reach? (C6) | Run, part (a) only - see below |
-| [`s6`](s6/) | Does each interception layer's protection justify its latency? (RQ5) | **Pre-registered, not run** |
+| [`s6`](s6/) | Does each interception layer's protection justify its latency? (RQ5) | Decorator layer run (H4 supported); proxy layer not built |
 
 ## A caveat that belongs on every figure
 
