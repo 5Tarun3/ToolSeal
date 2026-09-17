@@ -224,6 +224,10 @@ class Manifest:
             if tool_policy.approval is not None:
                 lines.append(f"approval = {_quote(tool_policy.approval)}")
             if tool_policy.timeout_seconds is not None:
+                lines.append(
+                    "# Bounds how long the agent waits for this tool, not how long "
+                    "the tool runs - see bound_runtime."
+                )
                 lines.append(f"timeout_seconds = {tool_policy.timeout_seconds!r}")
             if tool_policy.egress_allow is not None:
                 hosts = ", ".join(_quote(host) for host in tool_policy.egress_allow)

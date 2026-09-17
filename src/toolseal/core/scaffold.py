@@ -33,12 +33,17 @@ from toolseal.core.adapters.base import (
     provider_registry,
 )
 from toolseal.core.credentials import PRECOMMIT_CONFIG, merge_gitignore
-from toolseal.core.manifest import MANIFEST_NAME, Manifest
+from toolseal.core.manifest import MANIFEST_NAME, Manifest, ToolPolicy
 from toolseal.core.policy.profile import load_profile
 from toolseal.core.sbom import SBOM_FILENAME
 from toolseal.core.sbom import render as render_sbom
 from toolseal.errors import ConfigError
-from toolseal.templates.common import DEFAULT_TOOL_NAMES
+from toolseal.templates.common import (
+    DEFAULT_TOOL_NAMES,
+    DEFAULT_TOOL_TIMEOUT_SECONDS,
+    EVIDENCE_GITIGNORE_ENTRIES,
+    EVIDENCE_GITIGNORE_HEADER,
+)
 
 
 @dataclass(frozen=True)
@@ -113,6 +118,18 @@ def _project_hygiene_files(
             profile.require.get("policy.approval_required_for_destructive", True)
         )
 
+    # A project with generated tools ships with a guard in its tool's call
+    # path rather than a guard library nothing uses (see guards.guard_tool).
+    has_tools = not getattr(framework, "configures_in_place", False)
+    tool_policies = (
+        {
+            name: ToolPolicy(timeout_seconds=DEFAULT_TOOL_TIMEOUT_SECONDS)
+            for name in DEFAULT_TOOL_NAMES
+        }
+        if has_tools
+        else {}
+    )
+
     manifest = Manifest(
         project_name=spec.project_name,
         provider_id=provider.id,
@@ -124,6 +141,7 @@ def _project_hygiene_files(
         # it has no `tools.py` for `agent_config.py` to filter and gets none.
         tools=() if getattr(framework, "configures_in_place", False) else DEFAULT_TOOL_NAMES,
         profiles=profiles,
+        tool_policies=tool_policies,
     )
 
     return [
@@ -131,7 +149,11 @@ def _project_hygiene_files(
         # second run does not append a duplicate block.
         RenderedFile(
             PurePosixPath(".gitignore"),
-            merge_gitignore(existing_gitignore),
+            merge_gitignore(
+                merge_gitignore(existing_gitignore),
+                EVIDENCE_GITIGNORE_ENTRIES,
+                EVIDENCE_GITIGNORE_HEADER,
+            ),
             overwrite=True,
         ),
         RenderedFile(PurePosixPath(".pre-commit-config.yaml"), PRECOMMIT_CONFIG),

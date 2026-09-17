@@ -426,20 +426,28 @@ def is_placeholder(value: str) -> bool:
     return _PLACEHOLDER.match(value) is not None
 
 
-def merge_gitignore(existing: str) -> str:
-    """Add the credential ignore rules to *existing*, idempotently.
+def merge_gitignore(
+    existing: str,
+    entries: tuple[str, ...] = GITIGNORE_ENTRIES,
+    header: str = GITIGNORE_HEADER,
+) -> str:
+    """Add an ignore block to *existing*, idempotently.
+
+    Defaults to the credential rules. Other blocks - guard evidence, for
+    one - pass their own *entries* and *header* so each keeps its own
+    labelled section.
 
     Rewriting the file wholesale would discard a user's own rules, and appending
     unconditionally would grow a duplicate block on every run. Only genuinely
     missing lines are added.
     """
     present = {line.strip() for line in existing.splitlines()}
-    missing = [entry for entry in GITIGNORE_ENTRIES if entry not in present]
+    missing = [entry for entry in entries if entry not in present]
     if not missing:
         return existing
 
     prefix = existing if existing.endswith("\n") or not existing else existing + "\n"
-    block = "\n".join([GITIGNORE_HEADER, *missing])
+    block = "\n".join([header, *missing])
     separator = "\n" if prefix else ""
     return f"{prefix}{separator}{block}\n"
 

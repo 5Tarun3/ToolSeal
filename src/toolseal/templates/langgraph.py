@@ -134,13 +134,15 @@ from pathlib import Path
 
 from langchain_core.tools import tool
 
-from agent_config import TOOL_NAMES
+from agent_config import TOOL_NAMES, TOOL_POLICIES
+from guards import guard_tool
 
 # B3: filesystem access is rooted at the project workspace, not at "/" or "~".
 WORKSPACE = (Path(__file__).resolve().parent / "workspace").resolve()
 
 
 @tool
+@guard_tool(TOOL_POLICIES.get("read_workspace_file"))
 def read_workspace_file(relative_path: str) -> str:
     """Read a UTF-8 text file from the project workspace."""
     target = (WORKSPACE / relative_path).resolve()

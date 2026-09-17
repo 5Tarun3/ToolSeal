@@ -17,6 +17,17 @@ from typing import Final
 # is written down exactly once even though two frameworks might read it.
 DEFAULT_TOOL_NAMES: Final[tuple[str, ...]] = ("read_workspace_file",)
 
+# The per-tool policy a fresh project ships with. A timeout is the one guard
+# that fits a read-only workspace tool without inventing rules for it; it
+# bounds how long the agent waits, and does not stop the tool (see
+# bound_runtime in guards.py).
+DEFAULT_TOOL_TIMEOUT_SECONDS: Final = 30.0
+
+# guards.py writes decision records to .toolseal/evidence.jsonl by default.
+# They carry no arguments, but they are runtime output, not source.
+EVIDENCE_GITIGNORE_ENTRIES: Final[tuple[str, ...]] = (".toolseal/evidence*",)
+EVIDENCE_GITIGNORE_HEADER: Final = "# Guard evidence records - added by toolseal"
+
 GUARDS_PY = Template('''"""Security guards for $project_name.
 
 `require_approval` is also what a scaffolder emits as a *compensating guard*:
@@ -697,6 +708,21 @@ _enabled = _tools.get("enabled")
 TOOL_NAMES: tuple[str, ...] = (
     tuple(str(item) for item in _enabled) if isinstance(_enabled, list) else ()
 )
+
+_policy = _DATA.get("policy")
+_policy = _policy if isinstance(_policy, dict) else {}
+_tool_tables = _policy.get("tool")
+_tool_tables = _tool_tables if isinstance(_tool_tables, dict) else {}
+_POLICY_KEYS = ("approval", "timeout_seconds", "egress_allow")
+
+# [policy.tool.<name>]: the guards each tool is bound with, via
+# guards.guard_tool in tools.py. Only the keys guard_tool understands are
+# kept; a malformed table is ignored here, and toolseal audit reports it.
+TOOL_POLICIES: dict[str, dict[str, object]] = {
+    str(name): {key: table[key] for key in _POLICY_KEYS if key in table}
+    for name, table in _tool_tables.items()
+    if isinstance(table, dict)
+}
 ''')
 
 
