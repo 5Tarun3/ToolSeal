@@ -31,7 +31,7 @@ from toolseal.cli import (
 from toolseal.cli._ui import accent_text, console, err_console, new_table, print_line
 from toolseal.cli.errors import command as error_boundary
 from toolseal.cli.errors import format_error_line
-from toolseal.core.credentials import KeyringStore
+from toolseal.core.credentials import BACKENDS, KeyringStore, Posture
 from toolseal.errors import ExitCode, ToolsealError
 from toolseal.logging import configure_logging
 
@@ -127,6 +127,19 @@ def doctor(
         "keychain": keychain,
     }
 
+    # Which stores this machine can actually reach, and how well each protects
+    # what it holds. Listing them without the posture would imply they are
+    # interchangeable, which is the one thing this must not say.
+    backends = [
+        {
+            "name": identifier,
+            "available": factory().available(),
+            "posture": str(factory().posture),
+        }
+        for identifier, factory in BACKENDS.items()
+    ]
+    report["credential_backends"] = backends
+
     if as_json:
         typer.echo(json.dumps(report, indent=2, sort_keys=True))
         return
@@ -135,11 +148,24 @@ def doctor(
     table.add_column("field")
     table.add_column("value")
     for key, value in report.items():
+        # Rendered as one row per backend below; `str()` of a list of dicts
+        # would be unreadable in a table built for scalars.
+        if key == "credential_backends":
+            continue
         if value is None:
             cell = Text("not found", style="verdict.warn")
         else:
             cell = Text(str(value), style="muted")
         table.add_row(accent_text(key), cell)
+
+    for entry in backends:
+        state = "available" if entry["available"] else "not available"
+        cell = Text(f"{state} ({entry['posture']})", style="muted")
+        # Only the weaker backend is highlighted, and only when it is usable -
+        # warning about a backend nothing can reach is noise.
+        if entry["available"] and entry["posture"] == str(Posture.WEAKER):
+            cell = Text(f"{state} ({entry['posture']})", style="verdict.warn")
+        table.add_row(accent_text(f"credential: {entry['name']}"), cell)
     # Framed like every other command's report (spec: audit's summary,
     # policy explain's panel) rather than a bare table with nothing marking
     # where the report starts and ends. `expand=False`: the box fits the

@@ -266,3 +266,60 @@ def test_add_framework_advertises_only_what_it_will_accept() -> None:
     assert accepted, "at least one framework should configure in place"
     for value in accepted:
         assert value in rendered
+
+
+# --- credential backends ----------------------------------------------------
+#
+# `doctor` is what a bug report pastes, and "which backends can this machine
+# actually use" is now a question with more than one answer.
+
+
+def test_doctor_reports_every_credential_backend() -> None:
+    result = runner.invoke(app, ["doctor", "--json"])
+
+    assert result.exit_code == ExitCode.OK
+    report = json.loads(result.stdout)
+    names = {entry["name"] for entry in report["credential_backends"]}
+    assert names == {"os-keychain", "environment"}
+
+
+def test_doctor_labels_the_weaker_backend() -> None:
+    # Listing both without distinguishing them would imply they are
+    # interchangeable, which is the one thing this must not say.
+    result = runner.invoke(app, ["doctor", "--json"])
+
+    by_name = {entry["name"]: entry for entry in json.loads(result.stdout)["credential_backends"]}
+    assert by_name["environment"]["posture"] == "weaker"
+    assert by_name["os-keychain"]["posture"] == "strong"
+
+
+def test_doctor_reports_backend_availability() -> None:
+    result = runner.invoke(app, ["doctor", "--json"])
+
+    for entry in json.loads(result.stdout)["credential_backends"]:
+        assert isinstance(entry["available"], bool)
+
+
+def test_doctor_keeps_the_keychain_field() -> None:
+    # CHANGELOG 0.1.0 promised this field and `doctor` had silently dropped it
+    # once already. People quote it in triage notes; adding backends must not
+    # take it away a second time.
+    result = runner.invoke(app, ["doctor", "--json"])
+
+    report = json.loads(result.stdout)
+    assert "keychain" in report
+    assert isinstance(report["keychain"], str)
+    assert report["keychain"]
+
+
+def test_doctor_human_output_names_the_backends() -> None:
+    result = runner.invoke(app, ["doctor"])
+
+    assert result.exit_code == ExitCode.OK
+    assert "os-keychain" in result.stdout
+    assert "environment" in result.stdout
+
+
+# No ASCII assertion here: `test_cli_output_is_ascii_outside_rich_box_drawing`
+# in test_cli_ui.py already sweeps the live app, and it encodes the rule
+# correctly - box-drawing characters are rich's own, and are allowed.
