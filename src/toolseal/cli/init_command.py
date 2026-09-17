@@ -19,7 +19,7 @@ from toolseal.cli._ui import (
 )
 from toolseal.cli.wizard import equivalent_command, run_wizard
 from toolseal.core.adapters import ScaffoldSpec, framework_registry, provider_registry
-from toolseal.core.credentials import KeyringStore
+from toolseal.core.credentials import resolve_backend
 from toolseal.core.policy.profile import load_profile, profile_ids
 from toolseal.core.scaffold import apply_plan, build_plan
 from toolseal.errors import ConfigError, ExitCode, UsageError
@@ -278,11 +278,17 @@ def _provision_credential(provider: Any, api_key: str | None) -> str | None:
     if api_key is None:
         return "not provided - pass --api-key, or --interactive to be prompted"
 
+    # Whichever backend this machine actually resolves to, rather than
+    # assuming the keychain. Where no keychain exists, the environment
+    # backend's own refusal names the exact variable to set, so the failure is
+    # actionable rather than merely honest - and this function needs to know
+    # nothing about environments to say so.
     try:
-        KeyringStore().set(provider.id, api_key)
+        selection = resolve_backend()
+        selection.store.set(provider.id, api_key)
     except ConfigError as exc:
         return f"not stored - {exc}"
-    return "stored in the OS keychain"
+    return f"stored in the {selection.resolved} backend"
 
 
 def _emit(as_json: bool, payload: dict[str, Any], human: Any) -> None:

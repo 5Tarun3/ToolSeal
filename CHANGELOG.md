@@ -8,6 +8,53 @@ would notice, not by the internal step numbers used to plan the work.
 
 ## [Unreleased]
 
+### Added
+
+- **A second credential backend.** `CredentialStore` gains `EnvironmentStore`,
+  which reads a credential a secret manager, orchestrator or CI runner exported
+  as `TOOLSEAL_CREDENTIAL_<PROVIDER>`. This is what lets a credential reach a
+  deployed agent: `KeyringStore` correctly refuses rather than degrading when no
+  keychain exists, but a container has no keychain and a systemd unit has no
+  unlocked session, so until now the credential story assumed a developer
+  workstation.
+
+  The environment backend is **deliberately read-only**. Assigning `os.environ`
+  reaches only the current process, so `set()` and `delete()` refuse and name
+  the exact variable to configure instead. A store that reported success while
+  persisting nothing would be the same failure toolseal exists to prevent.
+
+- **Explicit backend selection, recorded.** `[credentials] backend` in
+  `toolseal.toml` declares which store a project expects. A declared backend is
+  honoured or the command fails - never silently substituted for a weaker one.
+  Declaring nothing keeps today's behaviour: resolve the strongest available.
+
+- **Posture is reported, and the two backends are not presented as equivalent.**
+  An environment variable is visible to every child process and to anything that
+  can read the process table, and the audit now says so. `toolseal audit --json`
+  gains a `credentials` object, the human report names the weaker backend when
+  that is what resolved, and `toolseal doctor` lists every backend with its
+  availability and posture.
+
+### Changed
+
+- **Family A's remediations no longer name the OS keychain as the only answer.**
+  In five places they told the reader to use a keychain; for a deployed project
+  that advice is impossible to follow. They now name both paths. The keychain is
+  still named - it remains the right answer on a workstation.
+- `toolseal init` reports which backend stored a credential rather than assuming
+  the keychain. Where none exists, the failure names the variable to set.
+
+### Notes
+
+- **No check ids were added and no score changed.** Credential posture is
+  information, not a check: it is resolved in the CLI from the manifest and
+  never enters `ProjectModel`, so no check can read it. A fresh `toolseal init`
+  still audits 100/100 on either backend.
+- `audit --json` gained one key and changed none of the existing ones.
+  `tests/test_audit_contract.py` now pins every key that existed at 0.1.3, so a
+  future rename fails in CI rather than in a downstream pipeline.
+- No new runtime dependencies; `keyring`, `rich` and `typer` remain the three.
+
 ## [0.1.3] - 2026-09-16
 
 ### Removed

@@ -371,7 +371,9 @@ def test_api_key_flag_stores_into_the_keychain(
 
     assert result.exit_code == ExitCode.OK
     assert stored == {"openai": "sk-test-value"}
-    assert "stored in the OS keychain" in result.output
+    # Names the backend now that there is more than one, rather than
+    # asserting the keychain unconditionally.
+    assert "stored in the os-keychain backend" in result.output
 
 
 def test_no_api_key_and_not_interactive_never_prompts(tmp_path: Path) -> None:
@@ -468,3 +470,81 @@ def test_a_keychain_that_refuses_storage_does_not_fail_init(
     assert result.exit_code == ExitCode.OK
     assert (tmp_path / "demo" / "agent.py").exists()
     assert "not stored" in result.output
+
+
+# --- which backend stored it ------------------------------------------------
+
+
+def test_init_names_the_backend_that_stored_the_key(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(KeyringStore, "available", lambda self: True)
+    monkeypatch.setattr(KeyringStore, "set", lambda self, account, value: None)
+
+    result = runner.invoke(
+        app,
+        [
+            "init",
+            "demo",
+            "--provider",
+            "openai",
+            "--directory",
+            str(tmp_path / "demo"),
+            "--api-key",
+            "sk-test-value",
+        ],
+    )
+
+    assert result.exit_code == ExitCode.OK
+    assert "os-keychain" in result.output
+
+
+def test_init_explains_that_the_environment_cannot_be_written(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # On a container there is no keychain, so --api-key has nowhere to go.
+    # Saying so, and naming the variable to set, beats failing obscurely - and
+    # beats storing nothing while reporting success.
+    monkeypatch.setattr(KeyringStore, "available", lambda self: False)
+
+    result = runner.invoke(
+        app,
+        [
+            "init",
+            "demo",
+            "--provider",
+            "openai",
+            "--directory",
+            str(tmp_path / "demo"),
+            "--api-key",
+            "sk-test-value",
+        ],
+    )
+
+    # Scaffolding still succeeds: a credential that could not be stored is not
+    # a reason to refuse to create the project.
+    assert result.exit_code == ExitCode.OK
+    assert "TOOLSEAL_CREDENTIAL_OPENAI" in result.output
+    assert "not stored" in result.output
+
+
+def test_init_never_echoes_the_key_when_storage_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(KeyringStore, "available", lambda self: False)
+
+    result = runner.invoke(
+        app,
+        [
+            "init",
+            "demo",
+            "--provider",
+            "openai",
+            "--directory",
+            str(tmp_path / "demo"),
+            "--api-key",
+            "sk-secret-never-echo",
+        ],
+    )
+
+    assert "sk-secret-never-echo" not in result.output
