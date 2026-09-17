@@ -179,6 +179,7 @@ D1 = register(
             ControlRef("owasp-llm-top10", "LLM02"),
             ControlRef("owasp-agentic-threats", "T9"),
             ControlRef("owasp-agentic-top10", "ASI07"),
+            ControlRef("mitre-atlas", "AML.T0025"),
         ),
     )
 )
@@ -197,6 +198,7 @@ D2 = register(
             ControlRef("owasp-agentic-threats", "T9"),
             ControlRef("owasp-agentic-top10", "ASI07"),
             ControlRef("owasp-agentic-top10", "ASI03"),
+            ControlRef("mitre-atlas", "AML.T0025"),
         ),
     )
 )
@@ -214,6 +216,7 @@ D3 = register(
             ControlRef("owasp-llm-top10", "LLM03"),
             ControlRef("owasp-llm-top10", "LLM02"),
             ControlRef("owasp-agentic-top10", "ASI04"),
+            ControlRef("mitre-atlas", "AML.T0025"),
         ),
     )
 )
@@ -231,6 +234,7 @@ E1 = register(
             ControlRef("owasp-llm-top10", "LLM05"),
             ControlRef("owasp-agentic-threats", "T11"),
             ControlRef("owasp-agentic-top10", "ASI05"),
+            ControlRef("mitre-atlas", "AML.T0011"),
         ),
     )
 )
@@ -247,6 +251,7 @@ E2 = register(
             ControlRef("owasp-llm-top10", "LLM06"),
             ControlRef("owasp-agentic-threats", "T3"),
             ControlRef("owasp-agentic-top10", "ASI03"),
+            ControlRef("mitre-atlas", "AML.T0055"),
         ),
     )
 )
@@ -263,6 +268,7 @@ E3 = register(
             ControlRef("owasp-llm-top10", "LLM10"),
             ControlRef("owasp-agentic-threats", "T4"),
             ControlRef("owasp-agentic-top10", "ASI02"),
+            ControlRef("mitre-atlas", "AML.T0034.002"),
         ),
     )
 )
@@ -280,6 +286,7 @@ F1 = register(
             ControlRef("owasp-agentic-top10", "ASI08"),
             ControlRef("owasp-agentic-top10", "ASI09"),
             ControlRef("nist-ai-rmf", "MANAGE-4.1"),
+            ControlRef("mitre-atlas", "AML.T0081"),
         ),
     )
 )
@@ -297,6 +304,7 @@ F2 = register(
             ControlRef("owasp-llm-top10", "LLM06"),
             ControlRef("owasp-agentic-threats", "T2"),
             ControlRef("owasp-agentic-top10", "ASI02"),
+            ControlRef("mitre-atlas", "AML.T0101"),
         ),
     )
 )

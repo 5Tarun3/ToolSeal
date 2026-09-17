@@ -239,6 +239,7 @@ def test_all_expected_catalogues_are_present() -> None:
         "owasp-agentic-top10",
         "nist-ai-rmf",
         "iso-42001",
+        "mitre-atlas",
     }
 
 

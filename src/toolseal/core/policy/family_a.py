@@ -290,6 +290,8 @@ A1 = register(
             ControlRef("owasp-llm-top10", "LLM02"),
             ControlRef("owasp-agentic-threats", "T3"),
             ControlRef("owasp-agentic-top10", "ASI03"),
+            ControlRef("mitre-atlas", "AML.T0083"),
+            ControlRef("mitre-atlas", "AML.T0055"),
         ),
     )
 )
@@ -305,6 +307,7 @@ A2 = register(
         controls=(
             ControlRef("owasp-llm-top10", "LLM02"),
             ControlRef("owasp-agentic-top10", "ASI03"),
+            ControlRef("mitre-atlas", "AML.T0055"),
         ),
     )
 )
@@ -322,6 +325,7 @@ A3 = register(
             ControlRef("owasp-llm-top10", "LLM02"),
             ControlRef("owasp-agentic-threats", "T3"),
             ControlRef("owasp-agentic-top10", "ASI03"),
+            ControlRef("mitre-atlas", "AML.T0055"),
         ),
     )
 )
@@ -337,6 +341,7 @@ A4 = register(
         controls=(
             ControlRef("owasp-llm-top10", "LLM02"),
             ControlRef("owasp-agentic-top10", "ASI03"),
+            ControlRef("mitre-atlas", "AML.T0055"),
         ),
     )
 )
@@ -354,6 +359,8 @@ A5 = register(
             ControlRef("owasp-llm-top10", "LLM02"),
             ControlRef("owasp-agentic-threats", "T3"),
             ControlRef("owasp-agentic-top10", "ASI03"),
+            ControlRef("mitre-atlas", "AML.T0083"),
+            ControlRef("mitre-atlas", "AML.T0098"),
         ),
     )
 )

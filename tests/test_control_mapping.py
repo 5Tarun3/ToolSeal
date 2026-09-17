@@ -182,3 +182,68 @@ def test_atlas_ids_use_the_published_form() -> None:
     for control in controls:
         assert pattern.match(control.id), f"{control.id} is not an ATLAS technique id"
         assert control.title, f"{control.id} has no title"
+
+
+def test_atlas_is_actually_cited() -> None:
+    # A catalogue nothing cites is dead weight: it lengthens the standards
+    # list while answering for nothing.
+    cited = {ref.standard for check in all_checks() for ref in check.controls}
+
+    assert "mitre-atlas" in cited
+
+
+def test_credential_checks_cite_the_atlas_credential_technique() -> None:
+    # Spot check with a known-correct answer, in the style of the OWASP spot
+    # checks above: A1 is "credential literal in tracked source", which is
+    # exactly AML.T0083, "Credentials from AI Agent Configuration".
+    a1 = next(check for check in all_checks() if check.id == "A1")
+    atlas = {ref.control for ref in a1.controls if ref.standard == "mitre-atlas"}
+
+    assert "AML.T0083" in atlas
+
+
+def test_supply_chain_checks_cite_the_atlas_supply_chain_techniques() -> None:
+    c_checks = [check for check in all_checks() if check.id.startswith("C")]
+    assert c_checks, "family C is empty"
+
+    cited = {
+        ref.control for check in c_checks for ref in check.controls if ref.standard == "mitre-atlas"
+    }
+
+    assert "AML.T0010" in cited
+    # C3 is the typosquat check; Malicious Package is its ATLAS name.
+    assert "AML.T0011.001" in cited
+
+
+def test_no_check_cites_an_uncheckable_atlas_technique() -> None:
+    # AML.T0051 and AML.T0080 are listed so the gap is visible, not so a check
+    # can claim to answer them. A citation to one would be the catalogue lying
+    # about this project's reach - the exact failure `checkable = false`
+    # exists to prevent.
+    catalogues = load_catalogues()
+
+    for check in all_checks():
+        for ref in check.controls:
+            if ref.standard == "mitre-atlas":
+                assert resolve(ref, catalogues).checkable, (
+                    f"{check.id} cites {ref.control}, which is marked not checkable"
+                )
+
+
+def test_every_checkable_atlas_technique_is_cited_by_something() -> None:
+    # This catalogue is a curated subset chosen as "what our checks bear on".
+    # A checkable entry nothing cites means the selection rule was not
+    # followed, and it would quietly drag the coverage percentage down while
+    # looking like a gap in the checks rather than a gap in the curation.
+    catalogues = load_catalogues()
+    checkable = {c.id for c in catalogues["mitre-atlas"].checkable()}
+    assert checkable, "no checkable ATLAS controls"
+
+    cited = {
+        ref.control
+        for check in all_checks()
+        for ref in check.controls
+        if ref.standard == "mitre-atlas"
+    }
+
+    assert checkable - cited == set(), f"checkable but uncited: {sorted(checkable - cited)}"

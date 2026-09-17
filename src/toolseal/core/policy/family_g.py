@@ -155,6 +155,7 @@ G1 = register(
             ControlRef("owasp-llm-top10", "LLM06"),
             ControlRef("owasp-agentic-threats", "T2"),
             ControlRef("owasp-agentic-top10", "ASI02"),
+            ControlRef("mitre-atlas", "AML.T0110"),
         ),
     )
 )
@@ -172,6 +173,7 @@ G2 = register(
             ControlRef("owasp-llm-top10", "LLM05"),
             ControlRef("owasp-agentic-threats", "T2"),
             ControlRef("owasp-agentic-top10", "ASI02"),
+            ControlRef("mitre-atlas", "AML.T0110"),
         ),
     )
 )
@@ -185,7 +187,10 @@ G3 = register(
         remediation="Map error results onto the framework's failure channel.",
         run=_g3,
         applies=_translated,
-        controls=(ControlRef("owasp-llm-top10", "LLM05"),),
+        controls=(
+            ControlRef("owasp-llm-top10", "LLM05"),
+            ControlRef("mitre-atlas", "AML.T0110"),
+        ),
     )
 )
 
@@ -202,6 +207,7 @@ G4 = register(
             ControlRef("owasp-llm-top10", "LLM06"),
             ControlRef("nist-ai-rmf", "MEASURE-2.7"),
             ControlRef("owasp-agentic-top10", "ASI02"),
+            ControlRef("mitre-atlas", "AML.T0110"),
         ),
     )
 )
@@ -219,6 +225,7 @@ G5 = register(
             ControlRef("owasp-llm-top10", "LLM01"),
             ControlRef("nist-ai-rmf", "MEASURE-2.7"),
             ControlRef("owasp-agentic-top10", "ASI01"),
+            ControlRef("mitre-atlas", "AML.T0110"),
         ),
     )
 )

@@ -424,34 +424,34 @@ and Mitigations* (v1.0, February 2025); `owasp-agentic-top10` holds the ranked
 
 | Check | Controls |
 | --- | --- |
-| `A1` | owasp-llm-top10:LLM02 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI03 |
-| `A2` | owasp-llm-top10:LLM02 · owasp-agentic-top10:ASI03 |
-| `A3` | owasp-llm-top10:LLM02 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI03 |
-| `A4` | owasp-llm-top10:LLM02 · owasp-agentic-top10:ASI03 |
-| `A5` | owasp-llm-top10:LLM02 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI03 |
-| `B1` | owasp-llm-top10:LLM06 · owasp-agentic-threats:T2 · owasp-agentic-top10:ASI02 |
-| `B2` | owasp-llm-top10:LLM06 · owasp-agentic-threats:T11 · owasp-agentic-top10:ASI05 |
-| `B3` | owasp-llm-top10:LLM06 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI03 |
-| `B4` | owasp-llm-top10:LLM06 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI02 |
-| `B5` | owasp-llm-top10:LLM03 · owasp-agentic-threats:T2 · nist-ai-rmf:GOVERN-6.1 · owasp-agentic-top10:ASI04 |
-| `C1` | owasp-llm-top10:LLM03 · nist-ai-rmf:GOVERN-6.1 · owasp-agentic-top10:ASI04 |
-| `C2` | owasp-llm-top10:LLM03 · nist-ai-rmf:MAP-4.1 · owasp-agentic-top10:ASI04 |
-| `C3` | owasp-llm-top10:LLM03 · owasp-agentic-threats:T9 · nist-ai-rmf:GOVERN-6.1 · owasp-agentic-top10:ASI04 |
-| `C4` | owasp-llm-top10:LLM03 · nist-ai-rmf:GOVERN-6.1 · owasp-agentic-top10:ASI04 |
-| `C5` | owasp-llm-top10:LLM03 · iso-42001:A.10.3 · owasp-agentic-top10:ASI04 |
-| `D1` | owasp-llm-top10:LLM02 · owasp-agentic-threats:T9 · owasp-agentic-top10:ASI07 |
-| `D2` | owasp-llm-top10:LLM03 · owasp-agentic-threats:T9 · owasp-agentic-top10:ASI07 · owasp-agentic-top10:ASI03 |
-| `D3` | owasp-llm-top10:LLM03 · owasp-llm-top10:LLM02 · owasp-agentic-top10:ASI04 |
-| `E1` | owasp-llm-top10:LLM05 · owasp-agentic-threats:T11 · owasp-agentic-top10:ASI05 |
-| `E2` | owasp-llm-top10:LLM06 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI03 |
-| `E3` | owasp-llm-top10:LLM10 · owasp-agentic-threats:T4 · owasp-agentic-top10:ASI02 |
-| `F1` | owasp-agentic-threats:T8 · owasp-agentic-top10:ASI08 · owasp-agentic-top10:ASI09 · nist-ai-rmf:MANAGE-4.1 |
-| `F2` | owasp-llm-top10:LLM06 · owasp-agentic-threats:T2 · owasp-agentic-top10:ASI02 |
-| `G1` | owasp-llm-top10:LLM06 · owasp-agentic-threats:T2 · owasp-agentic-top10:ASI02 |
-| `G2` | owasp-llm-top10:LLM05 · owasp-agentic-threats:T2 · owasp-agentic-top10:ASI02 |
-| `G3` | owasp-llm-top10:LLM05 |
-| `G4` | owasp-llm-top10:LLM06 · nist-ai-rmf:MEASURE-2.7 · owasp-agentic-top10:ASI02 |
-| `G5` | owasp-llm-top10:LLM01 · nist-ai-rmf:MEASURE-2.7 · owasp-agentic-top10:ASI01 |
+| `A1` | mitre-atlas:AML.T0055 · mitre-atlas:AML.T0083 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI03 · owasp-llm-top10:LLM02 |
+| `A2` | mitre-atlas:AML.T0055 · owasp-agentic-top10:ASI03 · owasp-llm-top10:LLM02 |
+| `A3` | mitre-atlas:AML.T0055 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI03 · owasp-llm-top10:LLM02 |
+| `A4` | mitre-atlas:AML.T0055 · owasp-agentic-top10:ASI03 · owasp-llm-top10:LLM02 |
+| `A5` | mitre-atlas:AML.T0083 · mitre-atlas:AML.T0098 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI03 · owasp-llm-top10:LLM02 |
+| `B1` | mitre-atlas:AML.T0053 · owasp-agentic-threats:T2 · owasp-agentic-top10:ASI02 · owasp-llm-top10:LLM06 |
+| `B2` | mitre-atlas:AML.T0011 · owasp-agentic-threats:T11 · owasp-agentic-top10:ASI05 · owasp-llm-top10:LLM06 |
+| `B3` | mitre-atlas:AML.T0053 · mitre-atlas:AML.T0086 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI03 · owasp-llm-top10:LLM06 |
+| `B4` | mitre-atlas:AML.T0053 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI02 · owasp-llm-top10:LLM06 |
+| `B5` | mitre-atlas:AML.T0110 · nist-ai-rmf:GOVERN-6.1 · owasp-agentic-threats:T2 · owasp-agentic-top10:ASI04 · owasp-llm-top10:LLM03 |
+| `C1` | mitre-atlas:AML.T0109 · nist-ai-rmf:GOVERN-6.1 · owasp-agentic-top10:ASI04 · owasp-llm-top10:LLM03 |
+| `C2` | mitre-atlas:AML.T0010 · nist-ai-rmf:MAP-4.1 · owasp-agentic-top10:ASI04 · owasp-llm-top10:LLM03 |
+| `C3` | mitre-atlas:AML.T0011.001 · nist-ai-rmf:GOVERN-6.1 · owasp-agentic-threats:T9 · owasp-agentic-top10:ASI04 · owasp-llm-top10:LLM03 |
+| `C4` | mitre-atlas:AML.T0010 · nist-ai-rmf:GOVERN-6.1 · owasp-agentic-top10:ASI04 · owasp-llm-top10:LLM03 |
+| `C5` | iso-42001:A.10.3 · mitre-atlas:AML.T0010 · owasp-agentic-top10:ASI04 · owasp-llm-top10:LLM03 |
+| `D1` | mitre-atlas:AML.T0025 · owasp-agentic-threats:T9 · owasp-agentic-top10:ASI07 · owasp-llm-top10:LLM02 |
+| `D2` | mitre-atlas:AML.T0025 · owasp-agentic-threats:T9 · owasp-agentic-top10:ASI03 · owasp-agentic-top10:ASI07 · owasp-llm-top10:LLM03 |
+| `D3` | mitre-atlas:AML.T0025 · owasp-agentic-top10:ASI04 · owasp-llm-top10:LLM02 · owasp-llm-top10:LLM03 |
+| `E1` | mitre-atlas:AML.T0011 · owasp-agentic-threats:T11 · owasp-agentic-top10:ASI05 · owasp-llm-top10:LLM05 |
+| `E2` | mitre-atlas:AML.T0055 · owasp-agentic-threats:T3 · owasp-agentic-top10:ASI03 · owasp-llm-top10:LLM06 |
+| `E3` | mitre-atlas:AML.T0034.002 · owasp-agentic-threats:T4 · owasp-agentic-top10:ASI02 · owasp-llm-top10:LLM10 |
+| `F1` | mitre-atlas:AML.T0081 · nist-ai-rmf:MANAGE-4.1 · owasp-agentic-threats:T8 · owasp-agentic-top10:ASI08 · owasp-agentic-top10:ASI09 |
+| `F2` | mitre-atlas:AML.T0101 · owasp-agentic-threats:T2 · owasp-agentic-top10:ASI02 · owasp-llm-top10:LLM06 |
+| `G1` | mitre-atlas:AML.T0110 · owasp-agentic-threats:T2 · owasp-agentic-top10:ASI02 · owasp-llm-top10:LLM06 |
+| `G2` | mitre-atlas:AML.T0110 · owasp-agentic-threats:T2 · owasp-agentic-top10:ASI02 · owasp-llm-top10:LLM05 |
+| `G3` | mitre-atlas:AML.T0110 · owasp-llm-top10:LLM05 |
+| `G4` | mitre-atlas:AML.T0110 · nist-ai-rmf:MEASURE-2.7 · owasp-agentic-top10:ASI02 · owasp-llm-top10:LLM06 |
+| `G5` | mitre-atlas:AML.T0110 · nist-ai-rmf:MEASURE-2.7 · owasp-agentic-top10:ASI01 · owasp-llm-top10:LLM01 |
 
 **`F1` has no *checkable* home in either ranked Top 10.** The OWASP Agentic AI
 threat taxonomy's own crosswalk for `T8 — Repudiation & Untraceability` (the
