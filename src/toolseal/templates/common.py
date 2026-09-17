@@ -32,14 +32,19 @@ guarded against.
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import re
 import sys
 import threading
-from collections.abc import Callable, Sequence
+import time
+from collections.abc import Callable, Mapping, Sequence
+from datetime import datetime, timezone
 from functools import wraps
 from typing import Any
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
 from urllib.parse import urlsplit
 
 REDACTED = "[REDACTED]"
@@ -130,6 +135,130 @@ def minimal_environment(extra: dict[str, str] | None = None) -> dict[str, str]:
     return env
 
 
+# --- evidence ----------------------------------------------------------------
+#
+# Every decision a call-path guard makes leaves one JSON line: which guard, which
+# tool, what it decided and why, and what the decision cost. Never the arguments -
+# an evidence log holding every payload that crossed a guard would be the most
+# valuable file in a deployed agent.
+#
+# Where records go is TOOLSEAL_EVIDENCE: unset means .toolseal/evidence.jsonl next
+# to this file (rotated); "-" means stderr, the natural choice in a container;
+# "off" means nothing; anything else is a path.
+#
+# Evidence is best-effort. If the sink cannot be written - a read-only filesystem,
+# a full disk, a bad path - one warning goes to stderr, recording stops, and the
+# guard's decision is unaffected: a refusal is still a refusal.
+
+EVIDENCE_SCHEMA = 1
+EVIDENCE_MAX_BYTES = 5_000_000
+EVIDENCE_BACKUPS = 3
+EVIDENCE_REASONS = frozenset(
+    {
+        "checked",
+        "approved",
+        "declined",
+        "approval_override",
+        "no_tty",
+        "egress",
+        "schema",
+        "timeout",
+        "tool_error",
+    }
+)
+
+_evidence_lock = threading.Lock()
+_evidence_state: dict[str, Any] = {"resolved": False, "sink": None, "warned": False}
+
+
+def _evidence_failed(detail: str) -> None:
+    """Warn once per process, then stop recording."""
+    _evidence_state["sink"] = None
+    if _evidence_state["warned"]:
+        return
+    _evidence_state["warned"] = True
+    print(
+        f"toolseal: evidence not recorded ({detail}); set TOOLSEAL_EVIDENCE to a "
+        "writable path, '-' for stderr, or 'off'. Further failures are silent.",
+        file=sys.stderr,
+    )
+
+
+class _EvidenceFileHandler(RotatingFileHandler):
+    def handleError(self, record: logging.LogRecord) -> None:
+        _evidence_failed("write failed")
+
+
+class _EvidenceStreamHandler(logging.StreamHandler):
+    def handleError(self, record: logging.LogRecord) -> None:
+        _evidence_failed("write failed")
+
+
+def _evidence_sink() -> logging.Handler | None:
+    if _evidence_state["resolved"]:
+        return _evidence_state["sink"]
+    with _evidence_lock:
+        if _evidence_state["resolved"]:
+            return _evidence_state["sink"]
+        target = os.environ.get("TOOLSEAL_EVIDENCE", "").strip()
+        handler: logging.Handler | None = None
+        try:
+            if target == "off":
+                handler = None
+            elif target == "-":
+                handler = _EvidenceStreamHandler(sys.stderr)
+            else:
+                if target:
+                    path = Path(target)
+                else:
+                    here = globals().get("__file__")
+                    base = Path(here).resolve().parent if here else Path.cwd()
+                    path = base / ".toolseal" / "evidence.jsonl"
+                path.parent.mkdir(parents=True, exist_ok=True)
+                handler = _EvidenceFileHandler(
+                    path,
+                    maxBytes=EVIDENCE_MAX_BYTES,
+                    backupCount=EVIDENCE_BACKUPS,
+                    encoding="utf-8",
+                )
+            if handler is not None:
+                handler.setFormatter(logging.Formatter("%(message)s"))
+            _evidence_state["sink"] = handler
+        except OSError as exc:
+            _evidence_failed(type(exc).__name__)
+        _evidence_state["resolved"] = True
+        return _evidence_state["sink"]
+
+
+def _record(guard: str, tool: str, outcome: str, reason: str, elapsed_us: float) -> None:
+    """Record one guard decision. *reason* must come from EVIDENCE_REASONS."""
+    if reason not in EVIDENCE_REASONS:
+        message = f"evidence reason {reason!r} is not in EVIDENCE_REASONS"
+        raise ValueError(message)
+    sink = _evidence_sink()
+    if sink is None:
+        return
+    stamp = datetime.now(timezone.utc).isoformat(timespec="milliseconds")
+    line = json.dumps(
+        {
+            "schema": EVIDENCE_SCHEMA,
+            "ts": stamp.replace("+00:00", "Z"),
+            "layer": "decorator",
+            "guard": guard,
+            "tool": tool,
+            "outcome": outcome,
+            "reason": reason,
+            "elapsed_us": round(elapsed_us, 1),
+        },
+        separators=(",", ":"),
+    )
+    sink.handle(logging.makeLogRecord({"msg": line, "levelno": logging.INFO}))
+
+
+def _micros_since(started: float) -> float:
+    return (time.perf_counter() - started) * 1_000_000
+
+
 class ToolCallError(RuntimeError):
     """A tool reported failure.
 
@@ -158,9 +287,18 @@ def raise_on_tool_error(function: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(function)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         result = function(*args, **kwargs)
+        started = time.perf_counter()
         text = result if isinstance(result, str) else repr(result)
         if any(marker in text for marker in _ERROR_PREFIXES):
+            _record(
+                "raise_on_tool_error", function.__name__, "error", "tool_error",
+                _micros_since(started),
+            )
             raise ToolCallError(text[:500])
+        _record(
+            "raise_on_tool_error", function.__name__, "allowed", "checked",
+            _micros_since(started),
+        )
         return result
 
     return wrapper
@@ -184,11 +322,23 @@ def validate_against_schema(
     def decorate(function: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(function)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
+            started = time.perf_counter()
             properties = schema.get("properties") or {}
-            for name, value in kwargs.items():
-                rules = properties.get(name)
-                if isinstance(rules, dict):
-                    _check_value(name, value, rules)
+            try:
+                for name, value in kwargs.items():
+                    rules = properties.get(name)
+                    if isinstance(rules, dict):
+                        _check_value(name, value, rules)
+            except SchemaViolationError:
+                _record(
+                    "validate_against_schema", function.__name__, "refused", "schema",
+                    _micros_since(started),
+                )
+                raise
+            _record(
+                "validate_against_schema", function.__name__, "allowed", "checked",
+                _micros_since(started),
+            )
             return function(*args, **kwargs)
 
         return wrapper
@@ -238,23 +388,45 @@ def require_approval(reason: str) -> Callable[[Callable[..., Any]], Callable[...
     def decorate(function: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(function)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
+            started = time.perf_counter()
             if os.environ.get("TOOLSEAL_ASSUME_YES") == "1":
                 logging.getLogger("$package_name").warning(
                     "approval bypassed for %s (%s)", function.__name__, reason
                 )
+                # Recorded as the override, never as an approval: a call that
+                # went through because the variable was set must be told apart
+                # from one a human agreed to.
+                _record(
+                    "require_approval", function.__name__, "allowed", "approval_override",
+                    _micros_since(started),
+                )
                 return function(*args, **kwargs)
 
             if not sys.stdin.isatty():
+                _record(
+                    "require_approval", function.__name__, "refused", "no_tty",
+                    _micros_since(started),
+                )
                 message = (
                     f"{function.__name__} requires approval ({reason}) "
                     "but no terminal is attached"
                 )
                 raise PermissionError(message)
 
+            # elapsed_us below includes the human's answer time; it is a record
+            # of what the decision cost, not a machine measurement.
             answer = input(f"Allow {function.__name__}? {reason} [y/N] ").strip().lower()
             if answer != "y":
+                _record(
+                    "require_approval", function.__name__, "refused", "declined",
+                    _micros_since(started),
+                )
                 message = f"{function.__name__} was not approved"
                 raise PermissionError(message)
+            _record(
+                "require_approval", function.__name__, "allowed", "approved",
+                _micros_since(started),
+            )
             return function(*args, **kwargs)
 
         return wrapper
@@ -306,25 +478,39 @@ def bound_runtime(seconds: float) -> Callable[[Callable[..., Any]], Callable[...
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             outcome: list[Any] = []
             failure: list[Exception] = []
+            spent: list[float] = []
+            started = time.perf_counter()
 
             def run() -> None:
+                began = time.perf_counter()
                 try:
                     outcome.append(function(*args, **kwargs))
                 except Exception as exc:  # the caller's thread re-raises this, not this one
                     failure.append(exc)
+                finally:
+                    spent.append(time.perf_counter() - began)
 
             worker = threading.Thread(target=run, daemon=True)
             worker.start()
             worker.join(timeout=seconds)
             if worker.is_alive():
+                # The caller's actual wait: that is what a timeout cost it.
+                _record(
+                    "bound_runtime", function.__name__, "refused", "timeout",
+                    _micros_since(started),
+                )
                 message = (
                     f"{function.__name__} exceeded its {seconds}s bound "
                     "(policy.tool.<name>.timeout_seconds); it may still be running "
                     "in the background"
                 )
                 raise GuardTimeoutError(message)
+            # The guard's own cost, excluding the time the tool itself ran.
+            own = _micros_since(started) - (spent[0] * 1_000_000 if spent else 0.0)
             if failure:
+                _record("bound_runtime", function.__name__, "error", "tool_error", max(own, 0.0))
                 raise failure[0]
+            _record("bound_runtime", function.__name__, "allowed", "checked", max(own, 0.0))
             return outcome[0]
 
         return wrapper
@@ -373,6 +559,7 @@ def restrict_egress(
     def decorate(function: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(function)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
+            started = time.perf_counter()
             for name, value in kwargs.items():
                 if not isinstance(value, str):
                     continue
@@ -380,14 +567,54 @@ def restrict_egress(
                     continue
                 host = _named_host(value)
                 if host is not None and host.lower() not in allowed:
+                    _record(
+                        "restrict_egress", function.__name__, "refused", "egress",
+                        _micros_since(started),
+                    )
                     message = (
                         f"{function.__name__} would reach {host!r}, which is outside "
                         f"the allowed hosts {sorted(allowed)} (policy.tool.<name>.egress_allow)"
                     )
                     raise EgressPolicyError(message)
+            _record(
+                "restrict_egress", function.__name__, "allowed", "checked",
+                _micros_since(started),
+            )
             return function(*args, **kwargs)
 
         return wrapper
+
+    return decorate
+
+
+def guard_tool(
+    policy: Mapping[str, Any] | None,
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    """Bind the guards a `[policy.tool.<name>]` table declares.
+
+    Applied from the call outward: `timeout_seconds` bounds the call itself,
+    `egress_allow` is checked before that, and `approval = "always"` is asked
+    first of all - so a human is never asked about a call the egress rule would
+    refuse anyway, and only the tool's own work is timed. An absent or empty
+    policy returns the tool unchanged.
+
+    `agent_config.TOOL_POLICIES` supplies *policy*; this module deliberately
+    does not import it, so guards stay usable on their own.
+    """
+
+    def decorate(function: Callable[..., Any]) -> Callable[..., Any]:
+        if not policy:
+            return function
+        guarded = function
+        timeout = policy.get("timeout_seconds")
+        if timeout is not None:
+            guarded = bound_runtime(timeout)(guarded)
+        egress = policy.get("egress_allow")
+        if egress is not None:
+            guarded = restrict_egress(egress)(guarded)
+        if policy.get("approval") == "always":
+            guarded = require_approval("required by policy.tool: approval = 'always'")(guarded)
+        return guarded
 
     return decorate
 ''')

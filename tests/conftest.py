@@ -26,3 +26,15 @@ def _clear_c3_resolution_cache() -> None:
     from toolseal.core.policy.family_c import _resolve_cached
 
     _resolve_cached.cache_clear()
+
+
+@pytest.fixture(autouse=True)
+def _evidence_off(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep the guard evidence channel from writing into the repository.
+
+    Every generated guard records its decisions, and with `TOOLSEAL_EVIDENCE`
+    unset the sink is a `.toolseal/evidence.jsonl` next to `guards.py` - which,
+    for a template executed from a test, resolves relative to wherever the test
+    happens to run. Tests that exercise the sink set the variable themselves.
+    """
+    monkeypatch.setenv("TOOLSEAL_EVIDENCE", "off")
