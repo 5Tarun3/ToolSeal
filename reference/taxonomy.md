@@ -532,13 +532,22 @@ and this document does not claim to have made for it.
 
 ## Open items
 
-- **Drift guard.** Implemented, and row-level: `tests/test_control_mapping.py`
-  parses the Control mapping table and asserts, per check, that the
-  implemented check ids and their exact control sets agree with this document
-  — no missing row, no stale row for a withdrawn or unregistered check, no row
-  carrying a control the code does not. The control half is genuinely closed.
-  The severity half is still open — the test does not compare severities
-  against the family tables above, so those can still drift unnoticed.
+- **Drift guard.** Implemented, row-level, and now closed on both halves.
+  `tests/test_control_mapping.py` parses the Control mapping table and asserts,
+  per check, that the implemented check ids and their exact control sets agree
+  with this document — no missing row, no stale row for a withdrawn or
+  unregistered check, no row carrying a control the code does not.
+
+  The severity half is closed as of the ATLAS work:
+  `test_documented_severities_match_the_code` parses the per-family tables
+  above and compares each declared severity against the registered check's.
+  This matters beyond tidiness — `blocking` is defined as any applicable
+  `critical` check failing, and the overall score is a severity-weighted pass
+  rate, so a drifted severity changes both the verdict and the number the
+  evaluation quotes. A companion non-vacuity test pins the parsed row count,
+  because a regex that silently matched nothing would leave the comparison
+  passing forever while guarding nothing. `C2` is the one declared exemption
+  (see below); it is named in the test rather than skipped silently.
 - `C2` inherits severity from the advisory; the mapping from CVSS to the four
   levels here is not yet fixed.
 - Family G currently assumes MCP as the source abstraction. The expressiveness

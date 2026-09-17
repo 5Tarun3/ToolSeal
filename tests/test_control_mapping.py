@@ -247,3 +247,76 @@ def test_every_checkable_atlas_technique_is_cited_by_something() -> None:
     }
 
     assert checkable - cited == set(), f"checkable but uncited: {sorted(checkable - cited)}"
+
+
+# --- the severity half of the drift guard ----------------------------------
+
+# Family tables are `| ID | Check | Severity |`, except family G's, which
+# carries a fourth `P0 status` column - hence the tolerated trailing cells
+# rather than anchoring the severity cell to end-of-row.
+_FAMILY_ROW: re.Pattern[str] = re.compile(
+    r"^\| `([A-Z]\d+)` \| [^|]+ \| `(\w+)` \|", re.MULTILINE
+)
+
+#: Checks whose severity is deliberately not a fixed level in the document.
+#: `C2` takes its severity from the advisory it reports, which the Open items
+#: section records as unresolved ("the mapping from CVSS to the four levels
+#: here is not yet fixed"). Its row reads `inherited`. Listing it here keeps
+#: the exception explicit and countable; silently skipping unparsed rows is
+#: how a drift guard rots into a no-op.
+_SEVERITY_EXEMPT: frozenset[str] = frozenset({"C2"})
+
+
+def _family_severities_in(document: str) -> dict[str, str]:
+    """Parse the per-family tables into ``{check_id: severity}``.
+
+    Bounded to everything *before* the `## Control mapping` heading, so the
+    mapping table below it - a different shape, with no severity column -
+    can never be mistaken for a family table.
+    """
+    end = document.index("## Control mapping")
+    return dict(_FAMILY_ROW.findall(document[:end]))
+
+
+def test_the_family_tables_declare_a_severity_for_every_check() -> None:
+    # Non-vacuity guard. This regex depends on the document's exact column
+    # layout, and one that silently matched nothing would leave the test
+    # below passing forever while guarding nothing.
+    from pathlib import Path
+
+    document = Path("reference/taxonomy.md").read_text(encoding="utf-8")
+    documented = _family_severities_in(document)
+
+    expected = REGISTERED_CHECK_COUNT - len(_SEVERITY_EXEMPT)
+    assert len(documented) == expected, (
+        f"parsed {len(documented)} severity rows, expected {expected} "
+        f"({REGISTERED_CHECK_COUNT} checks less {sorted(_SEVERITY_EXEMPT)})"
+    )
+
+
+def test_documented_severities_match_the_code() -> None:
+    # The second half of the drift guard, recorded as open in this document's
+    # own Open items until now: the control half was closed row-by-row, the
+    # severity half was not, so a severity could drift unnoticed.
+    #
+    # A drifted severity is not cosmetic. `blocking` is defined as "any
+    # applicable check of severity critical failed", and the overall score is
+    # a severity-weighted pass rate, so a wrong severity changes both the
+    # verdict and the number the evaluation quotes.
+    from pathlib import Path
+
+    document = Path("reference/taxonomy.md").read_text(encoding="utf-8")
+    documented = _family_severities_in(document)
+    coded = {check.id: str(check.severity) for check in all_checks()}
+
+    missing = set(coded) - set(documented) - _SEVERITY_EXEMPT
+    assert not missing, f"checks with no severity row in taxonomy.md: {sorted(missing)}"
+
+    mismatched = {
+        check_id: (documented[check_id], coded[check_id])
+        for check_id in coded
+        if check_id in documented and documented[check_id] != coded[check_id]
+    }
+    assert not mismatched, (
+        f"severity drift between taxonomy.md and the code (document, code): {mismatched}"
+    )
