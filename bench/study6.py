@@ -617,8 +617,17 @@ def _paired(
     return _summary(differences)
 
 
-def measure_latency(evidence_on: bool, work: Path) -> dict[str, dict[str, Any]]:
-    """Per-guard added latency on the paths the protocol and its Deviations define."""
+def measure_latency(
+    evidence_on: bool,
+    work: Path,
+    micro_repeats: int = MICRO_REPEATS,
+    milli_repeats: int = MILLI_REPEATS,
+) -> dict[str, dict[str, Any]]:
+    """Per-guard added latency on the paths the protocol and its Deviations define.
+
+    The repeat counts default to the registered ones. Overriding them exists so a
+    test can check the shape of the result cheaply; a published run never does.
+    """
     evidence = str(work / f"latency-evidence-{int(time.time_ns())}.jsonl") if evidence_on else "off"
     points: dict[str, dict[str, Any]] = {}
 
@@ -635,7 +644,7 @@ def measure_latency(evidence_on: bool, work: Path) -> dict[str, dict[str, Any]]:
                 "enforcing": _paired(
                     lambda: delete_rows(table="users"),
                     lambda: approval(table="users"),
-                    MICRO_REPEATS,
+                    micro_repeats,
                 ),
                 "allowing": "not measured: the only machine-reachable allow path is the "
                 "approval override, which Study 6 forbids",
@@ -649,12 +658,12 @@ def measure_latency(evidence_on: bool, work: Path) -> dict[str, dict[str, Any]]:
             "enforcing": _paired(
                 lambda: fetch(url="https://exfil.invalid/upload"),
                 lambda: egress(url="https://exfil.invalid/upload"),
-                MICRO_REPEATS,
+                micro_repeats,
             ),
             "allowing": _paired(
                 lambda: fetch(url="https://api.allowed.invalid/v1"),
                 lambda: egress(url="https://api.allowed.invalid/v1"),
-                MICRO_REPEATS,
+                micro_repeats,
             ),
         }
 
@@ -664,9 +673,9 @@ def measure_latency(evidence_on: bool, work: Path) -> dict[str, dict[str, Any]]:
         schema = g["validate_against_schema"](LIMIT_SCHEMA)(query)
         points["validate_against_schema"] = {
             "enforcing": _paired(
-                lambda: query(limit=100000), lambda: schema(limit=100000), MICRO_REPEATS
+                lambda: query(limit=100000), lambda: schema(limit=100000), micro_repeats
             ),
-            "allowing": _paired(lambda: query(limit=10), lambda: schema(limit=10), MICRO_REPEATS),
+            "allowing": _paired(lambda: query(limit=10), lambda: schema(limit=10), micro_repeats),
         }
 
         def failing() -> str:
@@ -676,8 +685,8 @@ def measure_latency(evidence_on: bool, work: Path) -> dict[str, dict[str, Any]]:
             return "ok"
 
         points["raise_on_tool_error"] = {
-            "enforcing": _paired(failing, g["raise_on_tool_error"](failing), MICRO_REPEATS),
-            "allowing": _paired(clean, g["raise_on_tool_error"](clean), MICRO_REPEATS),
+            "enforcing": _paired(failing, g["raise_on_tool_error"](failing), micro_repeats),
+            "allowing": _paired(clean, g["raise_on_tool_error"](clean), micro_repeats),
         }
 
         # bound_runtime enforcing: overshoot past the bound (Deviations item 3).
@@ -688,14 +697,14 @@ def measure_latency(evidence_on: bool, work: Path) -> dict[str, dict[str, Any]]:
             return "late"
 
         guarded_slow = g["bound_runtime"](bound)(slow)
-        overshoot = [_timed(guarded_slow) - bound * 1_000_000 for _ in range(MILLI_REPEATS)]
+        overshoot = [_timed(guarded_slow) - bound * 1_000_000 for _ in range(milli_repeats)]
 
         def quick() -> str:
             return "done"
 
         points["bound_runtime"] = {
             "enforcing": {**_summary(overshoot), "measure": "overshoot past a 0.001 s bound"},
-            "allowing": _paired(quick, g["bound_runtime"](2.0)(quick), MICRO_REPEATS),
+            "allowing": _paired(quick, g["bound_runtime"](2.0)(quick), micro_repeats),
         }
 
         # redact: the filter a scaffolded project installs on every log record.
@@ -710,14 +719,14 @@ def measure_latency(evidence_on: bool, work: Path) -> dict[str, dict[str, Any]]:
         # RD-01's registered input, not a credential.
         secret_line = "OPENAI_API_KEY=sk-live-abcdefghijklmnopqrstu"  # noqa: S105  # toolseal:allow A1 - RD-01
         points["redact"] = {
-            "enforcing": _paired(emit(secret_line, False), emit(secret_line, True), MICRO_REPEATS),
+            "enforcing": _paired(emit(secret_line, False), emit(secret_line, True), micro_repeats),
             "allowing": _paired(
-                emit("processed 42 rows", False), emit("processed 42 rows", True), MICRO_REPEATS
+                emit("processed 42 rows", False), emit("processed 42 rows", True), micro_repeats
             ),
         }
 
         # minimal_environment: one path (Deviations item 4).
-        single = _paired(lambda: dict(os.environ), g["minimal_environment"], MICRO_REPEATS)
+        single = _paired(lambda: dict(os.environ), g["minimal_environment"], micro_repeats)
         points["minimal_environment"] = {"enforcing": single, "allowing": "same path as enforcing"}
 
     return points

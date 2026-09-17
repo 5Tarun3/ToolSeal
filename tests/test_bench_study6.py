@@ -116,3 +116,54 @@ def test_the_report_never_publishes_a_single_ratio() -> None:
     assert "per millisecond" not in report.replace("security per millisecond:", "")
     assert "x cheaper" not in report
     assert "h1-h3 are open" in report
+
+
+def test_latency_covers_every_guard_on_the_paths_the_protocol_defines(tmp_path: Path) -> None:
+    from bench.attack_suite import GUARDS
+    from bench.study6 import measure_latency
+
+    # Tiny repeat counts: this checks the shape of the result, not the numbers.
+    points = measure_latency(True, tmp_path, micro_repeats=5, milli_repeats=3)
+
+    assert set(points) == set(GUARDS)
+    for guard, entry in points.items():
+        assert {"enforcing", "allowing"} <= set(entry), guard
+    # The allowing path the protocol cannot reach is stated, not silently absent.
+    assert isinstance(points["require_approval"]["allowing"], str)
+    assert "override" in points["require_approval"]["allowing"]
+    # bound_runtime's enforcing path is reported as overshoot past the bound.
+    assert "overshoot" in points["bound_runtime"]["enforcing"]["measure"]
+    for guard in ("restrict_egress", "validate_against_schema", "raise_on_tool_error", "redact"):
+        for path in ("enforcing", "allowing"):
+            summary = points[guard][path]
+            assert {"repeats", "median_us", "p95_us", "p99_us"} <= set(summary), (guard, path)
+
+
+def test_latency_never_runs_under_the_approval_override(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from bench.study6 import measure_latency
+
+    # Even if the caller's environment carries the override, the measurement
+    # clears it for its duration, and restores the caller's value afterwards.
+    monkeypatch.setenv("TOOLSEAL_ASSUME_YES", "1")
+    seen: list[str | None] = []
+
+    import bench.study6 as study6
+
+    real = study6._paired
+
+    def spy(*args: object, **kwargs: object) -> dict[str, float | int]:
+        import os
+
+        seen.append(os.environ.get("TOOLSEAL_ASSUME_YES"))
+        return real(*args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(study6, "_paired", spy)
+    measure_latency(False, tmp_path, micro_repeats=2, milli_repeats=2)
+
+    assert seen
+    assert set(seen) == {None}
+    import os
+
+    assert os.environ.get("TOOLSEAL_ASSUME_YES") == "1"
