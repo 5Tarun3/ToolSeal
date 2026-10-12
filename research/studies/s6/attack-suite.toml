@@ -294,7 +294,7 @@ kind = "attack"
 atlas = "AML.T0055"
 description = "Provider key assigned to a credential-named variable in a log line"
 observable = "log_content"
-input = "log line 'OPENAI_API_KEY=sk-live-abcdefghijklmnopqrstu'"
+input = "log line 'OPENAI_API_KEY=sk-live-abcdefghijklmnopqrstu'"  # toolseal:allow A1 - fabricated attack input for the redaction case, never a real key
 expected = { decorator = "blocked", proxy = "not_applicable" }
 basis = "matches the KEY assignment rule and the sk- rule in _RULES"
 

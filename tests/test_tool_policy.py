@@ -375,7 +375,7 @@ def test_a_declared_backend_survives_a_round_trip() -> None:
         provider_id="ollama",
         framework_id="langgraph",
         model="llama3",
-        credential_backend="environment",
+        credential_backend="environment",  # toolseal:allow A1 - a backend name, not a credential
     )
     assert Manifest.from_toml(original.to_toml()).credential_backend == "environment"
 
