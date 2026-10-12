@@ -8,6 +8,8 @@ would notice, not by the internal step numbers used to plan the work.
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-10-12
+
 ### Added
 
 - **A second credential backend.** `CredentialStore` gains `EnvironmentStore`,
@@ -91,6 +93,43 @@ would notice, not by the internal step numbers used to plan the work.
   anticipate: a guard's decision costs about 1-2 us and writing its evidence
   record about 85 us, so the record is 98-99% of a shipped guard's cost. H1-H3
   need the proxy layer and remain open.
+
+- **Study 4 has run: translation fidelity across seven adapter units.**
+  `python -m bench s4` (with `uv sync --group research`) loads one fixture
+  server through `langchain-mcp-adapters`, `crewai-tools`, `openai-agents`
+  (plain and strict), Microsoft `agent-framework` (plain and FIDES labels) and
+  LangChain's OpenAI conversion. It scores what each carries, what each does
+  with ten invalid calls, and whether toolseal's generated guards, executed,
+  restore what was lost.
+
+  Only LangChain's adapter carries the annotation hints. CrewAI validates
+  client-side but loses array and nullable constraints. The lattice is wrong
+  about two targets. **The input-validation guard is never generated for an
+  MCP tool**, and applied by hand it stops only flat-schema violations. Those
+  are recorded as product changes still to make, not made alongside the
+  measurement.
+
+- **Study 5 part (b), the Study 1 re-cut by control, is delivered**, per stratum.
+  Its counts are check failures summed per control, and the header now says so;
+  it previously claimed to count completions.
+
+### Fixed
+
+- **The release gate's self-audit passes again.** Two fixtures - a fabricated
+  `sk-live-...` attack input in Study 6's suite and a backend name in a test -
+  were reported as critical credential literals. Each now carries a line-level
+  `toolseal:allow A1` with its reason; the suite's registered digest is
+  re-recorded under a Deviations row, with no case changed.
+- **Study 1's filename recovery missed names the model gave.** The
+  `llm-generated` stratum's 0 of 12 was published as `qwen2.5:3b` never naming
+  a file. It did, as a comment on each block's first line, which recovery never
+  read. The lookback also read across into the previous block's code, so a
+  command in one block could name the next. Both extractors are fixed. The
+  stratum, re-collected, materialises 12 of 18 (mean score 47.7). Because the
+  fix followed the result, it is labelled exploratory, as a field on the data.
+- **The HIPAA regime's source is verified against the primary text.** eCFR's
+  versioner API confirms the section structure and both quotations verbatim;
+  it was previously confirmed only through search indexing.
 
 ### Changed
 
@@ -417,7 +456,8 @@ keyless signing of the wheel, sdist, and SBOM.
   implicit one, and the project's own SBOM — previously stale and missing it
   entirely — is regenerated from the environment actually installed.
 
-[Unreleased]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/5Tarun3/ToolSeal/compare/v0.1.0...v0.1.1
