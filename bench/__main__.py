@@ -33,7 +33,7 @@ S1_SUB_STUDIES = (
 def main() -> int:
     parser = argparse.ArgumentParser(prog="bench", description="Run an evaluation study.")
     parser.add_argument(
-        "study", choices=(*S1_SUB_STUDIES, "s2", "s3", "s5", "s6"), help="Which study to run."
+        "study", choices=(*S1_SUB_STUDIES, "s2", "s3", "s4", "s5", "s6"), help="Which study to run."
     )
     parser.add_argument(
         "--out", type=Path, default=None, help="Where to write results.json and RESULTS.md."
@@ -95,6 +95,13 @@ def main() -> int:
         with tempfile.TemporaryDirectory(prefix="toolseal-s6-") as workspace:
             payload = study6.run(out, Path(workspace))
         print(study6.to_markdown(payload))
+    elif args.study == "s4":
+        # Imported here: it needs the `research` dependency group.
+        from bench import study4
+
+        payload = study4.run()
+        study4.write(payload, out)
+        print(study4.to_markdown(payload))
     elif args.study == "s5":
         payload = coverage.run()
         coverage.write(payload, out)

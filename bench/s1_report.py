@@ -133,6 +133,17 @@ two pages, not as a security finding about either project's own quickstart.
 Fixing the heuristic after seeing which two entries it mis-paired would be
 exactly the after-the-fact tuning `research/evaluation-protocol.md` exists to
 prevent, so it stands as recorded, with this caveat attached.
+
+**2026-10-09, exploratory.** Debugging the `llm-generated` stratum's 0 of 12
+found two defects in filename recovery, shared by both extractors: a name on
+a block's own first line (`# agent.py`) was never read, and the lookback read
+across into the previous block's code. Both are fixed. The three
+network-collected strata above are **not** re-collected: their upstream pages
+have since changed, so a re-run would measure drift, not the fix. On
+`templates`, whose content hashes are unchanged, a re-run under the fixed
+recovery produced byte-identical materialised files - so the
+`aws-samples` mis-pairing above is a prose-pairing case the fix does not
+reach, and that caveat still applies.
 """
 
 

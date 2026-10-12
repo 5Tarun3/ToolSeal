@@ -18,16 +18,18 @@ The model is a small local one, which bounds what can be claimed. This measures
 what a 3B-class open-weight model produces, not what a frontier model produces,
 and the report says so.
 
-**First run, qwen2.5:3b: 0 of 12 completions materialised.** Not because the
-setups were insecure, but because the model never named a file - bare fences,
-no filename on the fence line and none in the surrounding prose. So this stratum
-currently reports an instruction-following result rather than a security result,
-and the report says that rather than dressing it up.
+**First run, qwen2.5:3b: 0 of 12 completions materialised, and the cause was
+this parser, not the model.** That run was written up as the model never naming
+a file. It did name them - as a comment on each block's first line, `# agent.py`,
+in 17 of 18 completions when re-sampled - and the parser only looked at the fence
+line and the prose above it. The lookback also read across into the previous
+block's code, so `python3 main.py` in a run.sh named the next block main.py. Both
+are fixed and tested; the exclusion rule is unchanged, and a block whose name
+appears nowhere is still excluded rather than given one.
 
-That is a limitation of the model available, not of the method: the harness is
-unchanged and ready for a model that produces nameable multi-file output. It is
-also precisely why the protocol requires exclusions to be counted. Had they been
-dropped, the study would have reported a mean score over zero samples.
+The lesson is why each row now records how many blocks the completion had: the
+first run's twelve identical exclusion strings could not distinguish an empty
+reply from five blocks the parser failed to read, and so nobody looked.
 """
 
 from __future__ import annotations
@@ -54,6 +56,12 @@ _FILENAME: Final = re.compile(r"([A-Za-z0-9_.\-/]+\.(?:py|txt|env|toml|md|cfg|in
 
 # Files that make a directory auditable as an agent project at all.
 _MATERIALISABLE: Final = frozenset({".py", ".txt", ".env", ".toml", ".cfg", ".ini"})
+
+# Recorded on every payload rather than in prose, so it travels with the numbers.
+EXPLORATORY: Final = (
+    "exploratory - filename recovery was fixed after the first run's 0 of 12 was "
+    "seen (research/evaluation-protocol.md, Deviations, 2026-10-09)"
+)
 
 PROMPT: Final = (
     "Set up a minimal {framework} agent that uses {provider}. "
@@ -89,13 +97,33 @@ class Completion:
 _LOOKBACK_LINES: Final = 3
 
 
-def _name_for(text: str, info: str, fence_start: int) -> str | None:
-    """The filename for a block: from the fence line, else from just above it."""
+# A first line that is a comment and nothing but a filename: "# agent.py",
+# "// config.toml". qwen2.5:3b names blocks this way in 17 of 18 completions.
+# Anchored at both ends, so "# Run python main.py" - which mentions a file
+# rather than naming the block - is not read as a name.
+_FIRST_LINE_NAME: Final = re.compile(
+    r"^\s*(?:#|//|;|--)\s*(?:file(?:name)?:\s*)?" + _FILENAME.pattern + r"\s*$",
+    re.IGNORECASE,
+)
+
+
+def _name_for(text: str, info: str, body: str, fence_start: int, prose_start: int) -> str | None:
+    """The filename for a block: fence line, then its first line, then the prose above.
+
+    The lookback stops at ``prose_start``, the end of the previous block. Read
+    past it and a line of code from that block - ``python3 main.py`` in a
+    run.sh - names the next one, which then gets written out under a name it
+    was never given.
+    """
     named = _FILENAME.search(info)
     if named is not None:
         return named.group(1)
 
-    preceding = text[:fence_start].splitlines()[-_LOOKBACK_LINES:]
+    first_line = _FIRST_LINE_NAME.match(body.split("\n", 1)[0])
+    if first_line is not None:
+        return first_line.group(1)
+
+    preceding = text[prose_start:fence_start].splitlines()[-_LOOKBACK_LINES:]
     for line in reversed(preceding):
         named = _FILENAME.search(line)
         if named is not None:
@@ -106,8 +134,12 @@ def _name_for(text: str, info: str, fence_start: int) -> str | None:
 def extract_files(text: str) -> dict[str, str]:
     """Recover named files from fenced blocks, without repairing anything."""
     files: dict[str, str] = {}
+    prose_start = 0
     for match in _FENCE.finditer(text):
-        candidate = _name_for(text, match.group("info"), match.start())
+        candidate = _name_for(
+            text, match.group("info"), match.group("body"), match.start(), prose_start
+        )
+        prose_start = match.end()
         if candidate is None:
             continue
 
@@ -205,6 +237,7 @@ def to_dict(completions: list[Completion], model: str) -> dict[str, Any]:
 
     return {
         "study": "S1 llm-generated stratum",
+        "status": EXPLORATORY,
         "model": model,
         "limitation": (
             "a 3B-class open-weight model, not a frontier model. Bounds what can "
@@ -216,6 +249,9 @@ def to_dict(completions: list[Completion], model: str) -> dict[str, Any]:
                 "sample": c.sample,
                 "materialised": c.materialised,
                 "excluded": c.excluded,
+                # Counted, never stored: the text itself could carry a
+                # credential-shaped string into a committed file (P38).
+                "blocks": len(_FENCE.findall(c.text)),
                 "files": sorted(c.files),
                 "audit_score": c.audit_score,
                 "blocking": c.blocking,
@@ -243,6 +279,11 @@ def to_markdown(payload: dict[str, Any]) -> str:
         "",
         f"Model: `{payload['model']}`. Limitation: {payload['limitation']}.",
         "",
+    ]
+    # Absent from payloads written before the label existed.
+    if payload.get("status"):
+        lines += [f"Status: {payload['status']}.", ""]
+    lines += [
         f"- Completions: {aggregate['completions_total']}",
         f"- Materialised into an auditable project: {aggregate['materialised']}",
         f"- Excluded (counted, not dropped): {aggregate['excluded']}",

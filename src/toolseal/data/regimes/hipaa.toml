@@ -18,6 +18,16 @@
 # the project's own design spec (docs/superpowers/specs/
 # 2026-08-13-standards-compliance-policy-design.md §5) already used for
 # HIPAA.
+#
+# Re-verified 2026-10-09 against the primary text, closing the gap above.
+# eCFR's own versioner API serves the codified text without the browser
+# challenge: /api/versioner/v1/structure/2026-10-07/title-45.json lists
+# Subpart C as 164.302-318 and Subpart D as 164.400-414, and
+# /api/versioner/v1/full/2026-10-07/title-45.xml?part=164&section=164.312
+# gives 164.312(a)-(e) as Access control, Audit controls, Integrity, Person
+# or entity authentication and Transmission security. Both quotations below
+# match that text verbatim, and 164.312(e)(2)'s two implementation
+# specifications are marked Addressable there, as stated.
 
 id = "hipaa"
 kind = "regime"

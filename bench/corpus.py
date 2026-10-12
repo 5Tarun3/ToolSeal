@@ -83,11 +83,34 @@ def _reject_path(candidate: str) -> str | None:
     return name
 
 
-def _name_from_markdown(text: str, info: str, fence_start: int) -> str | None:
+# A block's first line that is a comment and nothing but a filename. The same
+# rule as bench/generated.py's, over this module's wider suffix set.
+_FIRST_LINE_NAME: Final = re.compile(
+    r"^\s*(?:#|//|;|--)\s*(?:file(?:name)?:\s*)?" + _FILENAME.pattern + r"\s*$",
+    re.IGNORECASE,
+)
+
+
+def _name_from_first_line(code: str) -> str | None:
+    named = _FIRST_LINE_NAME.match(code.lstrip("\n").split("\n", 1)[0])
+    return named.group(1) if named is not None else None
+
+
+def _name_from_markdown(
+    text: str, info: str, body: str, fence_start: int, prose_start: int
+) -> str | None:
+    """Fence line, then the block's first line, then prose since the last block.
+
+    The lookback stops at ``prose_start`` so a command inside the previous
+    block - ``uv run main.py`` - cannot name the next one.
+    """
     named = _FILENAME.search(info)
     if named is not None:
         return named.group(1)
-    preceding = text[:fence_start].splitlines()[-_LOOKBACK_LINES:]
+    first_line = _name_from_first_line(body)
+    if first_line is not None:
+        return first_line
+    preceding = text[prose_start:fence_start].splitlines()[-_LOOKBACK_LINES:]
     for line in reversed(preceding):
         named = _FILENAME.search(line)
         if named is not None:
@@ -98,8 +121,12 @@ def _name_from_markdown(text: str, info: str, fence_start: int) -> str | None:
 def extract_fenced_files(text: str) -> dict[str, str]:
     """Recover named files from Markdown fences, without inventing a name."""
     files: dict[str, str] = {}
+    prose_start = 0
     for match in _FENCE.finditer(text):
-        candidate = _name_from_markdown(text, match.group("info"), match.start())
+        candidate = _name_from_markdown(
+            text, match.group("info"), match.group("body"), match.start(), prose_start
+        )
+        prose_start = match.end()
         if candidate is None:
             continue
         name = _reject_path(candidate)
@@ -173,10 +200,13 @@ def extract_html_files(html: str) -> dict[str, str]:
     """
     files: dict[str, str] = {}
     for context, code in extract_html_code_blocks(html):
-        matches = list(_FILENAME.finditer(context))
-        if not matches:
-            continue
-        name = _reject_path(matches[-1].group(1))
+        candidate = _name_from_first_line(code)
+        if candidate is None:
+            matches = list(_FILENAME.finditer(context))
+            if not matches:
+                continue
+            candidate = matches[-1].group(1)
+        name = _reject_path(candidate)
         if name is None:
             continue
         files[name] = code

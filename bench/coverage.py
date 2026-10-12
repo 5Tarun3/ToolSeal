@@ -1,4 +1,4 @@
-"""Study 5: coverage analysis for C6, plus an attempted Study 1 re-cut by control.
+"""Study 5: coverage analysis for C6, plus Study 1 re-cut by control.
 
 Part (a) is a direct computation from the shipped catalogues and the check
 registry - the same data `toolseal policy list` prints, gathered here into one
@@ -85,19 +85,47 @@ def _other_strata_missing() -> list[str]:
     ]
 
 
-def recut_study1_by_control() -> dict[str, Any]:
-    """Re-report Study 1's per-check failure counts as per-control failure
-    counts, using the same `Check.controls` map `coverage_for` uses - if the
-    corpus has anything to re-cut. It does not.
+def _control_failures(check_counts: dict[str, int]) -> dict[str, int]:
+    """Per-check failure counts summed onto every control each check cites.
 
-    `research/studies/s1/results.json`'s `llm-generated` stratum recorded 0
-    of 12 completions materialised into an auditable project, so its own
-    `check_failure_counts` is empty. That alone is enough to make the re-cut
-    infeasible regardless of what the other three strata produced - this
-    function reports which of them are missing a results file too, but their
-    presence does not substitute for `llm-generated` having nothing to
-    re-derive a per-control table from. This reports the gap instead of
-    fabricating one.
+    A sum of check failures, not a count of completions: two failing checks
+    that cite one control add two. The aggregates Study 1 commits do not record
+    which completion failed which check, so a per-completion count cannot be
+    recovered, and the report's header says what is actually counted.
+    """
+    check_to_controls = {check.id: [str(ref) for ref in check.controls] for check in all_checks()}
+    control_failures: dict[str, int] = {}
+    for check_id, count in check_counts.items():
+        for control_ref in check_to_controls.get(check_id, ()):
+            control_failures[control_ref] = control_failures.get(control_ref, 0) + count
+    return dict(sorted(control_failures.items(), key=lambda kv: (-kv[1], kv[0])))
+
+
+def _stratum_recut(stratum: str, payload: dict[str, Any]) -> dict[str, Any]:
+    aggregate = payload.get("aggregate", {})
+    return {
+        "stratum": stratum,
+        "status": str(payload.get("status", "")),
+        "materialised": int(aggregate.get("materialised", 0)),
+        "completions_total": int(
+            aggregate.get("completions_total", aggregate.get("candidates_considered", 0))
+        ),
+        "control_failure_counts": _control_failures(aggregate.get("check_failure_counts", {})),
+    }
+
+
+def recut_study1_by_control() -> dict[str, Any]:
+    """Re-report Study 1's per-check failure counts as per-control counts.
+
+    Uses the same `Check.controls` map `coverage_for` uses. The top-level
+    figures are the `llm-generated` stratum's, the one this study was first
+    written against; ``strata`` carries the re-cut for every collected
+    stratum, reported separately because Study 1 is.
+
+    Until 2026-10-09 the `llm-generated` stratum had 0 of 12 completions
+    materialised and this returned infeasible. That zero was a
+    filename-recovery defect, since fixed; the stratum's payload is labelled
+    exploratory as a result, and ``status`` carries the label through.
     """
     payload = _load_s1()
     if payload is None:
@@ -106,54 +134,37 @@ def recut_study1_by_control() -> dict[str, Any]:
             "reason": f"{S1_RESULTS} does not exist; Study 1 has not been run.",
         }
 
-    aggregate = payload.get("aggregate", {})
-    materialised = int(aggregate.get("materialised", 0))
-    completions_total = int(aggregate.get("completions_total", 0))
-    check_counts: dict[str, int] = aggregate.get("check_failure_counts", {})
+    llm = _stratum_recut("llm-generated", payload)
     missing_strata = _other_strata_missing()
 
-    if materialised == 0 or not check_counts:
+    if llm["materialised"] == 0 or not llm["control_failure_counts"]:
         return {
             "possible": False,
             "reason": (
-                f"{materialised} of {completions_total} completions in the "
-                "llm-generated stratum materialised into an auditable "
-                "project, so aggregate.check_failure_counts is empty - "
-                "there is nothing to re-derive a per-control table from. "
-                f"The {', '.join(missing_strata)} strata the evaluation "
-                "protocol also defines for Study 1 were never collected "
-                "(no results file exists for any of them). Part (b) is not "
-                "delivered; coverage_analysis() above stands alone as the "
-                "evidence for C6."
-                if missing_strata
-                else f"{materialised} of {completions_total} completions "
-                "materialised, so aggregate.check_failure_counts is empty - "
-                "there is nothing to re-derive a per-control table from."
+                f"{llm['materialised']} of {llm['completions_total']} completions in "
+                "the llm-generated stratum materialised into an auditable project, "
+                "so aggregate.check_failure_counts is empty - there is nothing to "
+                "re-derive a per-control table from."
             ),
-            "materialised": materialised,
-            "completions_total": completions_total,
+            "materialised": llm["materialised"],
+            "completions_total": llm["completions_total"],
             "missing_strata": missing_strata,
         }
 
-    # Not reached by the corpus this repository currently ships, but kept
-    # real rather than stubbed: exercised directly by
-    # tests/test_bench_coverage.py against synthetic per-check data, so a
-    # future Study 1 run that does materialise completions produces this
-    # table automatically rather than requiring someone to notice and write
-    # the re-cut by hand.
-    check_to_controls = {check.id: [str(ref) for ref in check.controls] for check in all_checks()}
-    control_failures: dict[str, int] = {}
-    for check_id, count in check_counts.items():
-        for control_ref in check_to_controls.get(check_id, ()):
-            control_failures[control_ref] = control_failures.get(control_ref, 0) + count
+    strata = [llm]
+    for stratum in OTHER_S1_STRATA:
+        index = S1_RESULTS.parent / f"results.{stratum}.json"
+        if index.is_file():
+            strata.append(_stratum_recut(stratum, json.loads(index.read_text(encoding="utf-8"))))
 
     return {
         "possible": True,
-        "materialised": materialised,
-        "completions_total": completions_total,
-        "control_failure_counts": dict(
-            sorted(control_failures.items(), key=lambda kv: (-kv[1], kv[0]))
-        ),
+        "status": llm["status"],
+        "materialised": llm["materialised"],
+        "completions_total": llm["completions_total"],
+        "control_failure_counts": llm["control_failure_counts"],
+        "missing_strata": missing_strata,
+        "strata": strata,
     }
 
 
@@ -254,16 +265,28 @@ def to_markdown(payload: dict[str, Any]) -> str:
         "",
     ]
     if recut["possible"]:
-        lines.append(
-            f"Possible: {recut['materialised']} of {recut['completions_total']} "
-            "completions materialised, so per-check failures were re-derived "
-            "into the per-control table below."
-        )
-        lines.append("")
-        lines.append("| control | completions failing at least one check citing it |")
-        lines.append("| --- | ---: |")
-        for control_ref, count in recut["control_failure_counts"].items():
-            lines.append(f"| `{control_ref}` | {count} |")
+        if recut.get("status"):
+            lines += [f"Status: {recut['status']}.", ""]
+        lines += [
+            "Each stratum's per-check failures re-derived per control. Counts are "
+            "check failures summed onto every control the failing check cites, so "
+            "they can exceed the number of projects; Study 1's aggregates do not "
+            "record which project failed which check.",
+            "",
+        ]
+        for stratum in recut["strata"]:
+            lines += [
+                f"### `{stratum['stratum']}` - {stratum['materialised']} of "
+                f"{stratum['completions_total']} materialised",
+                "",
+            ]
+            if not stratum["control_failure_counts"]:
+                lines += ["Nothing materialised, so nothing to re-cut.", ""]
+                continue
+            lines += ["| control | check failures citing it |", "| --- | ---: |"]
+            for control_ref, count in stratum["control_failure_counts"].items():
+                lines.append(f"| `{control_ref}` | {count} |")
+            lines.append("")
     else:
         lines.append("**Not delivered.** " + recut["reason"])
         lines.append("")

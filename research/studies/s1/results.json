@@ -1,16 +1,25 @@
 {
   "aggregate": {
-    "check_failure_counts": {},
-    "completions_total": 12,
-    "excluded": 12,
-    "materialised": 0,
-    "mean_score": null,
+    "check_failure_counts": {
+      "A4": 12,
+      "C1": 9,
+      "C2": 1,
+      "C5": 5,
+      "E2": 12,
+      "E3": 12,
+      "F1": 12
+    },
+    "completions_total": 18,
+    "excluded": 6,
+    "materialised": 12,
+    "mean_score": 47.7,
     "with_critical_finding": 0
   },
   "completions": [
     {
       "audit_score": null,
       "blocking": null,
+      "blocks": 3,
       "excluded": "no named file blocks in the completion",
       "files": [],
       "findings": [],
@@ -19,18 +28,42 @@
       "task": "ollama-langgraph"
     },
     {
-      "audit_score": null,
-      "blocking": null,
-      "excluded": "no named file blocks in the completion",
-      "files": [],
-      "findings": [],
-      "materialised": false,
+      "audit_score": 40,
+      "blocking": false,
+      "blocks": 5,
+      "excluded": "",
+      "files": [
+        "agent.py",
+        "main.py"
+      ],
+      "findings": [
+        "A4",
+        "C1",
+        "E2",
+        "E3",
+        "F1"
+      ],
+      "materialised": true,
       "sample": 1,
       "task": "ollama-langgraph"
     },
     {
       "audit_score": null,
       "blocking": null,
+      "blocks": 3,
+      "excluded": "no Python source produced",
+      "files": [
+        "ollama_api_key.env"
+      ],
+      "findings": [],
+      "materialised": false,
+      "sample": 2,
+      "task": "ollama-langgraph"
+    },
+    {
+      "audit_score": null,
+      "blocking": null,
+      "blocks": 3,
       "excluded": "no named file blocks in the completion",
       "files": [],
       "findings": [],
@@ -41,56 +74,163 @@
     {
       "audit_score": null,
       "blocking": null,
-      "excluded": "no named file blocks in the completion",
-      "files": [],
+      "blocks": 3,
+      "excluded": "no Python source produced",
+      "files": [
+        "requirements.txt"
+      ],
       "findings": [],
       "materialised": false,
       "sample": 1,
       "task": "ollama-crewai"
     },
     {
-      "audit_score": null,
-      "blocking": null,
-      "excluded": "no named file blocks in the completion",
-      "files": [],
-      "findings": [],
-      "materialised": false,
+      "audit_score": 40,
+      "blocking": false,
+      "blocks": 3,
+      "excluded": "",
+      "files": [
+        "minimal_crewai_agent.py"
+      ],
+      "findings": [
+        "A4",
+        "C1",
+        "E2",
+        "E3",
+        "F1"
+      ],
+      "materialised": true,
+      "sample": 2,
+      "task": "ollama-crewai"
+    },
+    {
+      "audit_score": 56,
+      "blocking": false,
+      "blocks": 3,
+      "excluded": "",
+      "files": [
+        "main.py",
+        "requirements.txt"
+      ],
+      "findings": [
+        "A4",
+        "C2",
+        "C5",
+        "E2",
+        "E3",
+        "F1"
+      ],
+      "materialised": true,
       "sample": 0,
       "task": "openai-langgraph"
     },
     {
-      "audit_score": null,
-      "blocking": null,
-      "excluded": "no named file blocks in the completion",
-      "files": [],
-      "findings": [],
-      "materialised": false,
+      "audit_score": 51,
+      "blocking": false,
+      "blocks": 3,
+      "excluded": "",
+      "files": [
+        "main.py",
+        "requirements.txt"
+      ],
+      "findings": [
+        "A4",
+        "C1",
+        "C5",
+        "E2",
+        "E3",
+        "F1"
+      ],
+      "materialised": true,
       "sample": 1,
       "task": "openai-langgraph"
     },
     {
-      "audit_score": null,
-      "blocking": null,
-      "excluded": "no named file blocks in the completion",
-      "files": [],
-      "findings": [],
-      "materialised": false,
+      "audit_score": 51,
+      "blocking": false,
+      "blocks": 3,
+      "excluded": "",
+      "files": [
+        "main.py",
+        "requirements.txt"
+      ],
+      "findings": [
+        "A4",
+        "C1",
+        "C5",
+        "E2",
+        "E3",
+        "F1"
+      ],
+      "materialised": true,
+      "sample": 2,
+      "task": "openai-langgraph"
+    },
+    {
+      "audit_score": 40,
+      "blocking": false,
+      "blocks": 4,
+      "excluded": "",
+      "files": [
+        "crewai/__init__.py",
+        "crewai/agent.py"
+      ],
+      "findings": [
+        "A4",
+        "C1",
+        "E2",
+        "E3",
+        "F1"
+      ],
+      "materialised": true,
       "sample": 0,
+      "task": "openai-crewai"
+    },
+    {
+      "audit_score": 67,
+      "blocking": false,
+      "blocks": 5,
+      "excluded": "",
+      "files": [
+        "crewai.py",
+        "crewai_agent.py",
+        "requirements.txt"
+      ],
+      "findings": [
+        "A4",
+        "C5",
+        "E2",
+        "E3",
+        "F1"
+      ],
+      "materialised": true,
+      "sample": 1,
+      "task": "openai-crewai"
+    },
+    {
+      "audit_score": 40,
+      "blocking": false,
+      "blocks": 3,
+      "excluded": "",
+      "files": [
+        "crewai/__init__.py",
+        "crewai_agent.py"
+      ],
+      "findings": [
+        "A4",
+        "C1",
+        "E2",
+        "E3",
+        "F1"
+      ],
+      "materialised": true,
+      "sample": 2,
       "task": "openai-crewai"
     },
     {
       "audit_score": null,
       "blocking": null,
-      "excluded": "no named file blocks in the completion",
-      "files": [],
-      "findings": [],
-      "materialised": false,
-      "sample": 1,
-      "task": "openai-crewai"
-    },
-    {
-      "audit_score": null,
-      "blocking": null,
+      "blocks": 3,
       "excluded": "no named file blocks in the completion",
       "files": [],
       "findings": [],
@@ -99,37 +239,97 @@
       "task": "anthropic-langgraph"
     },
     {
-      "audit_score": null,
-      "blocking": null,
-      "excluded": "no named file blocks in the completion",
-      "files": [],
-      "findings": [],
-      "materialised": false,
+      "audit_score": 40,
+      "blocking": false,
+      "blocks": 4,
+      "excluded": "",
+      "files": [
+        "main_agent.py"
+      ],
+      "findings": [
+        "A4",
+        "C1",
+        "E2",
+        "E3",
+        "F1"
+      ],
+      "materialised": true,
       "sample": 1,
       "task": "anthropic-langgraph"
     },
     {
-      "audit_score": null,
-      "blocking": null,
-      "excluded": "no named file blocks in the completion",
-      "files": [],
-      "findings": [],
-      "materialised": false,
+      "audit_score": 40,
+      "blocking": false,
+      "blocks": 2,
+      "excluded": "",
+      "files": [
+        "AnthropicToolWrapper.py"
+      ],
+      "findings": [
+        "A4",
+        "C1",
+        "E2",
+        "E3",
+        "F1"
+      ],
+      "materialised": true,
+      "sample": 2,
+      "task": "anthropic-langgraph"
+    },
+    {
+      "audit_score": 40,
+      "blocking": false,
+      "blocks": 5,
+      "excluded": "",
+      "files": [
+        "anthropic/__init__.py",
+        "crewai/__init__.py"
+      ],
+      "findings": [
+        "A4",
+        "C1",
+        "E2",
+        "E3",
+        "F1"
+      ],
+      "materialised": true,
       "sample": 0,
+      "task": "anthropic-crewai"
+    },
+    {
+      "audit_score": 67,
+      "blocking": false,
+      "blocks": 4,
+      "excluded": "",
+      "files": [
+        "crewai/__init__.py",
+        "requirements.txt"
+      ],
+      "findings": [
+        "A4",
+        "C5",
+        "E2",
+        "E3",
+        "F1"
+      ],
+      "materialised": true,
+      "sample": 1,
       "task": "anthropic-crewai"
     },
     {
       "audit_score": null,
       "blocking": null,
+      "blocks": 1,
       "excluded": "no named file blocks in the completion",
       "files": [],
       "findings": [],
       "materialised": false,
-      "sample": 1,
+      "sample": 2,
       "task": "anthropic-crewai"
     }
   ],
   "limitation": "a 3B-class open-weight model, not a frontier model. Bounds what can be claimed, and is also what runs on a laptop with no API key",
   "model": "qwen2.5:3b",
+  "status": "exploratory - filename recovery was fixed after the first run's 0 of 12 was seen (research/evaluation-protocol.md, Deviations, 2026-10-09)",
   "study": "S1 llm-generated stratum"
 }

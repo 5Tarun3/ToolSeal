@@ -7,6 +7,7 @@ it. Regenerate with:
 ```bash
 uv run python -m bench s2 --out research/studies/s2
 uv run python -m bench s3 --out research/studies/s3
+uv run python -m bench s4 --out research/studies/s4   # needs: uv sync --group research
 uv run python -m bench s5 --out research/studies/s5
 uv run python -m bench s6 --out research/studies/s6
 ```
@@ -18,10 +19,11 @@ table.
 
 | Study | Question | Status |
 | --- | --- | --- |
-| [`s1`](s1/) | What do LLM-generated agent setups look like? (RQ1) | Run, **no usable samples** - see below |
+| [`s1`](s1/) | What do LLM-generated agent setups look like? (RQ1) | Run, all four strata; `llm-generated` **exploratory** - see below |
 | [`s2`](s2/) | Does securing setup cost developer time? (RQ2) | Run, idealised manual arm |
 | [`s3`](s3/) | What does a secure default cost at runtime? (RQ3) | Run |
-| [`s5`](s5/) | How much of each standard does the control mapping reach? (C6) | Run, part (a) only - see below |
+| [`s4`](s4/) | Which security properties survive translation between abstractions? (RQ4) | Run, seven units, Windows - see [`s4/README.md`](s4/README.md) |
+| [`s5`](s5/) | How much of each standard does the control mapping reach? (C6) | Run, parts (a) and (b); (b) exploratory - see below |
 | [`s6`](s6/) | Does each interception layer's protection justify its latency? (RQ5) | Decorator layer run (H4 supported); proxy layer not built |
 
 ## A caveat that belongs on every figure
@@ -47,31 +49,32 @@ The defensible claim is the narrow one - that a property knowable at
 configuration time does not need re-deriving on every call - and both the report
 and its tests are written to keep the ratio from being read as more than that.
 
-## Study 1 currently has no security result
+## Study 1's first zero was the harness, not the model
 
-The `llm-generated` stratum ran and returned nothing measurable: **0 of 12
-completions materialised**. Not because the generated setups were insecure, but
-because `qwen2.5:3b` never named a file - bare fences, no filename on the fence
-line and none in the surrounding prose - so there was no project to audit.
+The `llm-generated` stratum's first run reported **0 of 12 completions
+materialised**, and this page called it an instruction-following result:
+`qwen2.5:3b` had supposedly never named a file. That was wrong. Re-sampled
+with the raw text kept, the model named its files in 17 of 18 completions - as
+a comment on each block's first line, `# agent.py` - and the parser only read
+the fence line and the prose above it. Its lookback also read across into the
+previous block's code, which could name a block after a command in another one.
 
-That is a result about instruction-following, not about security posture, and it
-is reported as such. The harness is unchanged and ready for a model that
-produces nameable multi-file output; what is missing is the model, not the
-method.
+Both are fixed, and the stratum re-collected: **12 of 18 materialised, mean
+score 47.7**, every materialised project failing `A4`, `E2`, `E3` and `F1`.
+Because the fix came after the result was seen, the stratum is labelled
+**exploratory**, in the protocol's deviations table and as a field on the
+payload. The five blocks still excluded are genuinely unnamed, or put three
+files in one block; none is given a name it did not have.
 
-It is also the clearest illustration of why the protocol requires exclusions to
-be counted rather than dropped. Discarding them would have left a mean score
-computed over zero samples and presented as a finding.
+Two lessons stand. Exclusions are counted rather than dropped, which is the
+only reason the zero was visible at all. And twelve identical exclusion strings
+hid the cause, so every row now records how many blocks the completion had.
 
-## Study 5 delivers part (a) only
+## Study 5 part (b) is delivered, and exploratory
 
 C6's evidence (spec §11) has two parts: a coverage analysis of the control
-mapping, and a re-cut of Study 1's corpus by control instead of by family.
-The first ran cleanly. The second could not: Study 1's own zero-materialised
-result above means there is no per-check failure data to re-derive a
-per-control table from, and the `official-docs`, `mcp-servers` and
-`templates` strata the evaluation protocol also defines for Study 1 were
-never collected. `research/studies/s5/RESULTS.md` states this explicitly
-rather than fabricating a table, and [`bench/coverage.py`](../../bench/coverage.py)
-is written so a future Study 1 run that does materialise completions would
-produce the re-cut automatically, with no code change required.
+mapping, and a re-cut of Study 1's corpus by control instead of by family. Part
+(b) was blocked by Study 1's zero; it now runs for all four strata, reported per
+stratum as Study 1 is. It inherits the `llm-generated` stratum's exploratory
+label. Its counts are check failures summed per control, not projects, because
+Study 1's aggregates do not record which project failed which check.

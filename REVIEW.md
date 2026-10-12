@@ -7,6 +7,12 @@ research components. Written for review before pushing 28 local commits.
 running Ollama). `ruff`, `ruff format` and `mypy --strict` clean.
 `toolseal audit .` scores 100/100 on itself, no findings.
 
+> **Updated 2026-10-09.** The research rows below are brought up to date:
+> Study 1's zero was a harness defect and is fixed (exploratory re-run, 12 of
+> 18 materialised); Study 4 has run; Study 5 part (b) is delivered; the
+> severity drift guard and the HIPAA source check are closed. Test counts and
+> commit counts above are from the original writing and are not refreshed.
+
 ---
 
 ## 1. How to review, in order
@@ -176,10 +182,10 @@ hands it a modified check set. That boundary is asserted by test.
 | | Contribution | Status | Evidence |
 | --- | --- | --- | --- |
 | **C1** | Taxonomy of agent **configuration** misconfigurations | **Done** | `reference/taxonomy.md`, 28 checks, 7 families, every check citing an external control |
-| **C2** | First measurement of setup-guidance security posture | **Partial — negative** | Study 1 ran; 0 of 12 completions materialised |
+| **C2** | First measurement of setup-guidance security posture | **Done, partly exploratory** | Study 1, all four strata; `llm-generated` 12 of 18 materialised, mean 47.7, labelled exploratory |
 | **C3** | toolseal itself: scaffolder, registry, auditor | **Done** | 881 tests; self-audit 100/100 |
 | **C4** | Secure defaults are free in DX and runtime | **Done** | Studies 2 and 3 |
-| **C5** | Expressiveness lattice + compensating guards | **Done (mechanism)** | Probe P0, `translate/`, executable guard tests. Study 4 not run |
+| **C5** | Expressiveness lattice + compensating guards | **Done, with measured gaps** | Study 4: seven units; two lattice entries wrong; the validation guard is never emitted for an MCP tool and covers flat schemas only |
 | **C6** | Control mapping from taxonomy to published standards | **Done** | Study 5 |
 
 ### What each result actually says
@@ -204,13 +210,26 @@ AgentWarden's 800 ms buys a learned, task-aware policy; a guard reinstates one
 declared property. The results file says so itself, and two tests exist to stop
 the bare ratio being quoted. **Keep that discipline in the paper.**
 
-**Study 1 — an honest negative.**
-12 completions from `qwen2.5:3b`, **0 materialised** into auditable projects.
+**Study 1 — the negative was the harness.**
+The first run reported 12 completions from `qwen2.5:3b`, **0 materialised**, and
+this section read it as an instruction-following result. It was a parser
+defect: the model named its files as a first-line comment (`# agent.py`), which
+filename recovery never read. Fixed and re-run: **12 of 18 materialised, mean
+47.7**, every one failing `A4`, `E2`, `E3`, `F1`.
 
-*Inference:* this is an instruction-following result, not a security result. A
-3B open-weight model could not produce a runnable project from a setup prompt.
-It bounds what C2 can claim to nearly nothing at present. Reported rather than
-dropped, because discarding failures would bias the sample toward tidy answers.
+*Inference:* a small local model reproduces the same insecure defaults the
+ecosystem's guidance does. Because the fix followed the result, the stratum is
+labelled exploratory. The lesson stands in a different form: exclusions being
+counted is what made the zero visible, and identical exclusion strings are what
+hid its cause - rows now record how many blocks each completion had.
+
+**Study 4 — loss is adapter-dependent, and so is enforcement.**
+Seven units over four adapters. Only `langchain-mcp-adapters` carries the
+annotation hints. `crewai-tools` validates client-side but loses array and
+nullable constraints; the others send every invalid call to the server. The
+lattice is wrong about CrewAI's input constraints and strict-mode OpenAI's
+required sets, and `lower()` never emits the validation guard for an MCP tool.
+See `research/studies/s4/README.md`.
 
 **Study 5 — coverage, with the denominator kept honest.**
 
@@ -235,12 +254,12 @@ Coverage also counts *citations*, not adequacy. Both caveats are printed by
 
 | Item | Blocks | Note |
 | --- | --- | --- |
-| **Study 4** — translation fidelity at scale | C5's empirical half | Richer now: 5 abstractions, 3 `MEASURED` rows, working lift/lower |
-| **Study 1 re-run** | C2 | Needs a model that can follow setup instructions. Current result bounds C2 to almost nothing |
+| ~~**Study 4**~~ | C5's empirical half | **Done 2026-10-09**, Windows only. Its findings are product changes still to make (see §5) |
+| ~~**Study 1 re-run**~~ | C2 | **Done 2026-10-09**; the model was capable, the parser was not. Exploratory |
 | **P38** coordinated disclosure | Study 1 on third-party repos | Must exist **before** auditing others' code, not after |
 | **P37 / P41** write-up, then reconcile every claim against measured evidence | — | P41 is the step that catches overclaims |
 | **Externally review the mapping** | C1, C6 | The drift guard proves document and code agree; nothing proves either is *right* |
-| **HIPAA URL** verified by indexing, not fetch | C6 | Weaker than the EUR-Lex citations; disclosed |
+| ~~**HIPAA URL**~~ | C6 | **Done 2026-10-09**: verified against eCFR's versioner API, quotations verbatim |
 
 ---
 
@@ -254,7 +273,7 @@ flowchart LR
     S1["Study 1<br/>corpus audit"] --> C2
     S2["Study 2<br/>with/without"] --> C4
     S3["Study 3<br/>runtime cost"] --> C4
-    S4["Study 4<br/>NOT RUN"] -.-> C5
+    S4["Study 4<br/>translation at scale"] --> C5
     S5["Study 5<br/>coverage"] --> C6
 ```
 
@@ -289,7 +308,7 @@ specific failure:
 1. **Falsify before building.** P0 ran in week 1 and gated C5.
 2. **Execute, do not read.** Guards are run, not inspected — a generated
    binding that imports something undefined looks fine on the page.
-3. **Report the negative.** Study 1's zero is published as a result.
+3. **Report the negative.** Study 1's zero was published as a result - and because it was published rather than dropped, it could later be traced to a harness defect.
 4. **Keep the denominator honest.** `complete_enumeration`, inapplicable checks
    leaving the denominator, `UNKNOWN` distinct from `PASS`.
 5. **Make the caveat structural.** A field on the data, not a sentence in a
@@ -301,9 +320,8 @@ specific failure:
 
 | Left | Method it should follow |
 | --- | --- |
-| **Study 4** | Same shape as P0, widened: round-trip annotated MCP tools through every adapter, report loss per property per adapter, then verify guards restore behaviour **by executing them** |
-| **Study 1 re-run** | Unchanged protocol; swap the model. Keep exclusions counted, not dropped |
-| **Severity drift guard** | Extend `test_control_mapping.py` to compare severities as well as controls. Severities feed the weighted score the evaluation compares across versions |
+| **Study 4 on Linux and macOS** | Same runner (`python -m bench s4`); a different platform is a different unit, reported alongside, never merged |
+| **Study 4's product fixes** | Each its own change, measured again afterwards, so the published numbers keep describing the code they measured |
 | **P16 registry seeding** | Curation criteria fixed **in writing before** seeding — the plan's own mitigation against curating and then auditing our own entries |
 | **P40 demo rehearsal** | Twice, on genuinely fresh machines, recorded as fallback |
 
@@ -316,9 +334,9 @@ specific failure:
 | `MANAGE-2.2` uncovered | Real mapping gap | Study 5 names it |
 | `B4` extended rather than adding `B6` | Judgment call | P46; preserved the 28-check invariant |
 | `data_classes` has no automatic producer | Deliberate | Deriving it from hostnames would be the heuristic inference the spec forbids |
-| Severity drift unguarded | TODO | Controls guarded both directions; severities are not |
+| ~~Severity drift unguarded~~ | Done (T2) | The drift guard now compares severities; `C2` is a named exemption |
 | `docs/` is gitignored | Decision needed | The paper cites specs that exist on one machine only |
-| Study 1 corpus | Blocks C2 | 0 of 12 materialised |
+| Study 4's product findings | C5 | Validation guard unreachable from MCP and flat-only; CrewAI and `openai_fc` lattice entries; no agent-framework profile; bindings always import `langchain_core` |
 
 ---
 

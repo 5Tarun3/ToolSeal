@@ -103,6 +103,12 @@ enough to answer the go/no-go question P0 was created for; it is **not** the
 ecosystem measurement. Study 4 broadens this across abstractions and adapter
 versions, and should treat these numbers as a pilot.
 
+**Study 4 has since run** ([`research/studies/s4/`](../../studies/s4/)). It
+reproduces every P0 row at the same adapter versions and adds what P0 could not
+see: `crewai-tools` validates client-side but loses array and nullable
+constraints, and the `G2` guard this probe motivated is never generated for an
+MCP tool.
+
 The probe searches a fixed list of attribute names for annotation carriers. An
 adapter storing them somewhere unusual would be scored as dropping them. The
 candidate list is in `probe.py` as `ANNOTATION_CARRIERS` and should grow as new

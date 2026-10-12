@@ -76,6 +76,26 @@ def test_json_is_materialisable_here_unlike_bench_generated() -> None:
     assert files["mcp.json"]
 
 
+def test_markdown_first_line_comment_names_the_block() -> None:
+    # The same blind spot bench/generated.py had: a name on the block's own
+    # first line was never read, only the fence line and the prose above.
+    files = extract_fenced_files("```python\n# server.py\nprint(1)\n```\n")
+
+    assert files == {"server.py": "# server.py\nprint(1)\n"}
+
+
+def test_markdown_lookback_does_not_read_into_the_previous_block() -> None:
+    text = "```bash\nuv run main.py\n```\n```python\nprint(1)\n```\n"
+
+    assert extract_fenced_files(text) == {}
+
+
+def test_html_first_line_comment_names_the_block() -> None:
+    files = extract_html_files("<p>Run it:</p><pre># agent.py\nprint(1)\n</pre>")
+
+    assert set(files) == {"agent.py"}
+
+
 def test_markdown_path_traversal_is_rejected() -> None:
     hostile = "```../../evil.py\nprint(1)\n```"
 

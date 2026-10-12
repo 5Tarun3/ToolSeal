@@ -58,33 +58,40 @@ def test_coverage_analysis_lists_checks_citing_no_control() -> None:
     assert payload["checks_total"] >= len(payload["unmapped_checks"])
 
 
-# --- part (b): the real corpus has nothing to re-cut ------------------------
+# --- part (b): the real corpus ----------------------------------------------
 
 
-def test_recut_against_the_real_s1_corpus_reports_infeasibility() -> None:
-    # This is the actual state of research/studies/s1: 0 of 12 completions
-    # materialised, so there is no per-check failure data to re-derive a
-    # per-control table from. Asserting this against the real file (not a
-    # fixture) is the honesty check this study exists to pass.
+def test_recut_against_the_real_s1_corpus_is_delivered() -> None:
+    # Asserted against the real file, not a fixture. Until 2026-10-09 this
+    # asserted infeasibility: 0 of 12 completions had materialised. That zero
+    # was a filename-recovery defect (bench/generated.py's docstring), and
+    # with it fixed the corpus has per-check data to re-cut.
     result = study5.recut_study1_by_control()
 
-    assert result["possible"] is False
-    assert "0" in result["reason"] or result["materialised"] == 0
-    assert "control_failure_counts" not in result
+    assert result["possible"] is True
+    assert result["control_failure_counts"]
+    # The llm-generated input is exploratory, so the re-cut built on it is too.
+    assert result["status"].startswith("exploratory")
 
 
 def test_recut_reports_no_missing_strata_now_all_four_are_collected() -> None:
-    # S1: official-docs, mcp-servers and templates have now been collected
-    # (research/studies/s1/results.<stratum>.json all exist), so none of them
-    # is missing any more - but the re-cut is still infeasible regardless,
-    # because it is llm-generated's own check_failure_counts that is empty
-    # (test_recut_against_the_real_s1_corpus_reports_infeasibility, above).
-    # This was `list(study5.OTHER_S1_STRATA)` before those three were
-    # collected; the assertion changing is the honesty check working as
-    # intended, not a workaround for it.
     result = study5.recut_study1_by_control()
 
     assert result["missing_strata"] == []
+
+
+def test_recut_is_reported_per_stratum() -> None:
+    # Study 1 reports each stratum before any aggregate, because an aggregate
+    # can hide a stratum the others do not resemble. The re-cut follows suit.
+    strata = study5.recut_study1_by_control()["strata"]
+
+    assert [s["stratum"] for s in strata] == [
+        "llm-generated",
+        "official-docs",
+        "mcp-servers",
+        "templates",
+    ]
+    assert all(s["control_failure_counts"] for s in strata if s["materialised"])
 
 
 def test_recut_with_no_results_file_at_all_says_so(
@@ -147,7 +154,22 @@ def test_markdown_states_the_citation_not_adequacy_caveat() -> None:
     assert "not adequacy" in text or "not evidence the check discharges" in text
 
 
-def test_markdown_reports_the_recut_gap_honestly_when_infeasible() -> None:
+def test_markdown_delivers_the_recut_and_labels_it() -> None:
+    text = study5.to_markdown(study5.run())
+
+    assert "Not delivered" not in text
+    assert "exploratory" in text
+    # The counts are check failures summed per control, which can exceed the
+    # number of completions; the header must not claim to count completions.
+    assert "completions failing at least one check" not in text
+    assert "check failures citing it" in text
+
+
+def test_markdown_reports_the_recut_gap_honestly_when_infeasible(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(study5, "S1_RESULTS", tmp_path / "nowhere" / "results.json")
+
     text = study5.to_markdown(study5.run())
 
     assert "Not delivered" in text

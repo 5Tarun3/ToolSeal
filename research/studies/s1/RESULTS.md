@@ -162,16 +162,25 @@ A higher-ranked candidate that fails a mechanical criterion (fork, archived, sta
 
 Model: `qwen2.5:3b`. Limitation: a 3B-class open-weight model, not a frontier model. Bounds what can be claimed, and is also what runs on a laptop with no API key.
 
-- Completions: 12
-- Materialised into an auditable project: 0
-- Excluded (counted, not dropped): 12
-- Mean audit score: None
+Status: exploratory - filename recovery was fixed after the first run's 0 of 12 was seen (research/evaluation-protocol.md, Deviations, 2026-10-09).
+
+- Completions: 18
+- Materialised into an auditable project: 12
+- Excluded (counted, not dropped): 6
+- Mean audit score: 47.7
 - With at least one critical finding: 0
 
 ### Which checks fail most often
 
 | check | completions failing |
 | --- | ---: |
+| `A4` | 12 |
+| `E2` | 12 |
+| `E3` | 12 |
+| `F1` | 12 |
+| `C1` | 9 |
+| `C5` | 5 |
+| `C2` | 1 |
 
 Per-check counts are more actionable than the mean: they name the
 specific default a model reproduces, which is what a fix has to target.
@@ -189,7 +198,7 @@ Official documentation and a random template repository are different population
 | `official-docs` | 3 | 1 | 2 | 63.0 | 0 |
 | `mcp-servers` | 25 | 2 | 23 | 40.0 | 0 |
 | `templates` | 25 | 3 | 22 | 43.7 | 0 |
-| `llm-generated` | 12 | 0 | 12 | None | 0 |
+| `llm-generated` | 18 | 12 | 6 | 47.7 | 0 |
 
 ## Known limitation: filename recovery can mis-pair a block's name
 
@@ -213,3 +222,14 @@ two pages, not as a security finding about either project's own quickstart.
 Fixing the heuristic after seeing which two entries it mis-paired would be
 exactly the after-the-fact tuning `research/evaluation-protocol.md` exists to
 prevent, so it stands as recorded, with this caveat attached.
+
+**2026-10-09, exploratory.** Debugging the `llm-generated` stratum's 0 of 12
+found two defects in filename recovery, shared by both extractors: a name on
+a block's own first line (`# agent.py`) was never read, and the lookback read
+across into the previous block's code. Both are fixed. The three
+network-collected strata above are **not** re-collected: their upstream pages
+have since changed, so a re-run would measure drift, not the fix. On
+`templates`, whose content hashes are unchanged, a re-run under the fixed
+recovery produced byte-identical materialised files - so the
+`aws-samples` mis-pairing above is a prose-pairing case the fix does not
+reach, and that caveat still applies.
