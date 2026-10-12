@@ -42,5 +42,8 @@ Thumbs.db
 # for the second half of that fix).
 .superpowers/
 
-# Test workspace 
+# Test workspace
 /workspace
+
+# Generated output files
+output/
