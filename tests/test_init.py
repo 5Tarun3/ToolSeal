@@ -349,6 +349,9 @@ def test_api_key_flag_stores_into_the_keychain(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     stored: dict[str, str] = {}
+    # Pinned, not left to the host: a CI runner has no keychain, so backend
+    # resolution would fall back to the environment and never call `set`.
+    monkeypatch.setattr(KeyringStore, "available", lambda self: True)
     monkeypatch.setattr(
         KeyringStore,
         "set",
@@ -398,6 +401,8 @@ def test_interactive_flag_prompts_and_stores(
     # wizard has left to ask is the regime (blank -> none) and then the
     # credential - it does not need to re-derive provider/framework here.
     stored: dict[str, str] = {}
+    # Pinned for the same reason as the test above: no keychain on CI.
+    monkeypatch.setattr(KeyringStore, "available", lambda self: True)
     monkeypatch.setattr(
         KeyringStore,
         "set",
